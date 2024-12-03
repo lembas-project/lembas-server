@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo Stream</title>
+
+    <link rel="stylesheet" href="/static/css/bootstrap-4-6-0.min.css" crossorigin="anonymous">
+    <style>
+        .fade-me-in #videos-list.htmx-added {
+            opacity: 0;
+        }
+        .fade-me-in #videos-list {
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+<h1 class="text-center">
+    Demo Stream
+</h1>
+
+<button
+        hx-get="/?order=asc"
+        hx-target="#videos-list"
+        hx-swap="outerHTML settle:1s"
+        >
+    Ascending
+</button>
+
+<button
+        hx-get="/?order=desc"
+        hx-target="#videos-list"
+        hx-swap="outerHTML settle:1s">
+    Descending
+</button>
+
+<div class="fade-me-in">
+{{  render_partial("partials/videos_list.html", videos=videos) }}
+</div>
+
+<script src="/static/js/htmx.min.js"></script>
+<script src="/static/js/jquery-3.5.1.slim.min.js"></script>
+<script src="/static/js/popper-1.16.1.min.js"></script>
+<script src="/static/js/bootstrap-4.6.1.min.js"></script>
+
+</body>
+</html>

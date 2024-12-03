@@ -1,0 +1,30 @@
+<div id="package-table-container" class="col-8 offset-2">
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for package in packages %}
+            <tr>
+                <td>
+                    {{ package }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <button hx-get="/main?page={{ page - 1 }}"
+            hx-push-url="true"
+            hx-target="#package-table-container"
+            hx-swap="outerHTML">Previous Page
+    </button>
+    <button hx-get="/main?page={{ page + 1 }}"
+            hx-push-url="true"
+            hx-target="#package-table-container"
+            hx-swap="outerHTML">Next Page
+    </button>
+</div>

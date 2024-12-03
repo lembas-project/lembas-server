@@ -1,0 +1,27 @@
+ports:
+  - name: http
+    containerPort: 8000
+    protocol: TCP
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+
+autoscaling:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+ingress:
+  enabled: true
+  hosts:
+    - host: demos.localhost
+      paths:
+        - path: /
+          pathType: Prefix
+          servicePortName: http

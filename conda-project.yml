@@ -1,0 +1,23 @@
+name: demo-stream
+environments:
+  prod:
+    - environment-prod.yml
+  dev:
+    - environment-dev.yml
+    - environment-prod.yml
+commands:
+  prod:
+    cmd: fastapi run main.py
+    environment: prod
+  dev:
+    cmd: fastapi dev main.py
+    environment: dev
+  type-check:
+    cmd: mypy
+    environment: dev
+  test:
+    cmd: pytest
+    environment: dev
+    variables:
+      # This allows importing directly from the project root
+      PYTHONPATH: .

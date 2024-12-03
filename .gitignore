@@ -1,0 +1,7 @@
+# Conda environment directory
+/envs/
+
+# File containing environment variables
+.env
+
+/videos/*.mp4
