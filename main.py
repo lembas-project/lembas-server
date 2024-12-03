@@ -65,7 +65,7 @@ try:
 except FileNotFoundError:
     data = {}
 
-packages = data.get("packages", [])
+packages = data.get("packages", {})
 package_names = sorted(set(p["name"] for filename, p in packages.items()))
 
 PAGE_SIZE = 10
