@@ -2,6 +2,7 @@ SHELL := /bin/bash -o pipefail -o errexit
 
 # The port on which to run Tilt
 TILT_PORT := 10350
+K3D_CONFIG_FILE := infra/k3d/k3d_config.yaml
 
 # The namespace in which to deploy the resources
 NAMESPACE := lembas
@@ -13,7 +14,7 @@ CONDA_ENV_MARKER := $(CONDA_ENV_DIR)/.mark-environment-created
 
 # Marker files
 MARKER_DIR := .mark
-CLUSTER_UP_MARKER := cluster-up
+CLUSTER_UP_MARKER := $(MARKER_DIR)/cluster-up
 
 # Commands
 CONDA_EXE ?= conda
@@ -35,20 +36,18 @@ $(MARKER_DIR):
 	mkdir -p $@
 
 # Spin up the cluster and create a marker file
-$(MARKER_DIR)/$(CLUSTER_UP_MARKER): $(MARKER_DIR)
+$(CLUSTER_UP_MARKER): $(MARKER_DIR)
 	./infra/scripts/create-cluster.sh
 	touch $@
 
-cluster-up: $(CLUSTER_UP_MARKER)  ## Create a new Kubernetes cluster using k3d
+cluster: $(CLUSTER_UP_MARKER)  ## Create a new Kubernetes cluster using k3d
 
-cluster-down:  ## Tear down the k3d Kubernetes cluster
-	k3d cluster delete anaconda-one
+destroy:  ## Tear down the k3d Kubernetes cluster
+	k3d cluster delete --config $(K3D_CONFIG_FILE)
 	rm -f $(CLUSTER_UP_MARKER)
 
-destroy: cluster-down  ## Alias for cluster-down
-
 scale-cluster:  ## Scale the cluster to a number of nodes (e.g. `make scale-cluster replicas=2`)
-	k3d node create new-agent --cluster anaconda-one --role agent --replicas $(replicas)
+	k3d node create new-agent --config $(K3D_CONFIG_FILE) --role agent --replicas $(replicas)
 
 install-hooks:  ## Download + install all pre-commit hooks
 	pre-commit install-hooks
@@ -62,13 +61,13 @@ pre-commit:  ## Run pre-commit on all files
 # 		also allowing local manual development.
 RESOURCES ?=
 
-up: cluster-up  ## Run Tilt, deploying all its managed components
+up: cluster  ## Run Tilt, deploying all its managed components
 	tilt up $(RESOURCES) --namespace $(NAMESPACE) --port $(TILT_PORT)
 
 down:  ## Remove Tilt managed resources
 	tilt down --namespace $(NAMESPACE) --delete-namespaces
 
-ci: cluster-up-ci init-submodules helm-dependencies  ## Run Tilt in CI mode
+ci: cluster-up  ## Run Tilt in CI mode
 	tilt ci $(RESOURCES) --namespace $(NAMESPACE) --port $(TILT_PORT)
 
 setup: $(CONDA_ENV_MARKER)  ## Create or update local conda environment for testing
