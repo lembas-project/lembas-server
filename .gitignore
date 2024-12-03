@@ -4,4 +4,9 @@
 # File containing environment variables
 .env
 
-/videos/*.mp4
+# Cache and hidden directories
+.DS_Store
+.ruff_cache/
+
+# Marker files used in Makefile
+.mark/
