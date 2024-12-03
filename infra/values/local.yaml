@@ -20,7 +20,7 @@ podDisruptionBudget:
 ingress:
   enabled: true
   hosts:
-    - host: demos.localhost
+    - host: lembas.localhost
       paths:
         - path: /
           pathType: Prefix
