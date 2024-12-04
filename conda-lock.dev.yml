@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: 23709ef921fd65d2f1ad44ea5d5cf42567d56aaa1e40095691a3e32138c462fe
-    linux-64: d66624cfc791b4939654d591142eafeaf10576df14418bf4a43ada312ee780ce
+    osx-arm64: face3afa68ca553348849b9da8e7cf4d8357c874b9d314b8ac9892f744d14125
+    linux-64: f22b5c629d4bd03cfb188c97ad03944a74b4163e648b370b71e893596d3a6258
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2024-12-04T17:13:15Z'
+    created_at: '2024-12-04T17:24:57Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -414,45 +414,45 @@ package:
   category: main
   optional: false
 - name: fastapi
-  version: 0.111.1
+  version: 0.115.5
   manager: conda
   platform: linux-64
   dependencies:
     email_validator: '>=2.0.0'
-    fastapi-cli: '>=0.0.2'
+    fastapi-cli: '>=0.0.5'
     httpx: '>=0.23.0'
     jinja2: '>=2.11.2'
     pydantic: '>=1.7.4,!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0'
-    python: '>=3.8'
+    python: '>=3.9'
     python-multipart: '>=0.0.7'
-    starlette: '>=0.37.2,<0.38.0'
-    typing-extensions: '>=4.8.0'
-    uvicorn: '>=0.12.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/fastapi-0.111.1-pyhd8ed1ab_0.conda
+    starlette: '>=0.40.0,<0.42.0'
+    typing_extensions: '>=4.8.0'
+    uvicorn-standard: '>=0.12.0'
+  url: https://conda.anaconda.org/conda-forge/noarch/fastapi-0.115.5-pyhff2d567_0.conda
   hash:
-    md5: d70b311ede031d219232e110c2355ac5
-    sha256: d3d40bae4267b68dc3325089f4da9db3d5a34b741da061e04ac3b6a7b27ef55e
+    md5: cfe0f8cd904ab19c36ba50eb5179ebe0
+    sha256: da2833cc2ea5789abc2a6899be02ba0a769386d4913ff182bd1a9458bea40c34
   category: main
   optional: false
 - name: fastapi
-  version: 0.111.1
+  version: 0.115.5
   manager: conda
   platform: osx-arm64
   dependencies:
     email_validator: '>=2.0.0'
-    fastapi-cli: '>=0.0.2'
+    fastapi-cli: '>=0.0.5'
     httpx: '>=0.23.0'
     jinja2: '>=2.11.2'
     pydantic: '>=1.7.4,!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0'
-    python: '>=3.8'
+    python: '>=3.9'
     python-multipart: '>=0.0.7'
-    starlette: '>=0.37.2,<0.38.0'
-    typing-extensions: '>=4.8.0'
-    uvicorn: '>=0.12.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/fastapi-0.111.1-pyhd8ed1ab_0.conda
+    starlette: '>=0.40.0,<0.42.0'
+    typing_extensions: '>=4.8.0'
+    uvicorn-standard: '>=0.12.0'
+  url: https://conda.anaconda.org/conda-forge/noarch/fastapi-0.115.5-pyhff2d567_0.conda
   hash:
-    md5: d70b311ede031d219232e110c2355ac5
-    sha256: d3d40bae4267b68dc3325089f4da9db3d5a34b741da061e04ac3b6a7b27ef55e
+    md5: cfe0f8cd904ab19c36ba50eb5179ebe0
+    sha256: da2833cc2ea5789abc2a6899be02ba0a769386d4913ff182bd1a9458bea40c34
   category: main
   optional: false
 - name: fastapi-cli
@@ -1923,31 +1923,31 @@ package:
   category: main
   optional: false
 - name: starlette
-  version: 0.37.2
+  version: 0.41.3
   manager: conda
   platform: linux-64
   dependencies:
-    anyio: <5,>=3.4.0
-    python: '>=3.8'
+    anyio: '>=3.4.0,<5'
+    python: '>=3.9'
     typing_extensions: '>=3.10.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/starlette-0.37.2-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/starlette-0.41.3-pyh7900ff3_0.conda
   hash:
-    md5: 7e5550dfa3ed2c2019988cbb9f8302ea
-    sha256: de3c43075fdc33c90cd8034e440638904268c46023dc2b14921a8355415dc40e
+    md5: 0889c5a3e95d8c382cff7556757aedb0
+    sha256: 33986032cb0515f7e9f6647d07006b7dc49b3f373b73d5a1826e6979c661b27a
   category: main
   optional: false
 - name: starlette
-  version: 0.37.2
+  version: 0.41.3
   manager: conda
   platform: osx-arm64
   dependencies:
-    anyio: <5,>=3.4.0
-    python: '>=3.8'
+    anyio: '>=3.4.0,<5'
+    python: '>=3.9'
     typing_extensions: '>=3.10.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/starlette-0.37.2-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/starlette-0.41.3-pyh7900ff3_0.conda
   hash:
-    md5: 7e5550dfa3ed2c2019988cbb9f8302ea
-    sha256: de3c43075fdc33c90cd8034e440638904268c46023dc2b14921a8355415dc40e
+    md5: 0889c5a3e95d8c382cff7556757aedb0
+    sha256: 33986032cb0515f7e9f6647d07006b7dc49b3f373b73d5a1826e6979c661b27a
   category: main
   optional: false
 - name: tk
