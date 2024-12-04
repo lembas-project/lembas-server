@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: face3afa68ca553348849b9da8e7cf4d8357c874b9d314b8ac9892f744d14125
-    linux-64: f22b5c629d4bd03cfb188c97ad03944a74b4163e648b370b71e893596d3a6258
+    osx-arm64: 60ee190cda8c1ea5a5988fb1e685affd4f0f1bd0d2b662ec0be8351edeb94206
+    linux-64: 97b3986bd2856f1d492e16fbc594ba88788926cabb698aa210faed602d26a8d6
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2024-12-04T17:24:57Z'
+    created_at: '2024-12-04T17:37:42Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -649,7 +649,7 @@ package:
   category: main
   optional: false
 - name: httpx
-  version: 0.27.0
+  version: 0.28.0
   manager: conda
   platform: linux-64
   dependencies:
@@ -657,16 +657,15 @@ package:
     certifi: ''
     httpcore: 1.*
     idna: ''
-    python: '>=3.8'
-    sniffio: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.27.0-pyhd8ed1ab_0.conda
+    python: '>=3.9'
+  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 9f359af5a886fd6ca6b2b6ea02e58332
-    sha256: fdaf341fb2630b7afe8238315448fc93947f77ebfa4da68bb349e1bcf820af58
+    md5: 22878824a87f1af2ad48665f9d5bfcc8
+    sha256: cb7895446cd93091300accea6afbc8d9811a3c5899922ccfeeff97d9b55909dc
   category: main
   optional: false
 - name: httpx
-  version: 0.27.0
+  version: 0.28.0
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -674,12 +673,11 @@ package:
     certifi: ''
     httpcore: 1.*
     idna: ''
-    python: '>=3.8'
-    sniffio: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.27.0-pyhd8ed1ab_0.conda
+    python: '>=3.9'
+  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 9f359af5a886fd6ca6b2b6ea02e58332
-    sha256: fdaf341fb2630b7afe8238315448fc93947f77ebfa4da68bb349e1bcf820af58
+    md5: 22878824a87f1af2ad48665f9d5bfcc8
+    sha256: cb7895446cd93091300accea6afbc8d9811a3c5899922ccfeeff97d9b55909dc
   category: main
   optional: false
 - name: hyperframe
@@ -2192,12 +2190,12 @@ package:
     __unix: ''
     click: '>=7.0'
     h11: '>=0.8'
-    python: '>=3.8'
+    python: '>=3.9'
     typing_extensions: '>=4.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.32.1-pyh31011fe_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.32.1-pyh31011fe_1.conda
   hash:
-    md5: fa77fc8110207b3bfc5ccc9d316744f4
-    sha256: a310c494c817a9f6c985fc6d2772acb953a20170d03b0eabfae0e9d8c76c97ee
+    md5: 7832640e5e302059e844d56f410487a6
+    sha256: ad1d8470c629679ea3db52351a522ae44eee0111d8d8b254e8c863c4a292e5c4
   category: main
   optional: false
 - name: uvicorn
@@ -2208,12 +2206,12 @@ package:
     __unix: ''
     click: '>=7.0'
     h11: '>=0.8'
-    python: '>=3.8'
+    python: '>=3.9'
     typing_extensions: '>=4.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.32.1-pyh31011fe_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-0.32.1-pyh31011fe_1.conda
   hash:
-    md5: fa77fc8110207b3bfc5ccc9d316744f4
-    sha256: a310c494c817a9f6c985fc6d2772acb953a20170d03b0eabfae0e9d8c76c97ee
+    md5: 7832640e5e302059e844d56f410487a6
+    sha256: ad1d8470c629679ea3db52351a522ae44eee0111d8d8b254e8c863c4a292e5c4
   category: main
   optional: false
 - name: uvicorn-standard
@@ -2229,10 +2227,10 @@ package:
     uvloop: '>=0.14.0,!=0.15.0,!=0.15.1'
     watchfiles: '>=0.13'
     websockets: '>=10.4'
-  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-standard-0.32.1-h31011fe_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-standard-0.32.1-h31011fe_1.conda
   hash:
-    md5: 49c2820e0f39cb710becd856ff14d683
-    sha256: 52545f7c88a7c779376900de5f9d81ce36738cd8770b543e89592ad7d1003c40
+    md5: 0c233d5c71d398cf01d0281e72194005
+    sha256: 378903c51b2b1136fa48b01c0a2a8dd4634136d038a4a56561c0856fdcbfcabe
   category: main
   optional: false
 - name: uvicorn-standard
@@ -2248,10 +2246,10 @@ package:
     uvloop: '>=0.14.0,!=0.15.0,!=0.15.1'
     watchfiles: '>=0.13'
     websockets: '>=10.4'
-  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-standard-0.32.1-h31011fe_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/uvicorn-standard-0.32.1-h31011fe_1.conda
   hash:
-    md5: 49c2820e0f39cb710becd856ff14d683
-    sha256: 52545f7c88a7c779376900de5f9d81ce36738cd8770b543e89592ad7d1003c40
+    md5: 0c233d5c71d398cf01d0281e72194005
+    sha256: 378903c51b2b1136fa48b01c0a2a8dd4634136d038a4a56561c0856fdcbfcabe
   category: main
   optional: false
 - name: uvloop
