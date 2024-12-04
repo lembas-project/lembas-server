@@ -6,6 +6,10 @@ files = [
 ]
 python_version = "3.12"
 
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = "jinja_partials.*"
+
 [tool.pytest.ini_options]
 addopts = []
 asyncio_mode = "auto"

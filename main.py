@@ -13,7 +13,7 @@ templates = Jinja2Templates("tests/test_templates")
 
 REQUEST_CTX_KEY = "request_id"
 
-_request_ctx_var: ContextVar[Request] = ContextVar(REQUEST_CTX_KEY, default=None)
+_request_ctx_var: ContextVar[Request] = ContextVar(REQUEST_CTX_KEY)
 
 app = FastAPI()
 
@@ -41,7 +41,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
 app.add_middleware(RequestContextMiddleware)
 
 
-def render_template(name, model: BaseModel | None = None, **context: Any):
+def render_template(name: str, model: BaseModel | None = None, **context: Any) -> HTMLResponse:
     if model is not None:
         context.update({"model": model.dict(), **model.dict()})
     return templates.TemplateResponse(request=get_request(), name=name, context=context)

@@ -6,6 +6,7 @@
 
 # Cache and hidden directories
 .DS_Store
+__pycache__/
 .ruff_cache/
 
 # Marker files used in Makefile
