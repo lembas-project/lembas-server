@@ -4,6 +4,7 @@ from typing import Any
 import jinja_partials
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -16,7 +17,7 @@ _request_ctx_var: ContextVar[Request] = ContextVar(REQUEST_CTX_KEY, default=None
 
 app = FastAPI()
 
-# app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 jinja_partials.register_starlette_extensions(templates)
