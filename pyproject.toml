@@ -17,7 +17,7 @@ norecursedirs = ["envs"]
 
 [tool.ruff]
 line-length = 99
-target-version = "py39"
+target-version = "py312"
 
 [tool.ruff.lint]
 # Allow fix for all enabled rules (when `--fix`) is provided.

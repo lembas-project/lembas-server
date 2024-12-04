@@ -1,5 +1,4 @@
-from collections.abc import AsyncIterator
-from typing import Callable
+from collections.abc import AsyncIterator, Callable
 
 import httpx
 import pytest
