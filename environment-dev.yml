@@ -11,7 +11,7 @@ dependencies:
   # renovate: datasource=conda depName=conda-forge/pytest-asyncio
   - pytest-asyncio=0.23.7
   # renovate: datasource=conda depName=conda-forge/mypy
-  - mypy=1.10.1
+  - mypy=1.13.0
 variables:
 prefix:
 platforms:
