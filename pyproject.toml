@@ -1,0 +1,26 @@
+[tool.mypy]
+disallow_untyped_defs = true
+files = [
+  "main.py",
+  "tests/**/*.py"
+]
+python_version = "3.12"
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = "jinja_partials.*"
+
+[tool.pytest.ini_options]
+addopts = []
+asyncio_mode = "auto"
+norecursedirs = ["envs"]
+
+[tool.ruff]
+line-length = 99
+target-version = "py312"
+
+[tool.ruff.lint]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+# see https://docs.astral.sh/ruff/rules/
+select = ["F", "E", "W", "C90", "I", "UP"]

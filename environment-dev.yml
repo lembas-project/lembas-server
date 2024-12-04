@@ -1,0 +1,19 @@
+name: dev
+channels:
+  - conda-forge
+dependencies:
+  # renovate: datasource=conda depName=conda-forge/pytest
+  - pytest=8.2.2
+  # renovate: datasource=conda depName=conda-forge/pre-commit
+  - pre-commit=3.7.1
+  # renovate: datasource=conda depName=conda-forge/httpx
+  - httpx=0.27.0
+  # renovate: datasource=conda depName=conda-forge/pytest-asyncio
+  - pytest-asyncio=0.23.7
+  # renovate: datasource=conda depName=conda-forge/mypy
+  - mypy=1.10.1
+variables:
+prefix:
+platforms:
+  - osx-arm64
+  - linux-64

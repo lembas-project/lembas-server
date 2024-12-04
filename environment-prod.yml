@@ -1,0 +1,20 @@
+name: prod
+channels:
+  - conda-forge
+dependencies:
+  # renovate: datasource=conda depName=conda-forge/python
+  - python=3.12.4
+  # renovate: datasource=conda depName=conda-forge/pip
+  - pip=24.0
+  # renovate: datasource=conda depName=conda-forge/fastapi
+  - fastapi=0.111.1
+  # renovate: datasource=conda depName=conda-forge/jinja2
+  - jinja2=3.1.4
+  - pip:
+      # renovate: datasource=pypi
+      - jinja-partials==0.2.1
+variables:
+prefix:
+platforms:
+  - osx-arm64
+  - linux-64

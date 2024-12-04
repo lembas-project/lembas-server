@@ -1,0 +1,13 @@
+# Conda environment directory
+/envs/
+
+# File containing environment variables
+.env
+
+# Cache and hidden directories
+.DS_Store
+__pycache__/
+.ruff_cache/
+
+# Marker files used in Makefile
+.mark/
