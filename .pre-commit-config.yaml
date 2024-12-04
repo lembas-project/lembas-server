@@ -40,7 +40,6 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        exclude: static/js/.*
   - repo: meta
     hooks:
       - id: check-hooks-apply
