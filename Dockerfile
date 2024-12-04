@@ -18,7 +18,6 @@ ENV PATH="/opt/env/bin:${PATH}"
 #RUN conda project install --environment prod
 
 # Copy in the app code
-COPY static/ ./static
 COPY templates/ ./templates
 COPY main.py ./
 

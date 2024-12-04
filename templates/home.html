@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Demo Stream</title>
+    <title>Lembas</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" crossorigin="anonymous">
     <style>
-        .fade-me-in #videos-list.htmx-added {
+        .fade-me-in #project-list.htmx-added {
             opacity: 0;
         }
-        .fade-me-in #videos-list {
+        .fade-me-in #project-list {
             opacity: 1;
             transition: opacity 1s ease-out;
         }
@@ -18,26 +18,11 @@
 <body>
 
 <h1 class="text-center">
-    Demo Stream
+    Lembas
 </h1>
 
-<button
-        hx-get="/?order=asc"
-        hx-target="#videos-list"
-        hx-swap="outerHTML settle:1s"
-        >
-    Ascending
-</button>
-
-<button
-        hx-get="/?order=desc"
-        hx-target="#videos-list"
-        hx-swap="outerHTML settle:1s">
-    Descending
-</button>
-
 <div class="fade-me-in">
-{{  render_partial("partials/videos_list.html", videos=videos) }}
+{{  render_partial("partials/project_list.html", projects=projects) }}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js"></script>
