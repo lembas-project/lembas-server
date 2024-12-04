@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: 46312038df5806984b795b29e5c6f386c0dd4a820eee36cb636d3c7fb74292ea
-    linux-64: e3c756595a0bf7328780f7ae09c56e411f227d31c0d4ec6ffa87fc615bf10bd4
+    osx-arm64: 9d9c78d8f678f3f7ba1b8cd1f3440c8088d15277206d34fe7ac5ec7e9f4d0316
+    linux-64: 2c60392b2263b474b659d3daa717fb8e0ea42f40d72b86d74929d57208ea5944
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2024-12-04T18:00:59Z'
+    created_at: '2024-12-04T18:38:46Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -1581,7 +1581,7 @@ package:
   category: main
   optional: false
 - name: pytest
-  version: 8.2.2
+  version: 8.3.4
   manager: conda
   platform: linux-64
   dependencies:
@@ -1589,17 +1589,17 @@ package:
     exceptiongroup: '>=1.0.0rc8'
     iniconfig: ''
     packaging: ''
-    pluggy: <2.0,>=1.5
-    python: '>=3.8'
+    pluggy: <2,>=1.5
+    python: '>=3.9'
     tomli: '>=1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pytest-8.2.2-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pytest-8.3.4-pyhd8ed1ab_1.conda
   hash:
-    md5: 0f3f49c22c7ef3a1195fa61dad3c43be
-    sha256: 00b7a49b31cf705b59edbd96219d8a67d2b9f51a913aa059fadd921b016965cb
+    md5: 799ed216dc6af62520f32aa39bc1c2bb
+    sha256: 75245ca9d0cbd6d38bb45ec02430189a9d4c21c055c5259739d738a2298d61b3
   category: main
   optional: false
 - name: pytest
-  version: 8.2.2
+  version: 8.3.4
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -1607,13 +1607,13 @@ package:
     exceptiongroup: '>=1.0.0rc8'
     iniconfig: ''
     packaging: ''
-    pluggy: <2.0,>=1.5
-    python: '>=3.8'
+    pluggy: <2,>=1.5
+    python: '>=3.9'
     tomli: '>=1'
-  url: https://conda.anaconda.org/conda-forge/noarch/pytest-8.2.2-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pytest-8.3.4-pyhd8ed1ab_1.conda
   hash:
-    md5: 0f3f49c22c7ef3a1195fa61dad3c43be
-    sha256: 00b7a49b31cf705b59edbd96219d8a67d2b9f51a913aa059fadd921b016965cb
+    md5: 799ed216dc6af62520f32aa39bc1c2bb
+    sha256: 75245ca9d0cbd6d38bb45ec02430189a9d4c21c055c5259739d738a2298d61b3
   category: main
   optional: false
 - name: pytest-asyncio
