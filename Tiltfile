@@ -14,6 +14,16 @@ namespace = k8s_namespace()
 # Build the service image
 docker_build(SERVICE_NAME, ".")
 
+# Load environment variables from .env file
+load("ext://dotenv", "dotenv")
+dotenv()
+
+# Mount environment variables in a secret
+load("ext://secret", "secret_from_dict")
+k8s_yaml(secret_from_dict("secrets", inputs = {
+    "CLIENT_SECRET" : os.environ["CLIENT_SECRET"],
+}))
+
 # Deploy via Helm chart
 load('ext://helm_remote', 'helm_remote')
 helm_remote(

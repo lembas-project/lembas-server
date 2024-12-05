@@ -25,3 +25,18 @@ ingress:
         - path: /
           pathType: Prefix
           servicePortName: http
+
+env:
+  REDIRECT_URL: "http://lembas.localhost"
+  TOKEN_URL: "https://github.com/login/oauth/access_token"
+  LOGIN_URL_BASE: "https://github.com/login/oauth/authorize"
+
+envValueFrom:
+  CLIENT_ID:
+    secretKeyRef:
+      name: secrets
+      key: CLIENT_SECRET
+  CLIENT_SECRET:
+    secretKeyRef:
+      name: secrets
+      key: CLIENT_SECRET
