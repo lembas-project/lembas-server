@@ -22,10 +22,14 @@
     Lembas
 </h1>
 
-<h2>{{ access_token }}</h2>
-
-<a href="{{ login_url }}">Login</a>
+{% if user %}
+<h5>Name: {{ user.name }}</h5>
+<h5>Username: {{ user.username }}</h5>
+<img src="{{ user.avatar_url }}">
 <a href="{{ logout_url }}">Logout</a>
+{% else %}
+<a href="{{ login_url }}">Login</a>
+{% endif %}
 
 <div class="fade-me-in">
 {{  render_partial("partials/project_list.html", projects=projects) }}
