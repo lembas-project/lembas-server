@@ -7,7 +7,7 @@ dependencies:
   # renovate: datasource=conda depName=conda-forge/pip
   - pip=24.3.1
   # renovate: datasource=conda depName=conda-forge/fastapi
-  - fastapi=0.115.5
+  - fastapi=0.115.6
   # renovate: datasource=conda depName=conda-forge/jinja2
   - jinja2=3.1.4
   - pip:
