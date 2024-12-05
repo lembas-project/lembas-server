@@ -7,11 +7,11 @@ from urllib.parse import urlencode
 import httpx
 import jinja_partials
 from dotenv import load_dotenv
-from fastapi import Cookie, FastAPI, Request, Response
+from fastapi import Cookie, Depends, FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 load_dotenv()
@@ -63,15 +63,42 @@ def render_template(name: str, model: BaseModel | None = None, **context: Any) -
     return templates.TemplateResponse(request=get_request(), name=name, context=context)
 
 
+class User(BaseModel):
+    username: str = Field(validation_alias="login")
+    name: str | None = None
+    avatar_url: str = ""
+
+
+async def get_user_from_token(token: str) -> None:
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            "https://api.github.com/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            },
+        )
+    data = resp.json()
+    return User(**data)
+
+
+async def get_current_user(access_token: Annotated[str | None, Cookie()] = None) -> User | None:
+    if access_token is not None:
+        user = await get_user_from_token(access_token)
+        return user
+    return None
+
+
 @app.get("/")
-async def home(access_token: Annotated[str | None, Cookie()] = None) -> HTMLResponse:
+async def home(user: Annotated[User | None, Depends(get_current_user)]) -> HTMLResponse:
     return render_template(
         "home.html",
         projects=[{"name": "project 1"}],
         login_url=LOGIN_URL,
         # TODO: Use request.url_for
         logout_url="/auth/logout",
-        access_token=access_token,
+        user=user,
     )
 
 
