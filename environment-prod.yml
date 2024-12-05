@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   # renovate: datasource=conda depName=conda-forge/python
-  - python=3.12.4
+  - python=3.13.1
   # renovate: datasource=conda depName=conda-forge/pip
   - pip=24.3.1
   # renovate: datasource=conda depName=conda-forge/fastapi
