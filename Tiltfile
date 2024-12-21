@@ -21,6 +21,7 @@ dotenv()
 # Mount environment variables in a secret
 load("ext://secret", "secret_from_dict")
 k8s_yaml(secret_from_dict("secrets", inputs = {
+    "CLIENT_ID" : os.environ["CLIENT_ID"],
     "CLIENT_SECRET" : os.environ["CLIENT_SECRET"],
 }))
 
