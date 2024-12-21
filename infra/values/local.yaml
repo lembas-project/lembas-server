@@ -35,7 +35,7 @@ envValueFrom:
   CLIENT_ID:
     secretKeyRef:
       name: secrets
-      key: CLIENT_SECRET
+      key: CLIENT_ID
   CLIENT_SECRET:
     secretKeyRef:
       name: secrets
