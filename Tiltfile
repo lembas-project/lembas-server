@@ -18,12 +18,25 @@ docker_build(SERVICE_NAME, ".")
 load("ext://dotenv", "dotenv")
 dotenv()
 
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+if not CLIENT_ID or not CLIENT_SECRET:
+    fail(
+      "Must set both `CLIENT_ID` and `CLIENT_SECRET` as environment variables. "
+      + "This can be done by placing them in a `.env` file."
+    )
+
 # Mount environment variables in a secret
 load("ext://secret", "secret_from_dict")
-k8s_yaml(secret_from_dict("secrets", inputs = {
-    "CLIENT_ID" : os.environ["CLIENT_ID"],
-    "CLIENT_SECRET" : os.environ["CLIENT_SECRET"],
-}))
+k8s_yaml(
+  secret_from_dict(
+    "secrets",
+    inputs = {
+      "CLIENT_ID" : CLIENT_ID,
+      "CLIENT_SECRET" : CLIENT_SECRET,
+    },
+  )
+)
 
 # Deploy via Helm chart
 load('ext://helm_remote', 'helm_remote')
