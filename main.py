@@ -69,7 +69,7 @@ class User(BaseModel):
     avatar_url: str = ""
 
 
-async def get_user_from_token(token: str) -> None:
+async def get_user_from_token(token: str) -> User:
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             "https://api.github.com/user",
