@@ -15,6 +15,10 @@ addopts = []
 asyncio_mode = "auto"
 norecursedirs = ["envs"]
 
+[tool.pytest_env]
+CLIENT_ID = "test-client-id"
+CLIENT_SECRET = "test-client-secret"
+
 [tool.ruff]
 line-length = 99
 target-version = "py312"

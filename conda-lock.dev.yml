@@ -1289,10 +1289,10 @@ package:
     __glibc: '>=2.17,<3.0.a0'
     ca-certificates: ''
     libgcc: '>=13'
-  url: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.4.0-hb9d3cd8_0.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.4.0-h7b32b05_1.conda
   hash:
-    md5: 23cc74f77eb99315c0360ec3533147a9
-    sha256: 814b9dff1847b132c676ee6cc1a8cb2d427320779b93e1b6d76552275c128705
+    md5: 4ce6875f75469b2757a65e10a5d05e31
+    sha256: f62f6bca4a33ca5109b6d571b052a394d836956d21b25b7ffd03376abf7a481f
   category: main
   optional: false
 - name: openssl
@@ -1302,10 +1302,10 @@ package:
   dependencies:
     __osx: '>=11.0'
     ca-certificates: ''
-  url: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.4.0-h39f12f2_0.conda
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.4.0-h81ee809_1.conda
   hash:
-    md5: df307bbc703324722df0293c9ca2e418
-    sha256: bd1d58ced46e75efa3b842c61642fd12272c69e9fe4d7261078bc082153a1d53
+    md5: 22f971393637480bda8c679f374d8861
+    sha256: 97772762abc70b3a537683ca9fc3ff3d6099eb64e4aba3b9c99e6fce48422d21
   category: main
   optional: false
 - name: packaging
@@ -2316,7 +2316,7 @@ package:
   category: main
   optional: false
 - name: virtualenv
-  version: 20.28.0
+  version: 20.28.1
   manager: conda
   platform: linux-64
   dependencies:
@@ -2324,14 +2324,14 @@ package:
     filelock: '>=3.12.2,<4'
     platformdirs: '>=3.9.1,<5'
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.28.0-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.28.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 1d601bc1d28b5ce6d112b90f4b9b8ede
-    sha256: 82776f74e90a296b79415361faa6b10f360755c1fb8e6d59ca68509e6fe7e115
+    md5: 680b1c287b10cefc8bda0530b217229f
+    sha256: c8bde4547ddbd21ea89e483a7c65d8a5e442c0db494b0b977e389b75b9d03d62
   category: main
   optional: false
 - name: virtualenv
-  version: 20.28.0
+  version: 20.28.1
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -2341,8 +2341,8 @@ package:
     platformdirs: '>=3.9.1,<5'
   url: https://conda.anaconda.org/conda-forge/noarch/virtualenv-20.28.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 1d601bc1d28b5ce6d112b90f4b9b8ede
-    sha256: 82776f74e90a296b79415361faa6b10f360755c1fb8e6d59ca68509e6fe7e115
+    md5: 680b1c287b10cefc8bda0530b217229f
+    sha256: c8bde4547ddbd21ea89e483a7c65d8a5e442c0db494b0b977e389b75b9d03d62
   category: main
   optional: false
 - name: watchfiles
