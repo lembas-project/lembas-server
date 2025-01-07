@@ -1,56 +1,21 @@
 import logging
-from contextvars import ContextVar
-from typing import Annotated, Any
+from typing import Annotated
 
 import httpx
-import jinja_partials
-from fastapi import Cookie, Depends, FastAPI, Request, Response
+from fastapi import Cookie, Depends, FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-from app import config
+from app import config, templates
+from app.templates import render_template
 
 log = logging.getLogger(__name__)
 
-templates = Jinja2Templates("tests/test_templates")
-
-REQUEST_CTX_KEY = "request_id"
-
-_request_ctx_var: ContextVar[Request] = ContextVar(REQUEST_CTX_KEY)
-
 app = FastAPI()
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-templates = Jinja2Templates(directory="templates")
-jinja_partials.register_starlette_extensions(templates)
-
-
-def get_request() -> Request:
-    return _request_ctx_var.get()
-
-
-class RequestContextMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        request_id = _request_ctx_var.set(request)
-
-        response = await call_next(request)
-
-        _request_ctx_var.reset(request_id)
-
-        return response
-
-
-app.add_middleware(RequestContextMiddleware)
-
-
-def render_template(name: str, model: BaseModel | None = None, **context: Any) -> HTMLResponse:
-    if model is not None:
-        context.update({"model": model.dict(), **model.dict()})
-    return templates.TemplateResponse(request=get_request(), name=name, context=context)
+templates.init_app(app)
 
 
 class User(BaseModel):
