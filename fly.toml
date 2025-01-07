@@ -1,5 +1,5 @@
-app = 'lembas'
-primary_region = 'dfw'
+app = "lembas"
+primary_region = "dfw"
 
 [build]
 
@@ -10,13 +10,13 @@ REDIRECT_URL = "https://lembas.fly.io"
 
 [http_service]
 auto_start_machines = true
-auto_stop_machines = 'stop'
+auto_stop_machines = "stop"
 force_https = true
 internal_port = 8000
 min_machines_running = 0
-processes = ['app']
+processes = ["app"]
 
 [[vm]]
-cpu_kind = 'shared'
+cpu_kind = "shared"
 cpus = 1
-memory = '1gb'
+memory = "1gb"
