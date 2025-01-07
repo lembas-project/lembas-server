@@ -2,7 +2,6 @@ from collections.abc import AsyncIterator, Callable
 
 import httpx
 import pytest
-
 from main import app
 
 ClientFactory = Callable[[], httpx.AsyncClient]
