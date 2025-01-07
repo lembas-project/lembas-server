@@ -1,0 +1,22 @@
+app = 'lembas'
+primary_region = 'dfw'
+
+[build]
+
+[env]
+CLIENT_ID = "Ov23liZQ3GSRQrONST3V"
+# CLIENT_SECRET is set as a secret in fly.io
+REDIRECT_URL = "https://lembas.fly.io"
+
+[http_service]
+auto_start_machines = true
+auto_stop_machines = 'stop'
+force_https = true
+internal_port = 8000
+min_machines_running = 0
+processes = ['app']
+
+[[vm]]
+cpu_kind = 'shared'
+cpus = 1
+memory = '1gb'
