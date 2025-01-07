@@ -1,7 +1,7 @@
 [tool.mypy]
 disallow_untyped_defs = true
 files = [
-  "main.py",
+  "app/**/*.py",
   "tests/**/*.py"
 ]
 python_version = "3.12"
@@ -14,6 +14,7 @@ module = "jinja_partials.*"
 addopts = []
 asyncio_mode = "auto"
 norecursedirs = ["envs"]
+pythonpath = "."
 
 [tool.pytest_env]
 CLIENT_ID = "test-client-id"

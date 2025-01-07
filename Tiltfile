@@ -5,7 +5,7 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 VALUES_DIR = os.path.join(HERE, "infra", "values")
 
 # Configure the docker build
-SERVICE_NAME = "demo-stream"
+SERVICE_NAME = "lembas"
 
 # Get the active namespace
 # This can be set with tilt up --namespace <NAMESPACE>
