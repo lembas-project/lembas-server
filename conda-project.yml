@@ -7,10 +7,10 @@ environments:
     - environment-prod.yml
 commands:
   prod:
-    cmd: fastapi run main.py
+    cmd: fastapi run
     environment: prod
   dev:
-    cmd: fastapi dev main.py
+    cmd: fastapi dev
     environment: dev
   type-check:
     cmd: mypy
