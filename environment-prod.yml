@@ -1,22 +1,22 @@
 name: prod
 channels:
-  - conda-forge
+- conda-forge
 dependencies:
-  # renovate: datasource=conda depName=conda-forge/python
-  - python=3.13.1
-  # renovate: datasource=conda depName=conda-forge/pip
-  - pip=24.3.1
-  # renovate: datasource=conda depName=conda-forge/fastapi
-  - fastapi=0.115.6
-  # renovate: datasource=conda depName=conda-forge/jinja2
-  - jinja2=3.1.5
-  # renovate: datasource=conda depName=conda-forge/httpx
-  - httpx=0.28.1
-  - pip:
-      # renovate: datasource=pypi
-      - jinja-partials==0.2.1
+# renovate: datasource=conda depName=conda-forge/python
+- python=3.13.1
+# renovate: datasource=conda depName=conda-forge/pip
+- pip=24.3.1
+# renovate: datasource=conda depName=conda-forge/fastapi
+- fastapi=0.115.6
+# renovate: datasource=conda depName=conda-forge/jinja2
+- jinja2=3.1.5
+# renovate: datasource=conda depName=conda-forge/httpx
+- httpx=0.28.1
+- pip:
+  # renovate: datasource=pypi
+  - jinja-partials==0.2.1
 variables:
 prefix:
 platforms:
-  - osx-arm64
-  - linux-64
+- osx-arm64
+- linux-64
