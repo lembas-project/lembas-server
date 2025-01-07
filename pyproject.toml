@@ -12,14 +12,10 @@ module = "jinja_partials.*"
 
 [tool.pytest.ini_options]
 addopts = []
-asyncio_default_fixture_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "session"
 asyncio_mode = "auto"
 norecursedirs = ["envs"]
 pythonpath = "."
-
-[tool.pytest_env]
-CLIENT_ID = "test-client-id"
-CLIENT_SECRET = "test-client-secret"
 
 [tool.ruff]
 line-length = 99
