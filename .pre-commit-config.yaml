@@ -17,7 +17,7 @@ repos:
       - id: generate-renovate-annotations
         args:
           - "--create-command"
-          - "conda project install --environment dev"
+          - "conda project install --all"
           - "--environment-selector"
           - "-p ./envs/dev"
   - repo: https://github.com/astral-sh/ruff-pre-commit
