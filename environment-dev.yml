@@ -6,8 +6,6 @@ dependencies:
   - pytest=8.3.4
   # renovate: datasource=conda depName=conda-forge/pre-commit
   - pre-commit=4.0.1
-  # renovate: datasource=conda depName=conda-forge/httpx
-  - httpx=0.28.1
   # renovate: datasource=conda depName=conda-forge/pytest-asyncio
   - pytest-asyncio=0.25.1
   # renovate: datasource=conda depName=conda-forge/pytest-env
