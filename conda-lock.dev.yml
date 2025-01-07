@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: c5cd2c35386ed31f4a708a127335c7f4115f95d6a5f484923ad9e12d796499d3
-    linux-64: b8992b71705c29d56c48994cf905543c021c59af26c4d23128cb4e4516cd77d3
+    osx-arm64: d691df86a6c19937be0da4021138a8265a701e05333ae518f083326a94f8b11f
+    linux-64: 2425715471a90d0b5b70057aa5b77ee9d0e870056a5f4f262a3843a94c39d49a
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-07T21:09:49Z'
+    created_at: '2025-01-07T21:13:55Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -1529,6 +1529,34 @@ package:
   hash:
     md5: dcb307e02f17d38c6e1cbfbf8c602852
     sha256: cfa7201f890d5d08ce29ff70e65a96787d5793a1718776733666b44bbd4a1205
+  category: main
+  optional: false
+- name: pydantic-settings
+  version: 2.7.1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.9'
+    python-dotenv: '>=0.21.0'
+    pydantic: '>=2.7.0'
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-settings-2.7.1-pyh3cfb1c2_0.conda
+  hash:
+    md5: d71d76b62bed332b037d7adfc0f3989a
+    sha256: 082fb1ec29917d2c9ed6a862cb8eb9beb88c208ea62c9fef1aeb5f4f3e0e0b06
+  category: main
+  optional: false
+- name: pydantic-settings
+  version: 2.7.1
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    python: '>=3.9'
+    python-dotenv: '>=0.21.0'
+    pydantic: '>=2.7.0'
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-settings-2.7.1-pyh3cfb1c2_0.conda
+  hash:
+    md5: d71d76b62bed332b037d7adfc0f3989a
+    sha256: 082fb1ec29917d2c9ed6a862cb8eb9beb88c208ea62c9fef1aeb5f4f3e0e0b06
   category: main
   optional: false
 - name: pygments
