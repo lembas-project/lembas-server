@@ -1,7 +1,7 @@
 [tool.mypy]
 disallow_untyped_defs = true
 files = [
-  "main.py",
+  "app/**/*.py",
   "tests/**/*.py"
 ]
 python_version = "3.12"
