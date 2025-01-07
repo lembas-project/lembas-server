@@ -24,9 +24,6 @@ jobs:
     - name: Run static type checks
       run: |
         conda project run type-check
-      env:
-        CLIENT_ID: test-client-id
-        CLIENT_SECRET: test-client-secret
     - name: Run tests
       run: |
         conda project run test
