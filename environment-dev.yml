@@ -9,7 +9,7 @@ dependencies:
   # renovate: datasource=conda depName=conda-forge/httpx
   - httpx=0.28.0
   # renovate: datasource=conda depName=conda-forge/pytest-asyncio
-  - pytest-asyncio=0.24.0
+  - pytest-asyncio=0.25.1
   # renovate: datasource=conda depName=conda-forge/pytest-env
   - pytest-env=1.1.5
   # renovate: datasource=conda depName=conda-forge/mypy

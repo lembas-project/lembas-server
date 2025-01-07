@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: 3f4993948592ebcd6ecf606fe8522da166f11bace8350eb4f2a41b334209074a
-    linux-64: 8e51a6ceee1c2b4c8df8e3998cfa290871bac2108f16e0bb7dc51e8846909ebb
+    osx-arm64: 17a9935facd26ec0c925d8bc78696281c029e52d0c8bf9f9f2e87d99f06b1446
+    linux-64: 57ecda851851fda2f0703e3c1d886e033e3bd5cb95a349e9933c2d1ebc4b2496
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-06T20:39:05Z'
+    created_at: '2025-01-06T20:55:16Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -1619,29 +1619,29 @@ package:
   category: main
   optional: false
 - name: pytest-asyncio
-  version: 0.24.0
+  version: 0.25.1
   manager: conda
   platform: linux-64
   dependencies:
     pytest: '>=8.2,<9'
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/pytest-asyncio-0.24.0-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pytest-asyncio-0.25.1-pyhd8ed1ab_0.conda
   hash:
-    md5: feae296a7273cf1153188f2bd7b294b0
-    sha256: 82bd96a45940227c14a1456f78f931f33ba355906ceb7246bec6d72b30efd4e3
+    md5: 91ee7eb94bd0a2a625f6afe407e639f7
+    sha256: bf8a141be6e549237033bfa45c5f0918a9844e7a5d1cadbbe7505762cd2eff95
   category: main
   optional: false
 - name: pytest-asyncio
-  version: 0.24.0
+  version: 0.25.1
   manager: conda
   platform: osx-arm64
   dependencies:
     pytest: '>=8.2,<9'
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/pytest-asyncio-0.24.0-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pytest-asyncio-0.25.1-pyhd8ed1ab_0.conda
   hash:
-    md5: feae296a7273cf1153188f2bd7b294b0
-    sha256: 82bd96a45940227c14a1456f78f931f33ba355906ceb7246bec6d72b30efd4e3
+    md5: 91ee7eb94bd0a2a625f6afe407e639f7
+    sha256: bf8a141be6e549237033bfa45c5f0918a9844e7a5d1cadbbe7505762cd2eff95
   category: main
   optional: false
 - name: pytest-env
