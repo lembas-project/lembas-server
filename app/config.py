@@ -15,4 +15,5 @@ TOKEN_URL = os.getenv("TOKEN_URL", "https://github.com/login/oauth/access_token"
 LOGIN_URL_BASE = os.getenv("LOGIN_URL_BASE", "https://github.com/login/oauth/authorize")
 LOGIN_URL = LOGIN_URL_BASE + "?" + urlencode(dict(client_id=CLIENT_ID, redirect_url=REDIRECT_URL))
 
+static_dir = "static"
 template_dir = "templates"
