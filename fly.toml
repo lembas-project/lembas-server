@@ -6,7 +6,7 @@ primary_region = "dfw"
 [env]
 CLIENT_ID = "Ov23liZQ3GSRQrONST3V"
 # CLIENT_SECRET is set as a secret in fly.io
-REDIRECT_URL = "https://lembas.fly.io"
+REDIRECT_URL = "https://lembas.matt-kramer.com"
 
 [http_service]
 auto_start_machines = true
