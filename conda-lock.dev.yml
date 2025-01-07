@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: c25a01fc326a98c7d679ab36cdd67f1724891ae665128fc587d421ef6e9790d7
-    linux-64: c158cd731f2a26486e02f0404819e1ac61b2b016405f3b84eee61c16207c7283
+    osx-arm64: 0cdbde748d11685a68e9c58ea81c89bba6889af3ca11fe3099015f7af25968cb
+    linux-64: 884c845ece85707c4e9b2de29741edbba46dfd9036e0bc0c096ba568af4fc715
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-07T15:50:27Z'
+    created_at: '2025-01-07T16:00:44Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -651,7 +651,7 @@ package:
   category: main
   optional: false
 - name: httpx
-  version: 0.28.0
+  version: 0.28.1
   manager: conda
   platform: linux-64
   dependencies:
@@ -660,14 +660,14 @@ package:
     httpcore: 1.*
     idna: ''
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.0-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 8a4a83ba566c6b5c718dd0531a362d01
-    sha256: 0b864abaa9f1443fc42368b4d2a4f4efb9971a53f961d1fe30fabd7fbdd76b27
+    md5: d6989ead454181f4f9bc987d3dc4e285
+    sha256: cd0f1de3697b252df95f98383e9edb1d00386bfdd03fdf607fa42fe5fcb09950
   category: main
   optional: false
 - name: httpx
-  version: 0.28.0
+  version: 0.28.1
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -676,10 +676,10 @@ package:
     httpcore: 1.*
     idna: ''
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.0-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 8a4a83ba566c6b5c718dd0531a362d01
-    sha256: 0b864abaa9f1443fc42368b4d2a4f4efb9971a53f961d1fe30fabd7fbdd76b27
+    md5: d6989ead454181f4f9bc987d3dc4e285
+    sha256: cd0f1de3697b252df95f98383e9edb1d00386bfdd03fdf607fa42fe5fcb09950
   category: main
   optional: false
 - name: hyperframe

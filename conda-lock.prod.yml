@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: 2dddefda7e915d19ccd016ed5452936bc8c074903912ff32bd7a10957f47204a
-    linux-64: c512fde647eef2654e915233e58f19717006cd20d6387ca676180e6b267f6f53
+    osx-arm64: e8ef10aea8e5fc3b2034b5e53820411c8e3c70244fb902946b2eaabbdcc34ccf
+    linux-64: 6d749a1f3e757085b55759b6256703d7d19fa8fe15837f515046afa738496127
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -24,7 +24,7 @@ metadata:
   sources:
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-07T15:50:00Z'
+    created_at: '2025-01-07T16:00:19Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -521,7 +521,7 @@ package:
   category: main
   optional: false
 - name: httpx
-  version: 0.28.0
+  version: 0.28.1
   manager: conda
   platform: linux-64
   dependencies:
@@ -530,14 +530,14 @@ package:
     httpcore: 1.*
     idna: ''
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.0-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 8a4a83ba566c6b5c718dd0531a362d01
-    sha256: 0b864abaa9f1443fc42368b4d2a4f4efb9971a53f961d1fe30fabd7fbdd76b27
+    md5: d6989ead454181f4f9bc987d3dc4e285
+    sha256: cd0f1de3697b252df95f98383e9edb1d00386bfdd03fdf607fa42fe5fcb09950
   category: main
   optional: false
 - name: httpx
-  version: 0.28.0
+  version: 0.28.1
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -546,10 +546,10 @@ package:
     httpcore: 1.*
     idna: ''
     python: '>=3.9'
-  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.0-pyhd8ed1ab_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/httpx-0.28.1-pyhd8ed1ab_0.conda
   hash:
-    md5: 8a4a83ba566c6b5c718dd0531a362d01
-    sha256: 0b864abaa9f1443fc42368b4d2a4f4efb9971a53f961d1fe30fabd7fbdd76b27
+    md5: d6989ead454181f4f9bc987d3dc4e285
+    sha256: cd0f1de3697b252df95f98383e9edb1d00386bfdd03fdf607fa42fe5fcb09950
   category: main
   optional: false
 - name: hyperframe
