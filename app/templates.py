@@ -10,7 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 
 from app.settings import Settings
 
-config = Settings()
+config = Settings()  # type: ignore[call-arg]
 
 REQUEST_CTX_KEY = "request_id"
 
