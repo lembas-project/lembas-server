@@ -8,7 +8,9 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-from app import config
+from app.settings import Settings
+
+config = Settings()
 
 REQUEST_CTX_KEY = "request_id"
 

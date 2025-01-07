@@ -5,11 +5,12 @@ import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import config
 from app.dependencies import current_user
 from app.models import User
+from app.settings import Settings
 from app.templates import render_template
 
+config = Settings()
 log = logging.getLogger(__name__)
 
 router = APIRouter()
