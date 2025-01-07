@@ -5,9 +5,9 @@ import httpx
 from fastapi import Cookie, Depends, FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
 
 from app import config, templates
+from app.models import User
 from app.templates import render_template
 
 log = logging.getLogger(__name__)
@@ -16,12 +16,6 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates.init_app(app)
-
-
-class User(BaseModel):
-    username: str = Field(validation_alias="login")
-    name: str | None = None
-    avatar_url: str = ""
 
 
 async def get_user_from_token(token: str) -> User:
