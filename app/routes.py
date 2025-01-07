@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import config
-from app.dependencies import get_current_user
+from app.dependencies import current_user
 from app.models import User
 from app.templates import render_template
 
@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("/")
-async def home(user: Annotated[User | None, Depends(get_current_user)]) -> HTMLResponse:
+async def home(user: Annotated[User | None, Depends(current_user)]) -> HTMLResponse:
     return render_template(
         "home.html",
         projects=[{"name": "project 1"}],
