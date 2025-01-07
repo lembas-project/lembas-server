@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: b51c84e6b8b270274a84750812a3453c39dac795bd00f3c775a4d2e8bf5dc4d2
-    linux-64: 70f47a2ca942e680b455152cb4071bb437da6edd43f057d0475cb054ee97db26
+    osx-arm64: 2efc32232ebe5b215238a26884732acc30606e3515f06d54f03c3a286d6d0319
+    linux-64: 7bfbe1e822edb835c94ae4064c30ebcb38ff656128ffeba4cdbb2fbd8ed250b8
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -24,7 +24,7 @@ metadata:
   sources:
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-07T21:07:58Z'
+    created_at: '2025-01-07T21:09:30Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
