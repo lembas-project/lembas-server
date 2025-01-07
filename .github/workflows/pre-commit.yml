@@ -39,7 +39,7 @@ jobs:
         with:
           path: |
             ./envs
-          key: conda-project|${{ hashFiles('conda-lock.dev.yml', 'conda-lock.prod.yml') }}
+          key: conda-project|${{ hashFiles('environment-dev.yml', 'environment-prod.yml', 'conda-lock.dev.yml', 'conda-lock.prod.yml') }}
       - name: Run pre-commit
         run: |
           pre-commit run --verbose --show-diff-on-failure --color=always --all-files
