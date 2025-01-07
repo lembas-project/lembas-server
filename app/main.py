@@ -1,12 +1,9 @@
 import logging
-import os
 from contextvars import ContextVar
 from typing import Annotated, Any
-from urllib.parse import urlencode
 
 import httpx
 import jinja_partials
-from dotenv import load_dotenv
 from fastapi import Cookie, Depends, FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,15 +11,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-load_dotenv()
-
-# TODO: Implement proper settings class
-CLIENT_ID = os.environ["CLIENT_ID"]
-CLIENT_SECRET = os.environ["CLIENT_SECRET"]
-REDIRECT_URL = os.getenv("REDIRECT_URL", "http://lembas.localhost")
-TOKEN_URL = os.getenv("TOKEN_URL", "https://github.com/login/oauth/access_token")
-LOGIN_URL_BASE = os.getenv("LOGIN_URL_BASE", "https://github.com/login/oauth/authorize")
-LOGIN_URL = LOGIN_URL_BASE + "?" + urlencode(dict(client_id=CLIENT_ID, redirect_url=REDIRECT_URL))
+from app import config
 
 log = logging.getLogger(__name__)
 
@@ -96,7 +85,7 @@ async def home(user: Annotated[User | None, Depends(get_current_user)]) -> HTMLR
     return render_template(
         "home.html",
         projects=[{"name": "project 1"}],
-        login_url=LOGIN_URL,
+        login_url=config.LOGIN_URL,
         # TODO: Use request.url_for
         logout_url="/auth/logout",
         user=user,
@@ -107,12 +96,12 @@ async def home(user: Annotated[User | None, Depends(get_current_user)]) -> HTMLR
 async def auth_callback(code: str) -> RedirectResponse:
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            TOKEN_URL,
+            config.TOKEN_URL,
             json=dict(
-                client_id=CLIENT_ID,
-                client_secret=CLIENT_SECRET,
+                client_id=config.CLIENT_ID,
+                client_secret=config.CLIENT_SECRET,
                 code=code,
-                redirect_url=REDIRECT_URL,
+                redirect_url=config.REDIRECT_URL,
             ),
             headers={
                 "Accept": "application/json",
