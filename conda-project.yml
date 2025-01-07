@@ -1,10 +1,10 @@
 name: demo-stream
 environments:
   prod:
-    - environment-prod.yml
+  - environment-prod.yml
   dev:
-    - environment-dev.yml
-    - environment-prod.yml
+  - environment-dev.yml
+  - environment-prod.yml
 commands:
   prod:
     cmd: fastapi run

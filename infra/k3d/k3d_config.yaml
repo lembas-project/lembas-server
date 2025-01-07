@@ -5,9 +5,9 @@ metadata:
 servers: 1
 agents: 1
 ports:
-  - port: 80:80
-    nodeFilters:
-      - loadbalancer
+- port: 80:80
+  nodeFilters:
+  - loadbalancer
 registries:
   create:
     name: k3d-tilt-registry
@@ -21,9 +21,9 @@ registries:
 options:
   k3s:
     extraArgs:
-      - arg: --kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%
-        nodeFilters:
-          - agent:*
-      - arg: --kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%
-        nodeFilters:
-          - agent:*
+    - arg: --kubelet-arg=eviction-hard=imagefs.available<1%,nodefs.available<1%
+      nodeFilters:
+      - agent:*
+    - arg: --kubelet-arg=eviction-minimum-reclaim=imagefs.available=1%,nodefs.available=1%
+      nodeFilters:
+      - agent:*

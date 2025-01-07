@@ -1,11 +1,11 @@
-name: 'Pre-Commit'
+name: Pre-Commit
 
 on:
   # Caches have a certain level of isolation, see https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
   # We run on push to main to have all caches in the main branch so that they can be reused for PRs.
   push:
     branches:
-      - main
+    - main
   merge_group:
   pull_request:
 
@@ -18,31 +18,31 @@ jobs:
   pre-commit:
     runs-on:
       labels:
-        - ubuntu-latest
+      - ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          token: ${{ secrets.GH_ACTIONS_TOKEN }}
-      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-      - name: Install pre-commit
-        run: |
-          python -m pip install pre-commit
-      - name: Install conda-project
-        run: |
-          conda install conda-project
-      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: |
-            ~/.cache/pre-commit
-          key: pre-commit|${{ runner.arch }}-${{ hashFiles('.pre-commit-config.yaml') }}
-      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: |
-            ./envs
-          key: conda-project|${{ hashFiles('environment-dev.yml', 'environment-prod.yml', 'conda-lock.dev.yml', 'conda-lock.prod.yml') }}
-      - name: Run pre-commit
-        run: |
-          pre-commit run --verbose --show-diff-on-failure --color=always --all-files
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683   # v4.2.2
+      with:
+        token: ${{ secrets.GH_ACTIONS_TOKEN }}
+    - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b   # v5.3.0
+    - name: Install pre-commit
+      run: |
+        python -m pip install pre-commit
+    - name: Install conda-project
+      run: |
+        conda install conda-project
+    - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57   # v4.2.0
+      with:
+        path: |
+          ~/.cache/pre-commit
+        key: pre-commit|${{ runner.arch }}-${{ hashFiles('.pre-commit-config.yaml') }}
+    - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57   # v4.2.0
+      with:
+        path: |
+          ./envs
+        key: conda-project|${{ hashFiles('environment-dev.yml', 'environment-prod.yml', 'conda-lock.dev.yml', 'conda-lock.prod.yml') }}
+    - name: Run pre-commit
+      run: |
+        pre-commit run --verbose --show-diff-on-failure --color=always --all-files
 
       ############################
       # Checkout + commit + push when the previous pre-commit run step failed, as that indicates
@@ -53,16 +53,16 @@ jobs:
       # the workflow as green, which technically is not correct. A succeeding workflow run after commit + push
       # will mark the PR as green, if everything is fine.
 
-      - name: Checkout the branch we're running on to enable a commit to it
-        if: ${{ failure() && github.event_name == 'pull_request' }}
-        run: |
-          git fetch origin refs/heads/${{ github.head_ref }}:refs/remotes/origin/${{ github.head_ref }}
-          git checkout ${{ github.head_ref }}
+    - name: Checkout the branch we're running on to enable a commit to it
+      if: ${{ failure() && github.event_name == 'pull_request' }}
+      run: |
+        git fetch origin refs/heads/${{ github.head_ref }}:refs/remotes/origin/${{ github.head_ref }}
+        git checkout ${{ github.head_ref }}
 
-      - name: Commit linted files
-        if: ${{ failure() && github.event_name == 'pull_request' }}
-        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
-        with:
-          message: 'chore(pre-commit): linting'
-          author_name: KrameBot
-          author_email: krame-bot@matt-kramer.com
+    - name: Commit linted files
+      if: ${{ failure() && github.event_name == 'pull_request' }}
+      uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5   # v9.1.4
+      with:
+        message: 'chore(pre-commit): linting'
+        author_name: KrameBot
+        author_email: krame-bot@matt-kramer.com

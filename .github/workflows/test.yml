@@ -1,4 +1,4 @@
-name: 'Test'
+name: Test
 
 on:
   pull_request:
@@ -16,14 +16,14 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Install conda-project
-        run: |
-          conda install conda-project
-      - name: Run static type checks
-        run: |
-          conda project run type-check
-      - name: Run tests
-        run: |
-          conda project run test
+    - name: Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683   # v4.2.2
+    - name: Install conda-project
+      run: |
+        conda install conda-project
+    - name: Run static type checks
+      run: |
+        conda project run type-check
+    - name: Run tests
+      run: |
+        conda project run test
