@@ -37,6 +37,12 @@ repos:
     args: [--autofix]
   - id: pretty-format-toml
     args: [--autofix]
+- repo: https://github.com/pre-commit/mirrors-prettier
+  rev: v2.5.1
+  hooks:
+  - id: prettier
+    files: \.(js|css|html|json)$
+    exclude: \.min\.js
 - repo: https://github.com/python-jsonschema/check-jsonschema
   rev: 0.30.0
   hooks:
@@ -46,6 +52,7 @@ repos:
   rev: v2.3.0
   hooks:
   - id: codespell
+    exclude: \.min\.js
 - repo: meta
   hooks:
   - id: check-hooks-apply

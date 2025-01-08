@@ -1,44 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" />
     <title>Lembas</title>
-    <link rel="icon" href="./static/images/favicon.ico" type="image/x-icon"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css" crossorigin="anonymous">
-    <style>
-        .fade-me-in #project-list.htmx-added {
-            opacity: 0;
-        }
-        .fade-me-in #project-list {
-            opacity: 1;
-            transition: opacity 1s ease-out;
-        }
-    </style>
-</head>
-<body>
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/static/css/output.css" />
+  </head>
+  <body>
+    {% if not user %}
+    <div class="flex justify-center items-center h-screen">
+      <button
+        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+      >
+        <a href="{{ login_url }}">Login</a>
+      </button>
+    </div>
+    {% else %}
+    <nav class="bg-white shadow-lg">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-4">
+            <!-- Brand icon -->
+            <a href="/" class="flex items-center space-x-2">
+              <img src="/static/images/favicon.ico" />
+              <span class="font-semibold text-gray-800 text-lg">lembas</span>
+            </a>
 
-<h1 class="text-center">
-    Lembas
-</h1>
+            <!--<a href="#" class="text-gray-600 hover:text-gray-800">Projects</a>-->
+          </div>
 
-{% if user %}
-<h5>Name: {{ user.name }}</h5>
-<h5>Username: {{ user.username }}</h5>
-<img src="{{ user.avatar_url }}" style="width: 150px;">
-<a href="{{ logout_url }}">Logout</a>
-{% else %}
-<a href="{{ login_url }}">Login</a>
-{% endif %}
+          <div class="flex items-center space-x-4">
+            <!-- New Project button -->
+            <button
+              class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+            >
+              New Project
+            </button>
 
-<div class="fade-me-in">
-{{  render_partial("partials/project_list.html", projects=projects) }}
-</div>
+            <img
+              class="h-8 w-8 rounded-full"
+              src="{{ user.avatar_url }}"
+              alt="Avatar"
+            />
+          </div>
+        </div>
+      </div>
+    </nav>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.4/htmx.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/popper.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.min.js"></script>
+    <div class="flex justify-center items-center">
+      <button
+        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+      >
+        <a href="{{ logout_url }}">Logout</a>
+      </button>
+    </div>
 
-</body>
+    <div
+      class="py-8 px-8 max-w-sm mx-auto space-y-2 bg-white rounded-xl shadow-lg sm:py-4 sm:flex sm:items-center sm:space-y-0 sm:gap-x-6"
+    >
+      <img
+        class="block mx-auto h-24 rounded-full sm:mx-0 sm:shrink-0"
+        src="{{ user.avatar_url }}"
+        alt="Image of {{ user.name }}"
+      />
+      <div class="text-center space-y-2 sm:text-left">
+        <div class="space-y-0.5">
+          <p class="text-lg text-black font-semibold">{{ user.name }}</p>
+          <p class="text-slate-500 font-medium">{{ user.username }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!--<div class="fade-me-in">-->
+    <!--{{ render_partial("partials/project_list.html", projects=projects) }}-->
+    <!--</div>-->
+
+    <script src="/static/js/htmx.min.js"></script>
+  </body>
 </html>
