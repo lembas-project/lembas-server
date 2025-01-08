@@ -6,12 +6,14 @@
     <title>Lembas</title>
     <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="/static/css/output.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   </head>
   <body>
     {% if not user %}
     <div class="flex justify-center items-center h-screen">
       <button
-        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+        class="button-link px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+        data-href="{{ login_url }}"
       >
         <a href="{{ login_url }}">Login</a>
       </button>
@@ -23,7 +25,8 @@
           <div class="flex items-center space-x-4">
             <!-- Brand icon -->
             <a href="/" class="flex items-center space-x-2">
-              <img src="/static/images/favicon.ico" />
+              <img src="/static/images/favicon.ico" alt="The logo, showing
+              lembas bread wrapped in leaves/>
               <span class="font-semibold text-gray-800 text-lg">lembas</span>
             </a>
 
@@ -50,7 +53,8 @@
 
     <div class="flex justify-center items-center">
       <button
-        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+        class="button-link px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+        data-href="{{ logout_url }}"
       >
         <a href="{{ logout_url }}">Logout</a>
       </button>
@@ -64,6 +68,20 @@
 
     {% endif %}
 
-    <script src="/static/js/htmx.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var buttons = document.querySelectorAll(".button-link");
+
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function (e) {
+            e.preventDefault(); // Prevent default button behavior
+            var url = this.getAttribute("data-href");
+            if (url) {
+              window.location.href = url;
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
