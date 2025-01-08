@@ -5,9 +5,9 @@ import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import config
-from app.dependencies import current_user
+from app.dependencies import config, current_user
 from app.models import User
+from app.settings import Settings
 from app.templates import render_template
 
 log = logging.getLogger(__name__)
@@ -16,11 +16,14 @@ router = APIRouter()
 
 
 @router.get("/")
-async def home(user: Annotated[User | None, Depends(current_user)]) -> HTMLResponse:
+async def home(
+    user: Annotated[User | None, Depends(current_user)],
+    config: Annotated[Settings, Depends(config)],
+) -> HTMLResponse:
     return render_template(
         "home.html",
         projects=[{"name": "project 1"}],
-        login_url=config.LOGIN_URL,
+        login_url=config.login_url,
         # TODO: Use request.url_for
         logout_url="/auth/logout",
         user=user,
@@ -33,15 +36,18 @@ async def health() -> dict[str, str]:
 
 
 @router.get("/auth/callback")
-async def auth_callback(code: str) -> RedirectResponse:
+async def auth_callback(
+    code: str,
+    config: Annotated[Settings, Depends(config)],
+) -> RedirectResponse:
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            config.TOKEN_URL,
+            config.token_url,
             json=dict(
-                client_id=config.CLIENT_ID,
-                client_secret=config.CLIENT_SECRET,
+                client_id=config.client_id,
+                client_secret=config.client_secret,
                 code=code,
-                redirect_url=config.REDIRECT_URL,
+                redirect_url=config.redirect_url,
             ),
             headers={
                 "Accept": "application/json",

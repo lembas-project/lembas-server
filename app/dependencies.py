@@ -1,9 +1,10 @@
 from typing import Annotated
 
 import httpx
-from fastapi import Cookie
+from fastapi import Cookie, Request
 
 from app.models import User
+from app.settings import Settings
 
 
 async def _get_user_from_token(token: str) -> User:
@@ -18,6 +19,10 @@ async def _get_user_from_token(token: str) -> User:
         )
     data = resp.json()
     return User(**data)
+
+
+def config(request: Request) -> Settings:
+    return request.app.extra["config"]
 
 
 async def current_user(access_token: Annotated[str | None, Cookie()] = None) -> User | None:

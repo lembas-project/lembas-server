@@ -2,14 +2,25 @@ from collections.abc import AsyncIterator, Callable
 
 import httpx
 import pytest
+from fastapi import FastAPI
 
-from app.main import app
+from app.main import create_app
+from app.settings import Settings
 
 ClientFactory = Callable[[], httpx.AsyncClient]
 
 
-@pytest.fixture(scope="function")
-async def client_factory() -> AsyncIterator[ClientFactory]:
+@pytest.fixture(scope="session")
+def app() -> FastAPI:
+    config = Settings(
+        client_id="test-client-id",
+        client_secret="test-client-secret",
+    )
+    return create_app(config=config)
+
+
+@pytest.fixture(scope="session")
+async def client_factory(app: FastAPI) -> AsyncIterator[ClientFactory]:
     """A factory to construct an HTTPX AsyncClient."""
     clients = []
 
@@ -25,7 +36,7 @@ async def client_factory() -> AsyncIterator[ClientFactory]:
         await client_.aclose()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def client(client_factory: ClientFactory) -> httpx.AsyncClient:
     """An HTTP session."""
     return client_factory()

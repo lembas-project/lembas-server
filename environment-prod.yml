@@ -3,11 +3,15 @@ channels:
 - conda-forge
 dependencies:
 # renovate: datasource=conda depName=conda-forge/python
-- python=3.13.1
+- python=3.12.8
 # renovate: datasource=conda depName=conda-forge/pip
 - pip=24.3.1
 # renovate: datasource=conda depName=conda-forge/fastapi
 - fastapi=0.115.6
+# renovate: datasource=conda depName=conda-forge/pydantic
+- pydantic=2.10.4
+# renovate: datasource=conda depName=conda-forge/pydantic-settings
+- pydantic-settings=2.7.1
 # renovate: datasource=conda depName=conda-forge/jinja2
 - jinja2=3.1.5
 # renovate: datasource=conda depName=conda-forge/httpx

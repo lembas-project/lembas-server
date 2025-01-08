@@ -8,14 +8,11 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-from app import config
-
 REQUEST_CTX_KEY = "request_id"
 
 _request_ctx_var: ContextVar[Request] = ContextVar(REQUEST_CTX_KEY)
 
-templates = Jinja2Templates(directory=config.template_dir)
-jinja_partials.register_starlette_extensions(templates)
+templates: Jinja2Templates | None = None
 
 
 def get_request() -> Request:
@@ -36,8 +33,17 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
 def render_template(name: str, model: BaseModel | None = None, **context: Any) -> HTMLResponse:
     if model is not None:
         context.update({"model": model.dict(), **model.dict()})
+
+    if templates is None:
+        raise ValueError("Template engine never initialized")
+
     return templates.TemplateResponse(request=get_request(), name=name, context=context)
 
 
-def init_app(app: FastAPI) -> None:
+def init_app(app: FastAPI, template_dir: str) -> None:
+    global templates
+
+    templates = Jinja2Templates(directory=template_dir)
+    jinja_partials.register_starlette_extensions(templates)
+
     app.add_middleware(RequestContextMiddleware)
