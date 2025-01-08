@@ -16,3 +16,6 @@ __pycache__/
 
 # Marker files used in Makefile
 .mark/
+
+# Generated build artifacts
+static/css/output.css
