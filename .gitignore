@@ -1,6 +1,9 @@
 # Conda environment directory
 /envs/
 
+# Node modules
+node_modules/
+
 # File containing environment variables
 .env
 
