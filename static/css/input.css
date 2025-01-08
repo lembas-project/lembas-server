@@ -9,9 +9,9 @@
 }
 
 .fade-me-in #project-list.htmx-added {
-    opacity: 0;
+  opacity: 0;
 }
 .fade-me-in #project-list {
-    opacity: 1;
-    transition: opacity 1s ease-out;
+  opacity: 1;
+  transition: opacity 1s ease-out;
 }
