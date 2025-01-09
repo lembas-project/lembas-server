@@ -9,7 +9,7 @@ class Component(BaseModel):
 
     def render(self) -> HTMLResponse:
         # We do a shallow dump to prevent serializing every nested thing into a dictionary
-        shallow_dump = {name: getattr(self, name) for name in self.__fields__.keys()}
+        shallow_dump = {name: getattr(self, name) for name in self.model_fields.keys()}
         return render_template(self.__template_path__, **shallow_dump)
 
 
