@@ -7,9 +7,11 @@ VALUES_DIR = os.path.join(HERE, "infra", "values")
 # Configure the docker build
 SERVICE_NAME = "lembas"
 
-# Get the active namespace
+# Get the active namespace and make sure it is created
 # This can be set with tilt up --namespace <NAMESPACE>
+load("ext://namespace", "namespace_create")
 namespace = k8s_namespace()
+namespace_create(k8s_namespace())
 
 # Build the service image
 docker_build(SERVICE_NAME, ".")
@@ -45,7 +47,6 @@ helm_remote(
   repo_url="https://community-tooling.github.io/charts",
   release_name=SERVICE_NAME,
   namespace=namespace,
-  create_namespace=True,
   values=[
     os.path.join(VALUES_DIR, "local.yaml"),
   ],
