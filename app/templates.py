@@ -56,7 +56,9 @@ class AutoRenderExtension(Extension):
         environment.finalize = self.auto_render_filter
 
     def auto_render_filter(self, obj: Any) -> Any:
-        if isinstance(obj, BaseModel) and (p := getattr(obj, "__template_path__")):
+        from app.models import Component
+
+        if isinstance(obj, Component) and (p := obj.__template_path__):
             template = templates.get_template(p)
             return Markup(template.render(**obj.model_dump()))
         return obj
