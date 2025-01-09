@@ -69,10 +69,8 @@ class AutoRenderExtension(Extension):
 def init_app(app: FastAPI, template_dir: str) -> None:
     global templates
 
-    templates = Jinja2Templates(
-        directory=template_dir,
-        extensions=[AutoRenderExtension],
-    )
+    templates = Jinja2Templates(directory=template_dir)
+    templates.env.add_extension(AutoRenderExtension)
     jinja_partials.register_starlette_extensions(templates)
 
     app.add_middleware(RequestContextMiddleware)
