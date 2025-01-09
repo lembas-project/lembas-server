@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     static_dir: str = "static"
     template_dir: str = "templates"
 
+    sentry_dsn: str = ""
+    sentry_environment: str = "dev"
+    sentry_release: str = "unknown"
+
     @property
     def login_url(self) -> str:
         login_url = (
