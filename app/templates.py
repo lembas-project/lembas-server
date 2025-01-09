@@ -5,7 +5,7 @@ import jinja_partials
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from jinja2 import Environment
+from jinja2 import Environment, Template
 from jinja2.ext import Extension
 from markupsafe import Markup
 from pydantic import BaseModel
@@ -58,10 +58,15 @@ class AutoRenderExtension(Extension):
     def auto_render_filter(self, obj: Any) -> Any:
         from app.models import Component
 
-        if isinstance(obj, Component) and (p := obj.__template_path__):
-            if templates is None:
-                raise ValueError("Template engine never initialized")
-            template = templates.get_template(p)
+        if isinstance(obj, Component):
+            if p := obj.__template_path__:
+                if templates is None:
+                    raise ValueError("Template engine never initialized")
+                template = templates.get_template(p)
+            elif t := obj.__template__:
+                template = Template(t)
+            else:
+                return obj
             return Markup(template.render(**obj.model_dump()))
         return obj
 
