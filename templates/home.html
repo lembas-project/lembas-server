@@ -11,7 +11,7 @@
   <body>
     {% if not user %}
     <div class="flex justify-center items-center h-screen">
-      {{ Button(url=login_url, text="Login") }}
+      {{ LinkButton(url=login_url, text="Login") }}
     </div>
     {% else %}
     <nav class="bg-white shadow-lg">
@@ -47,7 +47,7 @@
     </nav>
 
     <div class="flex justify-center items-center">
-      {{ Button(url=logout_url, text="Logout") }}
+      {{ LinkButton(url=logout_url, text="Logout") }}
     </div>
 
     {# The user card #} {{ user }}
