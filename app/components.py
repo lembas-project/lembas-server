@@ -28,7 +28,7 @@ class LinkButton(Component):
 class UserCard(Component):
     __template_path__ = "partials/user_card.html"
 
-    user: User | None
+    user: User
 
 
 class Homepage(Component):
