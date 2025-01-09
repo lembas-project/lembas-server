@@ -5,8 +5,9 @@ import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from app.components import Homepage
 from app.dependencies import config, current_user
-from app.models import Homepage, User
+from app.models import User
 from app.settings import Settings
 
 log = logging.getLogger(__name__)

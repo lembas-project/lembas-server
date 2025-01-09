@@ -56,7 +56,7 @@ class AutoRenderExtension(Extension):
         environment.finalize = self.auto_render_filter
 
     def auto_render_filter(self, obj: Any) -> Any:
-        from app.models import Component
+        from app.components import Component
 
         if isinstance(obj, Component):
             if p := obj.__template_path__:
