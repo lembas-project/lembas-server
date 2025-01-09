@@ -29,10 +29,11 @@ if not CLIENT_ID or not CLIENT_SECRET:
     )
 
 # Mount environment variables in a secret
+SECRETS_NAME = "secrets"
 load("ext://secret", "secret_from_dict")
 k8s_yaml(
   secret_from_dict(
-    "secrets",
+    SECRETS_NAME,
     inputs = {
       "CLIENT_ID" : CLIENT_ID,
       "CLIENT_SECRET" : CLIENT_SECRET,
@@ -61,8 +62,9 @@ k8s_resource(
   "{}-generic".format(SERVICE_NAME),
   new_name=SERVICE_NAME,
   objects=[
-    "{}:namespace".format(namespace),
-    "{}-generic:serviceaccount:{}".format(SERVICE_NAME, namespace),
-    "{}-generic:ingress:{}".format(SERVICE_NAME, namespace),
+    "{}:Namespace".format(namespace),
+    "{}-generic:ServiceAccount:{}".format(SERVICE_NAME, namespace),
+    "{}-generic:Ingress:{}".format(SERVICE_NAME, namespace),
+    "{}:Secret".format(SECRETS_NAME, namespace),
   ],
 )
