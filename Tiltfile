@@ -54,17 +54,17 @@ helm_remote(
   set=[
     "image.repository={image_name}".format(image_name=SERVICE_NAME),
     "image.tag=local",
+    "fullnameOverride={}".format(SERVICE_NAME),
   ],
 )
 
 # Mark all objects as part of the resource, and rename it to remove "-generic"
 k8s_resource(
-  "{}-generic".format(SERVICE_NAME),
-  new_name=SERVICE_NAME,
+  SERVICE_NAME,
   objects=[
     "{}:Namespace".format(namespace),
-    "{}-generic:ServiceAccount:{}".format(SERVICE_NAME, namespace),
-    "{}-generic:Ingress:{}".format(SERVICE_NAME, namespace),
+    "{}:ServiceAccount:{}".format(SERVICE_NAME, namespace),
+    "{}:Ingress:{}".format(SERVICE_NAME, namespace),
     "{}:Secret".format(SECRETS_NAME, namespace),
   ],
 )
