@@ -19,6 +19,8 @@ dependencies:
 - pip:
   # renovate: datasource=pypi
   - jinja-partials==0.2.1
+  # renovate: datasource=pypi
+  - sentry-sdk[fastapi]==2.11.0
 variables:
 prefix:
 platforms:
