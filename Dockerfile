@@ -9,18 +9,14 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy the rest of your application's code
-# COPY . .
+# Copy the required code
 COPY tailwind.config.js ./
 COPY static/ ./static
 COPY templates/ ./templates
 
-# Install Tailwind CSS CLI globally
-RUN npm install -g tailwindcss
-
 # Generate CSS using Tailwind CSS CLI
 # Adjust the input and output paths as needed
-RUN tailwindcss -i ./static/css/input.css -o ./output.css
+RUN npx tailwindcss -i ./static/css/input.css -o ./output.css
 
 FROM --platform=linux/amd64 continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b as builder
 
