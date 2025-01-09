@@ -59,6 +59,8 @@ class AutoRenderExtension(Extension):
         from app.models import Component
 
         if isinstance(obj, Component) and (p := obj.__template_path__):
+            if templates is None:
+                raise ValueError("Template engine never initialized")
             template = templates.get_template(p)
             return Markup(template.render(**obj.model_dump()))
         return obj
