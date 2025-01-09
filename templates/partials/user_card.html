@@ -3,13 +3,13 @@
 >
   <img
     class="block mx-auto h-24 rounded-full sm:mx-0 sm:shrink-0"
-    src="{{ avatar_url }}"
-    alt="Image of {{ name }}"
+    src="{{ user.avatar_url }}"
+    alt="Image of {{ user.name }}"
   />
   <div class="text-center space-y-2 sm:text-left">
     <div class="space-y-0.5">
-      <p class="text-lg text-black font-semibold">{{ name }}</p>
-      <p class="text-slate-500 font-medium">{{ username }}</p>
+      <p class="text-lg text-black font-semibold">{{ user.name }}</p>
+      <p class="text-slate-500 font-medium">{{ user.username }}</p>
     </div>
   </div>
 </div>

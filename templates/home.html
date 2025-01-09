@@ -50,7 +50,7 @@
       {{ LinkButton(url=logout_url, text="Logout") }}
     </div>
 
-    {# The user card #} {{ user }}
+    {{ UserCard(user=user) }}
 
     <!--<div class="fade-me-in">-->
     <!--{{ render_partial("partials/project_list.html", projects=projects) }}-->
