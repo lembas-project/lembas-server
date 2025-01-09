@@ -5,10 +5,10 @@ import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from app.components import Homepage
 from app.dependencies import config, current_user
 from app.models import User
 from app.settings import Settings
-from app.templates import render_template
 
 log = logging.getLogger(__name__)
 
@@ -20,14 +20,13 @@ async def home(
     user: Annotated[User | None, Depends(current_user)],
     config: Annotated[Settings, Depends(config)],
 ) -> HTMLResponse:
-    return render_template(
-        "home.html",
+    return Homepage(
         projects=[{"name": "project 1"}],
         login_url=config.login_url,
         # TODO: Use request.url_for
         logout_url="/auth/logout",
         user=user,
-    )
+    ).render()
 
 
 @router.get("/healthz")

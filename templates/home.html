@@ -6,27 +6,27 @@
     <title>Lembas</title>
     <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="/static/css/output.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   </head>
   <body>
     {% if not user %}
     <div class="flex justify-center items-center h-screen">
-      <button
-        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-      >
-        <a href="{{ login_url }}">Login</a>
-      </button>
+      {{ LinkButton(url=login_url, text="Login") }}
     </div>
     {% else %}
     <nav class="bg-white shadow-lg">
       <div class="max-w-6xl mx-auto px-4">
         <div class="flex justify-between items-center py-4">
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 h-full">
             <!-- Brand icon -->
-            <a href="/" class="flex items-center space-x-2">
-              <img src="/static/images/favicon.ico" />
-              <span class="font-semibold text-gray-800 text-lg">lembas</span>
+            <a href="/" class="flex items-center h-full space-x-2">
+              <img
+                src="/static/images/logo.svg"
+                alt="The logo, showing lembas bread wrapped in leaves"
+                style="height: 40px"
+                class="h-full w-auto object-contain"
+              />
             </a>
-
             <!--<a href="#" class="text-gray-600 hover:text-gray-800">Projects</a>-->
           </div>
 
@@ -49,34 +49,31 @@
     </nav>
 
     <div class="flex justify-center items-center">
-      <button
-        class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
-      >
-        <a href="{{ logout_url }}">Logout</a>
-      </button>
+      {{ LinkButton(url=logout_url, text="Logout") }}
     </div>
 
-    <div
-      class="py-8 px-8 max-w-sm mx-auto space-y-2 bg-white rounded-xl shadow-lg sm:py-4 sm:flex sm:items-center sm:space-y-0 sm:gap-x-6"
-    >
-      <img
-        class="block mx-auto h-24 rounded-full sm:mx-0 sm:shrink-0"
-        src="{{ user.avatar_url }}"
-        alt="Image of {{ user.name }}"
-      />
-      <div class="text-center space-y-2 sm:text-left">
-        <div class="space-y-0.5">
-          <p class="text-lg text-black font-semibold">{{ user.name }}</p>
-          <p class="text-slate-500 font-medium">{{ user.username }}</p>
-        </div>
-      </div>
-    </div>
-    {% endif %}
+    {{ UserCard(user=user) }}
 
     <!--<div class="fade-me-in">-->
     <!--{{ render_partial("partials/project_list.html", projects=projects) }}-->
     <!--</div>-->
 
-    <script src="/static/js/htmx.min.js"></script>
+    {% endif %}
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var buttons = document.querySelectorAll(".button-link");
+
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function (e) {
+            e.preventDefault(); // Prevent default button behavior
+            var url = this.getAttribute("data-href");
+            if (url) {
+              window.location.href = url;
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>

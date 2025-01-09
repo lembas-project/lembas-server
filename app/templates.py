@@ -5,6 +5,9 @@ import jinja_partials
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from jinja2 import Environment, Template
+from jinja2.ext import Extension
+from markupsafe import Markup
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
@@ -40,10 +43,39 @@ def render_template(name: str, model: BaseModel | None = None, **context: Any) -
     return templates.TemplateResponse(request=get_request(), name=name, context=context)
 
 
+class AutoRenderExtension(Extension):
+    """An extension to automatically render a pydantic model."""
+
+    def __init__(self, environment: Environment):
+        super().__init__(environment)
+
+        # Add the filter to the environment
+        environment.filters["auto_render"] = self.auto_render_filter
+
+        # Override the default finalize function
+        environment.finalize = self.auto_render_filter
+
+    def auto_render_filter(self, obj: Any) -> Any:
+        from app.components import Component
+
+        if isinstance(obj, Component):
+            if p := obj.__template_path__:
+                if templates is None:
+                    raise ValueError("Template engine never initialized")
+                template = templates.get_template(p)
+            elif t := obj.__template__:
+                template = Template(t)
+            else:
+                return obj
+            return Markup(template.render(**obj.model_dump()))
+        return obj
+
+
 def init_app(app: FastAPI, template_dir: str) -> None:
     global templates
 
     templates = Jinja2Templates(directory=template_dir)
+    templates.env.add_extension(AutoRenderExtension)
     jinja_partials.register_starlette_extensions(templates)
 
     app.add_middleware(RequestContextMiddleware)
