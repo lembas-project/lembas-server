@@ -55,11 +55,12 @@ async def auth_callback(
             },
         )
 
-    if resp.status_code == HTTPStatus.UNAUTHORIZED:
-        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-
     # TODO: Add Error handling for non-200 responses
     data = resp.json()
+
+    if data.get("error", "") == "bad_verification_code":
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+
     access_token = data["access_token"]
 
     response = RedirectResponse("/")
