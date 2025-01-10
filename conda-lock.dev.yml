@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: 8953addcc769e0c5b009f15c548d1beae86ad7a14b6387d9220f111fed6d8fed
-    linux-64: a4648e92ec4d26744db14b41443e7c63ba07fa3ba7bb5a946676be05916bf141
+    osx-arm64: 9f55c619ec7b5b9c1d223a7c4d51b4c358c2c367b5f6303e3f0e971faef5e22e
+    linux-64: 54d8c72d399244e38e8bf21be66f065ee29e1083f61765a7d8e5b08ba288fee1
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-10T06:05:08Z'
+    created_at: '2025-01-10T06:13:45Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -1469,7 +1469,7 @@ package:
   category: main
   optional: false
 - name: pydantic
-  version: 2.10.4
+  version: 2.10.5
   manager: conda
   platform: linux-64
   dependencies:
@@ -1478,14 +1478,14 @@ package:
     typing_extensions: '>=4.12.2'
     annotated-types: '>=0.6.0'
     pydantic-core: 2.27.2
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.10.4-pyh3cfb1c2_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.10.5-pyh3cfb1c2_0.conda
   hash:
-    md5: 93bccf4d7a58c9140d59491de21e044b
-    sha256: e68400714532a33f34b44ddaee3e27e8dd6c83c3f31c7892ec10b84d13aa8b59
+    md5: e8ea30925c8271c4128375810d7d3d7a
+    sha256: 0f32c30ddc610cd1113335d8b4f311f20f4d72754b7c1a5d0d9493f597cf11d2
   category: main
   optional: false
 - name: pydantic
-  version: 2.10.4
+  version: 2.10.5
   manager: conda
   platform: osx-arm64
   dependencies:
@@ -1494,10 +1494,10 @@ package:
     typing_extensions: '>=4.12.2'
     annotated-types: '>=0.6.0'
     pydantic-core: 2.27.2
-  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.10.4-pyh3cfb1c2_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/pydantic-2.10.5-pyh3cfb1c2_0.conda
   hash:
-    md5: 93bccf4d7a58c9140d59491de21e044b
-    sha256: e68400714532a33f34b44ddaee3e27e8dd6c83c3f31c7892ec10b84d13aa8b59
+    md5: e8ea30925c8271c4128375810d7d3d7a
+    sha256: 0f32c30ddc610cd1113335d8b4f311f20f4d72754b7c1a5d0d9493f597cf11d2
   category: main
   optional: false
 - name: pydantic-core
