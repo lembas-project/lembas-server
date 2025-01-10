@@ -55,7 +55,7 @@ ci: cluster  ## Run Tilt in CI mode
 short_commit ?= $(shell git log -1 --pretty=%H | cut -c -7)
 
 deploy:
-	fly deploy \
+	flyctl deploy \
 		-e SENTRY_RELEASE=$(short_commit) \
 		-e APP_REVISION=$(short_commit)
 
