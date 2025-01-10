@@ -13,9 +13,6 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 if TYPE_CHECKING:
     from fastapi.templating import Jinja2Templates
 
-__all__ = [
-    "register_starlette_extensions",
-]
 
 REQUEST_CTX_KEY = "request_id"
 
@@ -77,18 +74,18 @@ class AutoRenderExtension(Extension):
         return obj
 
 
-def register_starlette_extensions(templates: "Jinja2Templates") -> None:
-    def render_partial(
-        template_name: str,
-        markup: bool = True,
-        **data: Any,
-    ) -> Markup | str:
-        if markup:
-            return Markup(templates.get_template(template_name).render(**data))
+def render_partial(
+    template_name: str,
+    markup: bool = True,
+    **data: Any,
+) -> Markup | str:
+    if templates is None:
+        raise ValueError("Template engine never initialized")
 
-        return templates.get_template(template_name).render(**data)
+    if markup:
+        return Markup(templates.get_template(template_name).render(**data))
 
-    templates.env.globals.update(render_partial=render_partial)
+    return templates.get_template(template_name).render(**data)
 
 
 def init_app(app: FastAPI, template_dir: str) -> None:
@@ -96,6 +93,6 @@ def init_app(app: FastAPI, template_dir: str) -> None:
 
     templates = Jinja2Templates(directory=template_dir)
     templates.env.add_extension(AutoRenderExtension)
-    register_starlette_extensions(templates)
+    templates.env.globals.update(render_partial=render_partial)
 
     app.add_middleware(RequestContextMiddleware)
