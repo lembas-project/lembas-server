@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
@@ -72,6 +72,22 @@ class AutoRenderExtension(Extension):
                 return obj
             return Markup(template.render(**obj.model_dump()))
         return obj
+
+
+@overload
+def render_partial(
+    template_name: str,
+    markup: Literal[True],
+    **data: Any,
+) -> Markup: ...
+
+
+@overload
+def render_partial(
+    template_name: str,
+    markup: Literal[False],
+    **data: Any,
+) -> str: ...
 
 
 def render_partial(
