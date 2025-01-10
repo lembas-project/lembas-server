@@ -31,7 +31,7 @@ def render_partial(
 
 def generate_render_partial(
     renderer: Callable[..., Any], markup: bool = True
-) -> Callable[..., Markup]:
+) -> Callable[..., Markup | str]:
     return partial(render_partial, renderer=renderer, markup=markup)
 
 
