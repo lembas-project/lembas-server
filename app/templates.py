@@ -82,10 +82,10 @@ def render_partial(
     if templates is None:
         raise ValueError("Template engine never initialized")
 
+    content = templates.get_template(template_name).render(**data)
     if markup:
-        return Markup(templates.get_template(template_name).render(**data))
-
-    return templates.get_template(template_name).render(**data)
+        return Markup(content)
+    return content
 
 
 def init_app(app: FastAPI, template_dir: str) -> None:
