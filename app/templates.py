@@ -1,6 +1,4 @@
-from collections.abc import Callable
 from contextvars import ContextVar
-from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI, Request, Response
@@ -82,19 +80,15 @@ class AutoRenderExtension(Extension):
 def register_starlette_extensions(templates: "Jinja2Templates") -> None:
     def render_partial(
         template_name: str,
-        renderer: Callable[..., Any],
         markup: bool = True,
         **data: Any,
     ) -> Markup | str:
         if markup:
-            return Markup(renderer(template_name, **data))
+            return Markup(templates.get_template(template_name).render(**data))
 
-        return renderer(template_name, **data)
-
-    def renderer(template_name: str, **data: Any) -> str:
         return templates.get_template(template_name).render(**data)
 
-    templates.env.globals.update(render_partial=partial(render_partial, renderer=renderer))
+    templates.env.globals.update(render_partial=render_partial)
 
 
 def init_app(app: FastAPI, template_dir: str) -> None:
