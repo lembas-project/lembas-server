@@ -2,10 +2,14 @@
 
 from urllib.parse import urlencode
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    live_reload_mode: bool = False
+
     client_id: str
     client_secret: str
     redirect_url: str = "http://lembas.localhost"

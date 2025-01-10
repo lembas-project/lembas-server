@@ -10,6 +10,8 @@ from markupsafe import Markup
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
+from app.settings import Settings
+
 REQUEST_CTX_KEY = "request_id"
 
 _request_ctx_var: ContextVar[Request] = ContextVar(REQUEST_CTX_KEY)
@@ -100,11 +102,13 @@ class AutoRenderExtension(Extension):
         return obj
 
 
-def init_app(app: FastAPI, template_dir: str) -> None:
+def init_app(app: FastAPI, settings: Settings) -> None:
     global templates
 
-    templates = Jinja2Templates(directory=template_dir)
+    templates = Jinja2Templates(directory=settings.template_dir)
     templates.env.add_extension(AutoRenderExtension)
-    templates.env.globals.update(render_partial=render_partial)
+    templates.env.globals.update(
+        live_reload_mode=settings.live_reload_mode, render_partial=render_partial
+    )
 
     app.add_middleware(RequestContextMiddleware)
