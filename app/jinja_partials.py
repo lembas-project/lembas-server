@@ -29,10 +29,8 @@ def render_partial(
     return renderer(template_name, **data)
 
 
-def generate_render_partial(
-    renderer: Callable[..., Any], markup: bool = True
-) -> Callable[..., Markup | str]:
-    return partial(render_partial, renderer=renderer, markup=markup)
+def generate_render_partial(renderer: Callable[..., Any]) -> Callable[..., Markup | str]:
+    return partial(render_partial, renderer=renderer)
 
 
 def register_starlette_extensions(templates: "Jinja2Templates") -> None:
