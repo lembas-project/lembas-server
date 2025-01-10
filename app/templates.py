@@ -1,5 +1,7 @@
+from collections.abc import Callable
 from contextvars import ContextVar
-from typing import Any
+from functools import partial
+from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
@@ -10,7 +12,12 @@ from markupsafe import Markup
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
-from app import jinja_partials
+if TYPE_CHECKING:
+    from fastapi.templating import Jinja2Templates
+
+__all__ = [
+    "register_starlette_extensions",
+]
 
 REQUEST_CTX_KEY = "request_id"
 
@@ -72,11 +79,29 @@ class AutoRenderExtension(Extension):
         return obj
 
 
+def register_starlette_extensions(templates: "Jinja2Templates") -> None:
+    def render_partial(
+        template_name: str,
+        renderer: Callable[..., Any],
+        markup: bool = True,
+        **data: Any,
+    ) -> Markup | str:
+        if markup:
+            return Markup(renderer(template_name, **data))
+
+        return renderer(template_name, **data)
+
+    def renderer(template_name: str, **data: Any) -> str:
+        return templates.get_template(template_name).render(**data)
+
+    templates.env.globals.update(render_partial=partial(render_partial, renderer=renderer))
+
+
 def init_app(app: FastAPI, template_dir: str) -> None:
     global templates
 
     templates = Jinja2Templates(directory=template_dir)
     templates.env.add_extension(AutoRenderExtension)
-    jinja_partials.register_starlette_extensions(templates)
+    register_starlette_extensions(templates)
 
     app.add_middleware(RequestContextMiddleware)
