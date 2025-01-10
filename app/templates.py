@@ -1,7 +1,6 @@
 from contextvars import ContextVar
-from typing import Any
+from typing import Any, Literal, overload
 
-import jinja_partials
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -43,6 +42,36 @@ def render_template(name: str, model: BaseModel | None = None, **context: Any) -
     return templates.TemplateResponse(request=get_request(), name=name, context=context)
 
 
+@overload
+def render_partial(
+    template_name: str,
+    markup: Literal[True],
+    **data: Any,
+) -> Markup: ...
+
+
+@overload
+def render_partial(
+    template_name: str,
+    markup: Literal[False],
+    **data: Any,
+) -> str: ...
+
+
+def render_partial(
+    template_name: str,
+    markup: bool = True,
+    **data: Any,
+) -> Markup | str:
+    if templates is None:
+        raise ValueError("Template engine never initialized")
+
+    content = templates.get_template(template_name).render(**data)
+    if markup:
+        return Markup(content)
+    return content
+
+
 class AutoRenderExtension(Extension):
     """An extension to automatically render a pydantic model."""
 
@@ -76,6 +105,6 @@ def init_app(app: FastAPI, template_dir: str) -> None:
 
     templates = Jinja2Templates(directory=template_dir)
     templates.env.add_extension(AutoRenderExtension)
-    jinja_partials.register_starlette_extensions(templates)
+    templates.env.globals.update(render_partial=render_partial)
 
     app.add_middleware(RequestContextMiddleware)
