@@ -1,4 +1,4 @@
-FROM node:14@sha256:a158d3b9b4e3fa813fa6c8c590b8f0a860e015ad4e59bbce5744d2f6fd8461aa AS tailwind
+FROM node:23@sha256:2f73096d856b0b9d6fa43002edb619f1527f939bab870eab6c909f633bcf56e9 AS tailwind
 
 # Set the working directory in the container
 WORKDIR /app
