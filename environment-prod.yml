@@ -18,9 +18,6 @@ dependencies:
 - httpx=0.28.1
 # renovate: datasource=conda depName=conda-forge/sentry-sdk
 - sentry-sdk=2.19.2
-- pip:
-  # renovate: datasource=pypi
-  - jinja-partials==0.2.1
 variables:
 prefix:
 platforms:

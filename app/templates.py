@@ -1,7 +1,6 @@
 from contextvars import ContextVar
 from typing import Any
 
-import jinja_partials
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -10,6 +9,8 @@ from jinja2.ext import Extension
 from markupsafe import Markup
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+
+from app import jinja_partials
 
 REQUEST_CTX_KEY = "request_id"
 

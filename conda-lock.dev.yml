@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: fe326248688c01d1acce69fd838410ab14e008e1e20682af50c6be278fe212a5
-    linux-64: a37323feeb62ba4795a0d2e3cf21ea333756c789a4276a79327b65018bbe94f1
+    osx-arm64: b5465a30ec9b9617192845babeb79aaf53175a359c680e16f86ae57c67592f54
+    linux-64: 1c5f77750863d8618ae3604b2f4a44fcefcdeb1b6b5c49feef883dccd78b7264
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-10T19:35:05Z'
+    created_at: '2025-01-10T19:39:21Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -2670,27 +2670,5 @@ package:
   hash:
     md5: d96942c06c3e84bfcc5efb038724a7fd
     sha256: 2d4fd1ff7ee79cd954ca8e81abf11d9d49954dd1fef80f27289e2402ae9c2e09
-  category: main
-  optional: false
-- name: jinja-partials
-  version: 0.2.1
-  manager: pip
-  platform: linux-64
-  dependencies:
-    jinja2: '*'
-  url: https://files.pythonhosted.org/packages/a7/f3/74e62cdc6b91724826bfcd8cc52de08392fc3973e95d0e1ba11966f82873/jinja_partials-0.2.1-py3-none-any.whl
-  hash:
-    sha256: c23a5217251350ef75b8368ce59fa7e43463cd61a11fde1b2c869b2011abb953
-  category: main
-  optional: false
-- name: jinja-partials
-  version: 0.2.1
-  manager: pip
-  platform: osx-arm64
-  dependencies:
-    jinja2: '*'
-  url: https://files.pythonhosted.org/packages/a7/f3/74e62cdc6b91724826bfcd8cc52de08392fc3973e95d0e1ba11966f82873/jinja_partials-0.2.1-py3-none-any.whl
-  hash:
-    sha256: c23a5217251350ef75b8368ce59fa7e43463cd61a11fde1b2c869b2011abb953
   category: main
   optional: false
