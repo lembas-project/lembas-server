@@ -1,10 +1,10 @@
 import logging
 from typing import Annotated
 
-import httpx
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from app.auth import exchange_code_for_token
 from app.components import Homepage
 from app.dependencies import config, current_user
 from app.models import User
@@ -39,26 +39,9 @@ async def auth_callback(
     code: str,
     config: Annotated[Settings, Depends(config)],
 ) -> RedirectResponse:
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            config.token_url,
-            json=dict(
-                client_id=config.client_id,
-                client_secret=config.client_secret,
-                code=code,
-                redirect_url=config.redirect_url,
-            ),
-            headers={
-                "Accept": "application/json",
-            },
-        )
-
-    # TODO: Add Error handling for non-200 responses
-    data = resp.json()
-
     response = RedirectResponse("/")
 
-    if access_token := data.get("access_token"):
+    if access_token := await exchange_code_for_token(code, config):
         response.set_cookie(key="access_token", value=access_token)
 
     return response
