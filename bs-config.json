@@ -1,0 +1,6 @@
+{
+  "files": ["**/*.html", "**/*.py", "**/*.css", "**/*.js"],
+  "notify": false,
+  "open": false,
+  "proxy": "http://localhost:8001"
+}
