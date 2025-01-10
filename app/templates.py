@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Literal, overload
+from typing import Any, Literal, overload
 
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
@@ -9,10 +9,6 @@ from jinja2.ext import Extension
 from markupsafe import Markup
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
-
-if TYPE_CHECKING:
-    from fastapi.templating import Jinja2Templates
-
 
 REQUEST_CTX_KEY = "request_id"
 
