@@ -13,10 +13,6 @@ __all__ = [
 ]
 
 
-class PartialsException(Exception):
-    pass
-
-
 def render_partial(
     template_name: str,
     renderer: Callable[..., Any],
