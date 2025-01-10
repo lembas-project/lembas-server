@@ -13,8 +13,8 @@
 version: 1
 metadata:
   content_hash:
-    osx-arm64: e0dc81a1adc497fe5d9e07fae9514ebe3a7864e19b52680add8feb7c341131e9
-    linux-64: f662edf065c1d03481b05a16c3f43ccb37a7a105e79d26992ab086ca3f540062
+    osx-arm64: fe326248688c01d1acce69fd838410ab14e008e1e20682af50c6be278fe212a5
+    linux-64: a37323feeb62ba4795a0d2e3cf21ea333756c789a4276a79327b65018bbe94f1
   channels:
   - url: conda-forge
     used_env_vars: []
@@ -25,7 +25,7 @@ metadata:
   - environment-dev.yml
   - environment-prod.yml
   time_metadata:
-    created_at: '2025-01-10T19:16:24Z'
+    created_at: '2025-01-10T19:35:05Z'
 package:
 - name: _libgcc_mutex
   version: '0.1'
@@ -107,6 +107,37 @@ package:
   hash:
     md5: 848d25bfbadf020ee4d4ba90e5668252
     sha256: f1455d2953e3eb6d71bc49881c8558d8e01888469dfd21061dd48afb6183e836
+  category: main
+  optional: false
+- name: brotli-python
+  version: 1.1.0
+  manager: conda
+  platform: linux-64
+  dependencies:
+    __glibc: '>=2.17,<3.0.a0'
+    libgcc: '>=13'
+    libstdcxx: '>=13'
+    python: '>=3.13.0rc1,<3.14.0a0'
+    python_abi: 3.13.*
+  url: https://conda.anaconda.org/conda-forge/linux-64/brotli-python-1.1.0-py313h46c70d0_2.conda
+  hash:
+    md5: f6bb3742e17a4af0dc3c8ca942683ef6
+    sha256: da92e5e904465fce33a7a55658b13caa5963cc463c430356373deeda8b2dbc46
+  category: main
+  optional: false
+- name: brotli-python
+  version: 1.1.0
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    __osx: '>=11.0'
+    libcxx: '>=17'
+    python: '>=3.13.0rc1,<3.14.0a0'
+    python_abi: 3.13.*
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-python-1.1.0-py313h3579c5c_2.conda
+  hash:
+    md5: f3bee63c7b5d041d841aff05785c28b7
+    sha256: b0a66572f44570ee7cc960e223ca8600d26bb20cfb76f16b95adf13ec4ee3362
   category: main
   optional: false
 - name: bzip2
@@ -1004,6 +1035,18 @@ package:
     sha256: 4661af0eb9bdcbb5fb33e5d0023b001ad4be828fccdcc56500059d56f9869462
   category: main
   optional: false
+- name: libstdcxx-ng
+  version: 14.2.0
+  manager: conda
+  platform: linux-64
+  dependencies:
+    libstdcxx: 14.2.0
+  url: https://conda.anaconda.org/conda-forge/linux-64/libstdcxx-ng-14.2.0-h4852527_1.conda
+  hash:
+    md5: 8371ac6457591af2cf6159439c1fd051
+    sha256: 25bb30b827d4f6d6f0522cc0579e431695503822f144043b93c50237017fffd8
+  category: main
+  optional: false
 - name: libuuid
   version: 2.38.1
   manager: conda
@@ -1580,6 +1623,32 @@ package:
     sha256: 28a3e3161390a9d23bc02b4419448f8d27679d9e2c250e29849e37749c8de86b
   category: main
   optional: false
+- name: pysocks
+  version: 1.7.1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    __unix: ''
+    python: '>=3.9'
+  url: https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyha55dd90_7.conda
+  hash:
+    md5: 461219d1a5bd61342293efa2c0c90eac
+    sha256: ba3b032fa52709ce0d9fd388f63d330a026754587a2f461117cac9ab73d8d0d8
+  category: main
+  optional: false
+- name: pysocks
+  version: 1.7.1
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    __unix: ''
+    python: '>=3.9'
+  url: https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyha55dd90_7.conda
+  hash:
+    md5: 461219d1a5bd61342293efa2c0c90eac
+    sha256: ba3b032fa52709ce0d9fd388f63d330a026754587a2f461117cac9ab73d8d0d8
+  category: main
+  optional: false
 - name: pytest
   version: 8.3.4
   manager: conda
@@ -1935,6 +2004,34 @@ package:
     sha256: e558f8c254a9ff9164d069110da162fc79497d70c60f2c09a5d3d0d7101c5628
   category: main
   optional: false
+- name: sentry-sdk
+  version: 2.19.2
+  manager: conda
+  platform: linux-64
+  dependencies:
+    certifi: ''
+    python: '>=3.9'
+    urllib3: '>=1.25.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/sentry-sdk-2.19.2-pyhd8ed1ab_1.conda
+  hash:
+    md5: 876522cc7e403cbee3eb11f153be8ca8
+    sha256: f95be8d7088df4e34270d3bca9cc79479f361e5f7cac6b26ae48532a7bb99039
+  category: main
+  optional: false
+- name: sentry-sdk
+  version: 2.19.2
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    certifi: ''
+    python: '>=3.9'
+    urllib3: '>=1.25.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/sentry-sdk-2.19.2-pyhd8ed1ab_1.conda
+  hash:
+    md5: 876522cc7e403cbee3eb11f153be8ca8
+    sha256: f95be8d7088df4e34270d3bca9cc79479f361e5f7cac6b26ae48532a7bb99039
+  category: main
+  optional: false
 - name: setuptools
   version: 75.8.0
   manager: conda
@@ -2269,6 +2366,38 @@ package:
     sha256: 482eac475928c031948790647ae10c2cb1d4a779c2e8f35f5fd1925561b13203
   category: main
   optional: false
+- name: urllib3
+  version: 2.3.0
+  manager: conda
+  platform: linux-64
+  dependencies:
+    brotli-python: '>=1.0.9'
+    h2: '>=4,<5'
+    pysocks: '>=1.5.6,<2.0,!=1.5.7'
+    python: '>=3.9'
+    zstandard: '>=0.18.0'
+  url: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.3.0-pyhd8ed1ab_0.conda
+  hash:
+    md5: 32674f8dbfb7b26410ed580dd3c10a29
+    sha256: 114919ffa80c328127dab9c8e7a38f9d563c617691fb81fccb11c1e86763727e
+  category: main
+  optional: false
+- name: urllib3
+  version: 2.3.0
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    brotli-python: '>=1.0.9'
+    h2: '>=4,<5'
+    pysocks: '>=1.5.6,<2.0,!=1.5.7'
+    python: '>=3.9'
+    zstandard: '>=0.18.0'
+  url: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.3.0-pyhd8ed1ab_0.conda
+  hash:
+    md5: 32674f8dbfb7b26410ed580dd3c10a29
+    sha256: 114919ffa80c328127dab9c8e7a38f9d563c617691fb81fccb11c1e86763727e
+  category: main
+  optional: false
 - name: uvicorn
   version: 0.34.0
   manager: conda
@@ -2483,6 +2612,66 @@ package:
     sha256: 93181a04ba8cfecfdfb162fc958436d868cc37db504c58078eab4c1a3e57fbb7
   category: main
   optional: false
+- name: zstandard
+  version: 0.23.0
+  manager: conda
+  platform: linux-64
+  dependencies:
+    __glibc: '>=2.17,<3.0.a0'
+    cffi: '>=1.11'
+    libgcc: '>=13'
+    python: '>=3.13.0rc1,<3.14.0a0'
+    python_abi: 3.13.*
+    zstd: '>=1.5.6,<1.6.0a0'
+  url: https://conda.anaconda.org/conda-forge/linux-64/zstandard-0.23.0-py313h80202fe_1.conda
+  hash:
+    md5: c178558ff516cd507763ffee230c20b2
+    sha256: ea82f2b8964150a3aa7373b4697e48e64f2200fe68ae554ee85c641c692d1c97
+  category: main
+  optional: false
+- name: zstandard
+  version: 0.23.0
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    __osx: '>=11.0'
+    cffi: '>=1.11'
+    python: '>=3.13.0rc1,<3.14.0a0'
+    python_abi: 3.13.*
+    zstd: '>=1.5.6,<1.6.0a0'
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/zstandard-0.23.0-py313hf2da073_1.conda
+  hash:
+    md5: deebca66926691fadaaf16da05ecb5f9
+    sha256: 12b4e34acff24d291e2626c6610dfd819b8d99a461025ae59affcb6e84bc1d57
+  category: main
+  optional: false
+- name: zstd
+  version: 1.5.6
+  manager: conda
+  platform: linux-64
+  dependencies:
+    libgcc-ng: '>=12'
+    libstdcxx-ng: '>=12'
+    libzlib: '>=1.2.13,<2.0.0a0'
+  url: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.6-ha6fb4c9_0.conda
+  hash:
+    md5: 4d056880988120e29d75bfff282e0f45
+    sha256: c558b9cc01d9c1444031bd1ce4b9cff86f9085765f17627a6cd85fc623c8a02b
+  category: main
+  optional: false
+- name: zstd
+  version: 1.5.6
+  manager: conda
+  platform: osx-arm64
+  dependencies:
+    __osx: '>=11.0'
+    libzlib: '>=1.2.13,<2.0.0a0'
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.6-hb46c0d2_0.conda
+  hash:
+    md5: d96942c06c3e84bfcc5efb038724a7fd
+    sha256: 2d4fd1ff7ee79cd954ca8e81abf11d9d49954dd1fef80f27289e2402ae9c2e09
+  category: main
+  optional: false
 - name: jinja-partials
   version: 0.2.1
   manager: pip
@@ -2503,51 +2692,5 @@ package:
   url: https://files.pythonhosted.org/packages/a7/f3/74e62cdc6b91724826bfcd8cc52de08392fc3973e95d0e1ba11966f82873/jinja_partials-0.2.1-py3-none-any.whl
   hash:
     sha256: c23a5217251350ef75b8368ce59fa7e43463cd61a11fde1b2c869b2011abb953
-  category: main
-  optional: false
-- name: sentry-sdk
-  version: 2.19.2
-  manager: pip
-  platform: linux-64
-  dependencies:
-    urllib3: '>=1.26.11'
-    certifi: '*'
-    fastapi: '>=0.79.0'
-  url: https://files.pythonhosted.org/packages/31/4d/74597bb6bcc23abc774b8901277652c61331a9d4d0a8d1bdb20679b9bbcb/sentry_sdk-2.19.2-py2.py3-none-any.whl
-  hash:
-    sha256: ebdc08228b4d131128e568d696c210d846e5b9d70aa0327dec6b1272d9d40b84
-  category: main
-  optional: false
-- name: sentry-sdk
-  version: 2.19.2
-  manager: pip
-  platform: osx-arm64
-  dependencies:
-    urllib3: '>=1.26.11'
-    certifi: '*'
-    fastapi: '>=0.79.0'
-  url: https://files.pythonhosted.org/packages/31/4d/74597bb6bcc23abc774b8901277652c61331a9d4d0a8d1bdb20679b9bbcb/sentry_sdk-2.19.2-py2.py3-none-any.whl
-  hash:
-    sha256: ebdc08228b4d131128e568d696c210d846e5b9d70aa0327dec6b1272d9d40b84
-  category: main
-  optional: false
-- name: urllib3
-  version: 2.3.0
-  manager: pip
-  platform: linux-64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/c8/19/4ec628951a74043532ca2cf5d97b7b14863931476d117c471e8e2b1eb39f/urllib3-2.3.0-py3-none-any.whl
-  hash:
-    sha256: 1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df
-  category: main
-  optional: false
-- name: urllib3
-  version: 2.3.0
-  manager: pip
-  platform: osx-arm64
-  dependencies: {}
-  url: https://files.pythonhosted.org/packages/c8/19/4ec628951a74043532ca2cf5d97b7b14863931476d117c471e8e2b1eb39f/urllib3-2.3.0-py3-none-any.whl
-  hash:
-    sha256: 1cee9ad369867bfdbbb48b7dd50374c0967a0bb7710050facf0dd6911440e3df
   category: main
   optional: false
