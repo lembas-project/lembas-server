@@ -51,4 +51,12 @@ down:  ## Remove Tilt managed resources
 ci: cluster  ## Run Tilt in CI mode
 	tilt ci $(RESOURCES) --namespace $(NAMESPACE) --port $(TILT_PORT)
 
+
+short_commit ?= $(shell git log -1 --pretty=%H | cut -c -7)
+
+deploy:
+	fly deploy \
+		-e SENTRY_RELEASE=$(short_commit) \
+		-e APP_REVISION=$(short_commit)
+
 .PHONY: $(MAKECMDGOALS)

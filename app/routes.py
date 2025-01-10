@@ -1,8 +1,10 @@
 import logging
+from http import HTTPStatus
 from typing import Annotated
 
 import httpx
 from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.components import Homepage
@@ -52,8 +54,13 @@ async def auth_callback(
                 "Accept": "application/json",
             },
         )
+
     # TODO: Add Error handling for non-200 responses
     data = resp.json()
+
+    if data.get("error", "") == "bad_verification_code":
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+
     access_token = data["access_token"]
 
     response = RedirectResponse("/")

@@ -11,6 +11,6 @@ jobs:
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683   # v4.2.2
     - uses: superfly/flyctl-actions/setup-flyctl@master
-    - run: flyctl deploy --remote-only
+    - run: make deploy
       env:
         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
