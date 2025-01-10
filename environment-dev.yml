@@ -10,6 +10,8 @@ dependencies:
 - pytest-asyncio=0.25.2
 # renovate: datasource=conda depName=conda-forge/pytest-env
 - pytest-env=1.1.5
+# renovate: datasource=conda depName=conda-forge/pytest-mock
+- pytest-mock=3.14.0
 # renovate: datasource=conda depName=conda-forge/mypy
 - mypy=1.14.1
 variables:
