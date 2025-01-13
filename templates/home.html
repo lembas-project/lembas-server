@@ -37,11 +37,13 @@
         </div>
       </div>
     </nav>
-    {% if user %} {{ UserCard(user=user) }} {% endif %}
+    {% if user %} {{ UserCard(user=user) }}
 
-    <!--<div class="fade-me-in">-->
-    <!--{{ render_partial("partials/project_list.html", projects=projects) }}-->
-    <!--</div>-->
+    <div class="fade-me-in">
+      {{ render_partial("partials/project_list.html", projects=projects) }}
+    </div>
+
+    {% endif %}
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
