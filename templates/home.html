@@ -37,7 +37,9 @@
         </div>
       </div>
     </nav>
-    {% if user %} {{ UserCard(user=user) }}
+    {% if user %}
+
+    <!--{{ UserCard(user=user) }}-->
 
     <div class="fade-me-in">
       {{ render_partial("partials/project_list.html", projects=projects) }}
