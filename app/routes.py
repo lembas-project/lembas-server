@@ -51,7 +51,7 @@ async def delete_project_by_id(id: int) -> HTMLResponse:
     return RedirectResponse("/projects", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/healthz")
+@router.get("/api/healthz")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
