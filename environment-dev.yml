@@ -5,7 +5,7 @@ dependencies:
 # renovate: datasource=conda depName=conda-forge/pytest
 - pytest=8.3.4
 # renovate: datasource=conda depName=conda-forge/pre-commit
-- pre-commit=4.0.1
+- pre-commit=4.1.0
 # renovate: datasource=conda depName=conda-forge/pytest-asyncio
 - pytest-asyncio=0.25.2
 # renovate: datasource=conda depName=conda-forge/pytest-env
