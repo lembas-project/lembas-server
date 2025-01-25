@@ -34,7 +34,7 @@ async def get_projects_list(
         return Homepage(
             projects=projects,
             login_url=config.login_url,
-            logout_url=request.url_for("auth_logout"),
+            logout_url=str(request.url_for("auth_logout")),
             user=user,
         ).render()
     else:

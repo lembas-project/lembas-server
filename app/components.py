@@ -1,8 +1,5 @@
-from typing import Any
-
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from starlette.datastructures import URL
 
 from app.models import User
 from app.templates import render_template
@@ -34,24 +31,10 @@ class UserCard(Component):
     user: User
 
 
-class URLString(str):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v: Any, *_) -> str:
-        if isinstance(v, URL):
-            return str(v)
-        elif isinstance(v, str):
-            return v
-        raise ValueError(f"Invalid URL: {v}")
-
-
 class Homepage(Component):
     __template_path__ = "home.html"
 
     user: User | None
-    login_url: URLString
-    logout_url: URLString
+    login_url: str
+    logout_url: str
     projects: list = []
