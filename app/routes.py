@@ -45,7 +45,7 @@ async def get_projects_list(
 
 
 @router.delete("/projects/{id}")
-async def delete_project_by_id(id: int) -> HTMLResponse:
+async def delete_project_by_id(id: int) -> RedirectResponse:
     """Delete a project by its ID and re-render the projects list."""
     await db.delete_project(id)
     return RedirectResponse("/projects", status_code=status.HTTP_303_SEE_OTHER)
