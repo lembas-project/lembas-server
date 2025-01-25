@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import db
@@ -58,7 +58,7 @@ async def health() -> dict[str, str]:
 @router.get("/auth/callback")
 async def auth_callback(
     request: Request,
-    code: str,
+    code: Annotated[str, Query],
     config: Annotated[Settings, Depends(config)],
 ) -> RedirectResponse:
     response = RedirectResponse(request.url_for("home"))
