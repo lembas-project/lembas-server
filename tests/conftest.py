@@ -20,13 +20,18 @@ def app() -> FastAPI:
 
 
 @pytest.fixture(scope="session")
-async def client_factory(app: FastAPI) -> AsyncIterator[ClientFactory]:
+def base_url() -> str:
+    return "http://test"
+
+
+@pytest.fixture(scope="session")
+async def client_factory(app: FastAPI, base_url: str) -> AsyncIterator[ClientFactory]:
     """A factory to construct an HTTPX AsyncClient."""
     clients = []
 
     def create_client() -> httpx.AsyncClient:
         transport = httpx.ASGITransport(app=app)  # type: ignore
-        client_ = httpx.AsyncClient(transport=transport, base_url="http://test")
+        client_ = httpx.AsyncClient(transport=transport, base_url=base_url)
         clients.append(client_)
         return client_
 

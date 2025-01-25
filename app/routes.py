@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import db
@@ -24,6 +24,7 @@ async def home() -> RedirectResponse:
 
 @router.get("/projects")
 async def get_projects_list(
+    request: Request,
     user: Annotated[User | None, Depends(current_user)],
     config: Annotated[Settings, Depends(config)],
     is_partial_request: Annotated[bool, Depends(is_partial_request)] = False,
@@ -33,22 +34,20 @@ async def get_projects_list(
         return Homepage(
             projects=projects,
             login_url=config.login_url,
-            # TODO: Use request.url_for
-            logout_url="/auth/logout",
+            logout_url=str(request.url_for("auth_logout")),
             user=user,
         ).render()
     else:
-        response = render_template("partials/project_list.html", projects=projects)
-
-        return response
-        return HTMLResponse(content=response)
+        return render_template("partials/project_list.html", projects=projects)
 
 
 @router.delete("/projects/{id}")
-async def delete_project_by_id(id: int) -> RedirectResponse:
+async def delete_project_by_id(request: Request, id: int) -> RedirectResponse:
     """Delete a project by its ID and re-render the projects list."""
     await db.delete_project(id)
-    return RedirectResponse("/projects", status_code=status.HTTP_303_SEE_OTHER)
+    return RedirectResponse(
+        request.url_for("get_projects_list"), status_code=status.HTTP_303_SEE_OTHER
+    )
 
 
 @router.get("/api/healthz")
@@ -58,10 +57,11 @@ async def health() -> dict[str, str]:
 
 @router.get("/auth/callback")
 async def auth_callback(
-    code: str,
+    request: Request,
+    code: Annotated[str, Query],
     config: Annotated[Settings, Depends(config)],
 ) -> RedirectResponse:
-    response = RedirectResponse("/")
+    response = RedirectResponse(request.url_for("home"))
 
     if access_token := await exchange_code_for_token(code, config):
         response.set_cookie(key="access_token", value=access_token)
@@ -70,8 +70,8 @@ async def auth_callback(
 
 
 @router.get("/auth/logout")
-async def auth_logout() -> RedirectResponse:
+async def auth_logout(request: Request) -> RedirectResponse:
     # TODO: https://docs.github.com/en/rest/apps/oauth-applications?apiVersion=2022-11-28#delete-an-app-token
-    response = RedirectResponse("/")
+    response = RedirectResponse(request.url_for("home"))
     response.delete_cookie(key="access_token")
     return response
