@@ -9,11 +9,6 @@
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   </head>
   <body>
-    {% if not user %}
-    <div class="flex justify-center items-center h-screen">
-      {{ LinkButton(url=login_url, text="Login") }}
-    </div>
-    {% else %}
     <nav class="bg-white shadow-lg">
       <div class="max-w-6xl mx-auto px-4">
         <div class="flex justify-between items-center py-4">
@@ -31,32 +26,24 @@
           </div>
 
           <div class="flex items-center space-x-4">
-            <!-- New Project button -->
-            <button
-              class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
-            >
-              New Project
-            </button>
-
+            {% if user %} {{ LinkButton(url=logout_url, text="Logout") }}
             <img
               class="h-8 w-8 rounded-full"
               src="{{ user.avatar_url }}"
               alt="Avatar"
             />
+            {% else %} {{ LinkButton(url=login_url, text="Login") }} {% endif %}
           </div>
         </div>
       </div>
     </nav>
+    {% if user %}
 
-    <div class="flex justify-center items-center">
-      {{ LinkButton(url=logout_url, text="Logout") }}
+    <!--{{ UserCard(user=user) }}-->
+
+    <div class="fade-me-in">
+      {{ render_partial("partials/project_list.html", projects=projects) }}
     </div>
-
-    {{ UserCard(user=user) }}
-
-    <!--<div class="fade-me-in">-->
-    <!--{{ render_partial("partials/project_list.html", projects=projects) }}-->
-    <!--</div>-->
 
     {% endif %}
 
@@ -75,5 +62,32 @@
         });
       });
     </script>
+
+    {% if live_reload_mode %}
+    <script id="__bs_script__">
+      //<![CDATA[
+      (function () {
+        try {
+          var script = document.createElement("script");
+          if ("async") {
+            script.async = true;
+          }
+          script.src =
+            "http://HOST:3001/browser-sync/browser-sync-client.js?v=2.29.3".replace(
+              "HOST",
+              location.hostname,
+            );
+          if (document.body) {
+            document.body.appendChild(script);
+          } else if (document.head) {
+            document.head.appendChild(script);
+          }
+        } catch (e) {
+          console.error("Browsersync: could not append script tag", e);
+        }
+      })();
+      //]]>
+    </script>
+    {% endif %}
   </body>
 </html>

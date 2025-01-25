@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "browser-sync": "^2.26.13",
     "tailwindcss": "^3.4.17"
   }
 }

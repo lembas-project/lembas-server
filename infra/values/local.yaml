@@ -5,11 +5,11 @@ ports:
 
 livenessProbe:
   httpGet:
-    path: /healthz
+    path: /api/healthz
 
 readinessProbe:
   httpGet:
-    path: /healthz
+    path: /api/healthz
 
 autoscaling:
   enabled: false

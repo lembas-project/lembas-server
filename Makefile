@@ -51,6 +51,16 @@ down:  ## Remove Tilt managed resources
 ci: cluster  ## Run Tilt in CI mode
 	tilt ci $(RESOURCES) --namespace $(NAMESPACE) --port $(TILT_PORT)
 
+dev:  ## Serve them in live-reload mode
+	@echo "Starting all processes..."
+	@trap 'kill 0' EXIT; \
+	{ \
+	  LIVE_RELOAD_MODE=true conda run --prefix ./envs/dev --live-stream fastapi dev --port 8001 & \
+	  npx browser-sync start --config bs-config.json & \
+	  npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch & \
+	  open http://localhost:8001 & \
+	  wait; \
+	}
 
 short_commit ?= $(shell git log -1 --pretty=%H | cut -c -7)
 
