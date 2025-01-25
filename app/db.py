@@ -10,7 +10,7 @@ async def get_projects() -> list[Project]:
 async def add_project(name: str) -> Project:
     new_id = max(id for id in PROJECTS.keys()) + 1
     project = Project(id=new_id, name=name)
-    PROJECTS.add(project)
+    PROJECTS[new_id] = project
     return project
 
 
