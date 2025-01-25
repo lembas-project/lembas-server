@@ -38,10 +38,7 @@ async def get_projects_list(
             user=user,
         ).render()
     else:
-        response = render_template("partials/project_list.html", projects=projects)
-
-        return response
-        return HTMLResponse(content=response)
+        return render_template("partials/project_list.html", projects=projects)
 
 
 @router.delete("/projects/{id}")
