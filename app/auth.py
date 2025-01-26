@@ -5,6 +5,9 @@ from app.settings import Settings
 
 async def exchange_code_for_token(code: str, config: Settings) -> str | None:
     """Retrieve an access token based on the code from the authorization flow."""
+    if config.dummy_auth:
+        return "dummy-token"
+
     async with httpx.AsyncClient() as client:
         resp = await client.post(
             config.token_url,

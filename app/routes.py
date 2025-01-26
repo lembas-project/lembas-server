@@ -57,8 +57,14 @@ async def health() -> dict[str, str]:
 
 @router.get("/auth/login")
 async def auth_login(
+    request: Request,
     config: Annotated[Settings, Depends(config)],
 ) -> RedirectResponse:
+    if config.dummy_auth:
+        return RedirectResponse(
+            request.url_for("auth_callback").include_query_params(code="dummy-code")
+        )
+
     return RedirectResponse(config.login_url)
 
 
