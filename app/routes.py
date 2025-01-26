@@ -27,7 +27,7 @@ async def get_projects_list(
     request: Request,
     user: Annotated[User | None, Depends(current_user)],
     config: Annotated[Settings, Depends(config)],
-    is_partial_request: Annotated[bool, Depends(is_partial_request)] = False,
+    is_partial_request: Annotated[bool, Depends(is_partial_request)],
 ) -> HTMLResponse:
     projects = await db.get_projects()
     if not is_partial_request:
