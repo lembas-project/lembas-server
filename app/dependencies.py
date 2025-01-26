@@ -15,12 +15,13 @@ async def current_user(
     config: Annotated[Settings, Depends(config)],
     access_token: Annotated[str | None, Cookie()] = None,
 ) -> User | None:
-    if access_token is not None:
-        if config.dummy_auth:
-            return User(login="dummy")
-        user = await get_user_from_token(access_token)
-        return user
-    return None
+    if access_token is None:
+        return None
+
+    if config.dummy_auth:
+        return User(login="dummy")
+
+    return await get_user_from_token(access_token)
 
 
 async def is_partial_request(
