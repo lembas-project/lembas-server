@@ -18,8 +18,8 @@ router = APIRouter()
 
 
 @router.get("/")
-async def home() -> RedirectResponse:
-    return RedirectResponse("/projects")
+async def home(request: Request) -> RedirectResponse:
+    return RedirectResponse(request.url_for("get_projects_list"))
 
 
 @router.get("/projects")
