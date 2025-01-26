@@ -1,24 +1,10 @@
 from typing import Annotated
 
-import httpx
 from fastapi import Cookie, Depends, Header, Request
 
+from app.auth import get_user_from_token
 from app.models import User
 from app.settings import Settings
-
-
-async def _get_user_from_token(token: str) -> User:
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(
-            "https://api.github.com/user",
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-            },
-        )
-    data = resp.json()
-    return User(**data)
 
 
 def config(request: Request) -> Settings:
@@ -32,7 +18,7 @@ async def current_user(
     if access_token is not None:
         if config.dummy_auth:
             return User(login="dummy")
-        user = await _get_user_from_token(access_token)
+        user = await get_user_from_token(access_token)
         return user
     return None
 
