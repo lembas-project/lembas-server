@@ -9,7 +9,7 @@ dependencies:
 # renovate: datasource=conda depName=conda-forge/fastapi
 - fastapi=0.115.6
 # renovate: datasource=conda depName=conda-forge/pydantic
-- pydantic=2.10.5
+- pydantic=2.10.6
 # renovate: datasource=conda depName=conda-forge/pydantic-settings
 - pydantic-settings=2.7.1
 # renovate: datasource=conda depName=conda-forge/jinja2
