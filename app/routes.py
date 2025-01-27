@@ -18,8 +18,8 @@ router = APIRouter()
 
 
 @router.get("/")
-async def home() -> RedirectResponse:
-    return RedirectResponse("/projects")
+async def home(request: Request) -> RedirectResponse:
+    return RedirectResponse(request.url_for("get_projects_list"))
 
 
 @router.get("/projects")
@@ -27,13 +27,13 @@ async def get_projects_list(
     request: Request,
     user: Annotated[User | None, Depends(current_user)],
     config: Annotated[Settings, Depends(config)],
-    is_partial_request: Annotated[bool, Depends(is_partial_request)] = False,
+    is_partial_request: Annotated[bool, Depends(is_partial_request)],
 ) -> HTMLResponse:
     projects = await db.get_projects()
     if not is_partial_request:
         return Homepage(
             projects=projects,
-            login_url=config.login_url,
+            login_url=str(request.url_for("auth_login")),
             logout_url=str(request.url_for("auth_logout")),
             user=user,
         ).render()
@@ -53,6 +53,19 @@ async def delete_project_by_id(request: Request, id: int) -> RedirectResponse:
 @router.get("/api/healthz")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/auth/login")
+async def auth_login(
+    request: Request,
+    config: Annotated[Settings, Depends(config)],
+) -> RedirectResponse:
+    if config.dummy_auth:
+        return RedirectResponse(
+            request.url_for("auth_callback").include_query_params(code="dummy-code")
+        )
+
+    return RedirectResponse(config.login_url)
 
 
 @router.get("/auth/callback")
