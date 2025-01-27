@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class User(BaseModel):
-    username: str = Field(validation_alias="login")
+    username: str = Field(alias="login", serialization_alias="username")
     name: str | None = None
     avatar_url: str = ""
 
