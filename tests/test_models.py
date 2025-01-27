@@ -1,7 +1,7 @@
 from app.models import User
 
 
-def test_user_model_serialization():
+def test_user_model_serialization() -> None:
     user = User(login="something", name="Someone Awesome", avatar_url="https://my-picture")
     data = user.model_dump()
     assert data == {
