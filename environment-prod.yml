@@ -5,7 +5,7 @@ dependencies:
 # renovate: datasource=conda depName=conda-forge/python
 - python=3.13.1
 # renovate: datasource=conda depName=conda-forge/pip
-- pip=24.3.1
+- pip=25.0
 # renovate: datasource=conda depName=conda-forge/fastapi
 - fastapi=0.115.6
 # renovate: datasource=conda depName=conda-forge/pydantic
