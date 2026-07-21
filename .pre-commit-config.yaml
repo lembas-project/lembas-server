@@ -15,15 +15,6 @@ repos:
   rev: v3.19.1
   hooks:
   - id: pyupgrade
-- repo: https://github.com/anaconda/pre-commit-hooks
-  rev: v24.5.2
-  hooks:
-  - id: generate-renovate-annotations
-    args:
-    - --create-command
-    - conda project install --all
-    - --environment-selector
-    - -p ./envs/dev
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.9.1
   hooks:

@@ -1,5 +1,5 @@
-# Conda environment directory
-/envs/
+# Pixi environment directory
+.pixi/
 
 # Node modules
 node_modules/
