@@ -171,7 +171,7 @@ def _row_to_case(row: sqlite3.Row) -> CaseRun:
         duration_seconds=row["duration_seconds"],
         results=json.loads(row["results"]) if row["results"] else {},
         error_message=row["error_message"],
-        environment=json.loads(row["environment"]) if row["environment"] else None,
+        environment=json.loads(row["environment"]) if row["environment"] else {},
     )
 
 
