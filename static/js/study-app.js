@@ -101,17 +101,57 @@ function StatCard({ label, value, color }) {
 }
 
 // ---------------------------------------------------------------------------
+// Format helpers
+// ---------------------------------------------------------------------------
+
+function formatNumber(val) {
+  if (val === null || val === undefined) return "—";
+  if (typeof val !== "number") return String(val);
+  if (Math.abs(val) < 0.01 || Math.abs(val) >= 10000) {
+    return val.toExponential(2);
+  }
+  return val.toFixed(2);
+}
+
+function formatInput(key, val) {
+  if (key === "froude_num") return "Fr=" + formatNumber(val);
+  if (key === "angle_of_attack") return formatNumber(val) + "°";
+  return formatNumber(val);
+}
+
+// ---------------------------------------------------------------------------
 // Case table
 // ---------------------------------------------------------------------------
 
-function CaseRow({ run, selected, onSelect }) {
-  const fc = run.results?.force_coefficients;
+function CaseRow({ run, selected, onSelect, resultKeys }) {
+  const results = run.results || {};
+  const inputs = run.inputs || {};
   const rowStyle = {
     cursor: "pointer",
     borderBottom: "1px solid #0d2035",
     background: selected ? "#0f2a45" : "transparent",
   };
   const cellStyle = { padding: "8px 12px" };
+
+  // Build input cells - show first 2 inputs
+  const inputKeys = Object.keys(inputs).slice(0, 2);
+  const inputCells = inputKeys.map(function (k) {
+    return h(
+      "td",
+      { key: k, style: { ...cellStyle, fontSize: 12, color: "#7eb8f7" } },
+      formatInput(k, inputs[k]),
+    );
+  });
+
+  // Build result cells - show first 3 result values
+  const resultCells = resultKeys.slice(0, 3).map(function (k) {
+    const val = results[k];
+    return h(
+      "td",
+      { key: k, style: { ...cellStyle, fontSize: 13, color: "#e2e8f0" } },
+      formatNumber(val),
+    );
+  });
 
   return h(
     "tr",
@@ -138,31 +178,8 @@ function CaseRow({ run, selected, onSelect }) {
       run.case_id.slice(0, 8),
     ),
     h("td", { style: cellStyle }, h(StatusBadge, { status: run.status })),
-    h(
-      "td",
-      { style: { ...cellStyle, fontSize: 12, color: "#7eb8f7" } },
-      "Fr=" + (run.inputs?.froude_num ?? "?"),
-    ),
-    h(
-      "td",
-      { style: { ...cellStyle, fontSize: 12, color: "#7eb8f7" } },
-      (run.inputs?.angle_of_attack ?? "?") + "°",
-    ),
-    h(
-      "td",
-      { style: { ...cellStyle, fontSize: 13, color: "#e2e8f0" } },
-      fc ? fc.lift_coefficient.toFixed(4) : "—",
-    ),
-    h(
-      "td",
-      { style: { ...cellStyle, fontSize: 13, color: "#e2e8f0" } },
-      fc ? fc.drag_coefficient.toFixed(4) : "—",
-    ),
-    h(
-      "td",
-      { style: { ...cellStyle, fontSize: 13, color: "#94a3b8" } },
-      fc ? fc.lift_to_drag_ratio.toFixed(1) : "—",
-    ),
+    inputCells,
+    resultCells,
     h(
       "td",
       { style: { ...cellStyle, fontSize: 11, color: "#4a6a8a" } },
@@ -172,7 +189,8 @@ function CaseRow({ run, selected, onSelect }) {
 }
 
 function CaseDetail({ run, onClose }) {
-  const fc = run.results?.force_coefficients;
+  const results = run.results || {};
+  const inputs = run.inputs || {};
 
   const KV = ({ k, v, accent }) =>
     h(
@@ -218,6 +236,21 @@ function CaseDetail({ run, onClose }) {
       ),
       children,
     );
+
+  // Build results display
+  const resultKeys = Object.keys(results);
+  const resultColors = ["#22d3a0", "#f59e0b", "#7eb8f7", "#e879f9"];
+  const resultsContent =
+    resultKeys.length > 0
+      ? resultKeys.map(function (k, i) {
+          return h(KV, {
+            key: k,
+            k: k,
+            v: formatNumber(results[k]),
+            accent: resultColors[i % resultColors.length],
+          });
+        })
+      : h("span", { style: { color: "#4a6a8a", fontSize: 12 } }, "No results");
 
   return h(
     "div",
@@ -269,39 +302,11 @@ function CaseDetail({ run, onClose }) {
     h(
       Section,
       { title: "Inputs" },
-      Object.entries(run.inputs || {}).map(([k, v]) =>
-        h(KV, { key: k, k: k, v: String(v) }),
+      Object.entries(inputs).map(([k, v]) =>
+        h(KV, { key: k, k: k, v: formatNumber(v) }),
       ),
     ),
-    h(
-      Section,
-      { title: "Results" },
-      fc
-        ? [
-            h(KV, {
-              key: "cl",
-              k: "lift_coefficient",
-              v: fc.lift_coefficient.toFixed(6),
-              accent: "#22d3a0",
-            }),
-            h(KV, {
-              key: "cd",
-              k: "drag_coefficient",
-              v: fc.drag_coefficient.toFixed(6),
-              accent: "#f59e0b",
-            }),
-            h(KV, {
-              key: "ld",
-              k: "L/D ratio",
-              v: fc.lift_to_drag_ratio.toFixed(3),
-            }),
-          ]
-        : h(
-            "span",
-            { style: { color: "#4a6a8a", fontSize: 12 } },
-            "No results",
-          ),
-    ),
+    h(Section, { title: "Results" }, resultsContent),
     h(
       Section,
       { title: "Environment" },
@@ -322,58 +327,6 @@ function CaseDetail({ run, onClose }) {
 }
 
 // ---------------------------------------------------------------------------
-// Generate demo data
-// ---------------------------------------------------------------------------
-
-function generateDemoData() {
-  const runs = [];
-  const froude_nums = [0.3, 0.5, 0.8, 1.2];
-  const aoas = [0.0, 5.0, 10.0];
-
-  for (let i = 0; i < 12; i++) {
-    const fn = froude_nums[Math.floor(i / 3)];
-    const aoa = aoas[i % 3];
-    const alpha = (aoa * Math.PI) / 180;
-    const cl = 2 * Math.PI * alpha;
-    const cd = Math.max(0.001, 0.002 + (cl * cl) / (Math.PI * 8));
-
-    runs.push({
-      case_id: (i * 0x1a3f + 0x7c2b).toString(16).padStart(8, "0") + "cafe",
-      handler: "PlaningPlateCase",
-      inputs: { froude_num: fn, angle_of_attack: aoa, chord_length: 1.0 },
-      status: "complete",
-      duration_seconds: 0.8 + Math.random() * 0.4,
-      results: {
-        force_coefficients: {
-          lift_coefficient: parseFloat(cl.toFixed(4)),
-          drag_coefficient: parseFloat(cd.toFixed(4)),
-          lift_to_drag_ratio: parseFloat((cl / cd).toFixed(2)),
-        },
-      },
-      environment: {
-        conda_env: "lembas-dev",
-        python_version: "3.12.3",
-        platform: "macOS-14.5",
-      },
-    });
-  }
-
-  return {
-    study_id: "demo123",
-    meta: {
-      name: "planing-plate-froude-sweep",
-      description:
-        "Parametric study of a planing flat plate across Froude numbers and angles of attack",
-      tags: ["hydrodynamics", "planing", "parametric"],
-      plugins: ["lembas-planing-plate>=0.1.0"],
-    },
-    pushed_at: new Date().toISOString(),
-    pushed_by: "demo",
-    runs: runs,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Main App
 // ---------------------------------------------------------------------------
 
@@ -382,7 +335,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedRun, setSelectedRun] = useState(null);
-  const [sortKey, setSortKey] = useState("froude_num");
+  const [sortKey, setSortKey] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
 
   // Fetch study data on mount
@@ -404,13 +357,74 @@ function App() {
           setLoading(false);
         });
     } else {
-      // Demo mode
-      setStudy(generateDemoData());
+      // Demo mode - generate data matching real structure
+      const runs = [];
+      const froude_nums = [0.5, 1.0, 1.5, 2.0];
+      const aoas = [5.0, 7.5, 10.0, 12.5, 15.0];
+
+      froude_nums.forEach(function (fn) {
+        aoas.forEach(function (aoa) {
+          runs.push({
+            case_id:
+              Math.random().toString(16).slice(2, 10) +
+              Math.random().toString(16).slice(2, 10),
+            handler: "PlaningPlateCase",
+            inputs: { froude_num: fn, angle_of_attack: aoa },
+            status: "complete",
+            duration_seconds: 0.001 + Math.random() * 0.002,
+            results: {
+              drag: 5 + fn * 10 + aoa * 3 + Math.random() * 2,
+              lift: 50 + fn * 20 + aoa * 10 + Math.random() * 5,
+              moment: -10 - fn * 2 - aoa * 0.5 + Math.random() * 2,
+            },
+            environment: {},
+          });
+        });
+      });
+
+      setStudy({
+        study_id: "demo123456789",
+        meta: {
+          name: "planing-plate-froude-sweep",
+          description:
+            "Parametric study of planing flat plate across Froude numbers and angles of attack",
+          tags: ["hydrodynamics", "planing", "parametric"],
+          plugins: [],
+        },
+        pushed_at: new Date().toISOString(),
+        pushed_by: "demo",
+        runs: runs,
+      });
       setLoading(false);
     }
   }, []);
 
-  // Compute sorted/filtered runs - always call useMemo, handle null inside
+  // Discover input and result keys from the data
+  const { inputKeys, resultKeys } = useMemo(
+    function () {
+      if (!study || !study.runs || study.runs.length === 0) {
+        return { inputKeys: [], resultKeys: [] };
+      }
+      const firstRun = study.runs[0];
+      return {
+        inputKeys: Object.keys(firstRun.inputs || {}),
+        resultKeys: Object.keys(firstRun.results || {}),
+      };
+    },
+    [study],
+  );
+
+  // Default sort key to first input
+  useEffect(
+    function () {
+      if (!sortKey && inputKeys.length > 0) {
+        setSortKey(inputKeys[0]);
+      }
+    },
+    [inputKeys, sortKey],
+  );
+
+  // Compute sorted/filtered runs
   const sortedRuns = useMemo(
     function () {
       if (!study || !study.runs) return [];
@@ -423,26 +437,26 @@ function App() {
         });
       }
 
-      runs.sort(function (a, b) {
-        const aFr = a.inputs?.froude_num ?? 0;
-        const bFr = b.inputs?.froude_num ?? 0;
-        const aAoa = a.inputs?.angle_of_attack ?? 0;
-        const bAoa = b.inputs?.angle_of_attack ?? 0;
-        const aCl = a.results?.force_coefficients?.lift_coefficient ?? 0;
-        const bCl = b.results?.force_coefficients?.lift_coefficient ?? 0;
-
-        if (sortKey === "froude_num") return aFr - bFr;
-        if (sortKey === "angle_of_attack") return aAoa - bAoa;
-        if (sortKey === "cl") return bCl - aCl;
-        return 0;
-      });
+      if (sortKey) {
+        runs.sort(function (a, b) {
+          // Try inputs first
+          if (a.inputs && a.inputs[sortKey] !== undefined) {
+            return (a.inputs[sortKey] || 0) - (b.inputs[sortKey] || 0);
+          }
+          // Try results
+          if (a.results && a.results[sortKey] !== undefined) {
+            return (b.results[sortKey] || 0) - (a.results[sortKey] || 0);
+          }
+          return 0;
+        });
+      }
 
       return runs;
     },
     [study, sortKey, filterStatus],
   );
 
-  // Compute status counts - always call useMemo
+  // Compute status counts
   const statusCounts = useMemo(
     function () {
       if (!study || !study.runs) return {};
@@ -543,8 +557,9 @@ function App() {
     },
   );
 
-  // Build sort buttons
-  const sortButtons = ["froude_num", "angle_of_attack", "cl"].map(function (k) {
+  // Build sort buttons from inputs + results
+  const sortOptions = inputKeys.slice(0, 2).concat(resultKeys.slice(0, 2));
+  const sortButtons = sortOptions.map(function (k) {
     return h(
       "button",
       {
@@ -595,6 +610,7 @@ function App() {
       onSelect: function (r) {
         setSelectedRun(selectedRun?.case_id === r.case_id ? null : r);
       },
+      resultKeys: resultKeys,
     });
   });
 
@@ -603,18 +619,12 @@ function App() {
     return h(Tag, { key: t, label: t });
   });
 
-  // Build table headers
-  const tableHeaders = [
-    "ID",
-    "Status",
-    "Froude",
-    "AoA",
-    "CL",
-    "CD",
-    "L/D",
-    "Time",
-  ].map(function (hdr) {
-    return h("th", { key: hdr, style: colStyle }, hdr);
+  // Build table headers dynamically
+  const inputHeaders = inputKeys.slice(0, 2).map(function (k) {
+    return h("th", { key: k, style: colStyle }, k);
+  });
+  const resultHeaders = resultKeys.slice(0, 3).map(function (k) {
+    return h("th", { key: k, style: colStyle }, k);
   });
 
   return h(
@@ -717,7 +727,7 @@ function App() {
           "div",
           { style: { marginTop: 10, fontSize: 11, color: "#2a5070" } },
           "pushed by ",
-          h("span", { style: { color: "#4a7a9b" } }, study.pushed_by),
+          h("span", { style: { color: "#4a7a9b" } }, study.pushed_by || "—"),
           " · ",
           new Date(study.pushed_at).toLocaleString(),
         ),
@@ -792,7 +802,19 @@ function App() {
           h(
             "table",
             { style: { width: "100%", borderCollapse: "collapse" } },
-            h("thead", null, h("tr", null, tableHeaders)),
+            h(
+              "thead",
+              null,
+              h(
+                "tr",
+                null,
+                h("th", { style: colStyle }, "ID"),
+                h("th", { style: colStyle }, "Status"),
+                inputHeaders,
+                resultHeaders,
+                h("th", { style: colStyle }, "Time"),
+              ),
+            ),
             h("tbody", null, tableRows),
           ),
         ),
