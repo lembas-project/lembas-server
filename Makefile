@@ -55,7 +55,7 @@ dev:  ## Serve them in live-reload mode
 	@echo "Starting all processes..."
 	@trap 'kill 0' EXIT; \
 	{ \
-	  LIVE_RELOAD_MODE=true conda run --prefix ./envs/dev --live-stream fastapi dev --port 8001 & \
+	  LIVE_RELOAD_MODE=true pixi run dev & \
 	  npx browser-sync start --config bs-config.json & \
 	  npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch & \
 	  open http://localhost:8001 & \

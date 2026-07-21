@@ -1,55 +1,38 @@
-FROM node:23@sha256:2f73096d856b0b9d6fa43002edb619f1527f939bab870eab6c909f633bcf56e9 AS tailwind
-
-# Set the working directory in the container
-WORKDIR /app
-
-# Copy package.json and package-lock.json (if available)
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the required code
-COPY tailwind.config.js ./
-COPY static/ ./static
-COPY templates/ ./templates
-
-# Generate CSS using Tailwind CSS CLI
-# Adjust the input and output paths as needed
-RUN npx tailwindcss -i ./static/css/input.css -o ./output.css
-
-FROM --platform=linux/amd64 continuumio/miniconda3:24.11.1-0@sha256:6a66425f001f739d4778dd732e020afeb06175f49478fafc3ec673658d61550b as builder
-
-# TODO: Replace this with a new builder image that is generated from its own lockfile
-RUN conda install -c conda-forge --override-channels conda-project
+# Build stage: install pixi and create environment
+FROM ghcr.io/prefix-dev/pixi:0.70.2 AS builder
 
 WORKDIR /app
 
-# Pre-install project dependencies during image build
-COPY ./conda-lock.prod.yml ./
-#COPY ./conda-project.yml ./
-#COPY ./environment-*.yml ./
+# Copy pixi files first for better caching
+COPY pixi.toml pixi.lock ./
 
-# Create the prod conda environment
-RUN conda lock install -p /opt/env conda-lock.prod.yml
-ENV PATH="/opt/env/bin:${PATH}"
+# Install dependencies (creates .pixi directory)
+RUN pixi install --locked
 
-# Because conda project is re-locking each time, I'm using conda-lock for now
-#RUN conda project install --environment prod
+# Runtime stage: minimal image with the environment
+FROM debian:bookworm-slim
 
-# Copy in the app code
-COPY app/ ./app
-COPY static/ ./static
-COPY templates/ ./templates
+# Install minimal runtime dependencies
+RUN apt-get update -q && \
+    apt-get install -q -y --no-install-recommends \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy in the generated CSS code from tailwind
-COPY --from=tailwind ./app/output.css static/css/
+WORKDIR /app
 
-# Expose the port and run the service
+# Copy the pixi environment from builder
+COPY --from=builder /app/.pixi /app/.pixi
+
+# Copy application code
+COPY app/ ./app/
+COPY static/ ./static/
+COPY templates/ ./templates/
+
+# Set environment to use pixi's Python
+ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
+ENV PYTHONDONTWRITEBYTECODE=1
+
 EXPOSE 8000
-ENTRYPOINT ["fastapi"]
-CMD ["run"]
 
-# Once we fix conda project, we may want to consider using this instead
-#ENTRYPOINT ["conda", "project", "run"]
-#CMD ["prod"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

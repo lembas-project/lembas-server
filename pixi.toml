@@ -1,0 +1,35 @@
+[dependencies]
+fastapi = "*"
+httpx = "*"
+jinja2 = "*"
+pydantic = "*"
+pydantic-settings = "*"
+python = ">=3.12"
+sentry-sdk = "*"
+uvicorn = "*"
+
+[environments]
+default = {features = ["dev"], solve-group = "default"}
+
+[feature.dev.dependencies]
+mypy = "*"
+pre-commit = ">=4"
+pytest = ">=8"
+pytest-asyncio = "*"
+pytest-env = "*"
+pytest-mock = "*"
+ruff = "*"
+
+[feature.dev.pypi-dependencies]
+jinja-partials = "*"
+
+[tasks]
+dev = "uvicorn app.main:app --reload --port 8001"
+lint = "ruff check app/ tests/"
+test = "pytest tests/"
+typecheck = "mypy"
+
+[workspace]
+channels = ["conda-forge"]
+name = "lembas-server"
+platforms = ["osx-arm64", "linux-64"]
