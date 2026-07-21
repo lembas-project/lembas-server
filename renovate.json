@@ -1,4 +1,20 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>anaconda/renovate-config"]
+  "extends": ["github>anaconda/renovate-config"],
+  "packageRules": [
+    {
+      "description": "Auto-merge minor and patch updates when CI passes",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Auto-merge pre-commit hook updates",
+      "matchManagers": ["pre-commit"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    }
+  ]
 }
