@@ -19,7 +19,14 @@ router = APIRouter()
 
 @router.get("/")
 async def home(request: Request) -> RedirectResponse:
-    return RedirectResponse(request.url_for("get_projects_list"))
+    return RedirectResponse(request.url_for("studies_gallery"))
+
+
+@router.get("/studies")
+async def studies_gallery(request: Request) -> HTMLResponse:
+    """Show a gallery of all studies."""
+    studies = await db.get_all_studies()
+    return render_template("studies_gallery.html", studies=studies)
 
 
 @router.get("/ui/studies/{study_id}")

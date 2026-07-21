@@ -62,6 +62,10 @@ async def get_studies_by_project(project_id: int) -> list[Study]:
     return [s for s in STUDIES.values() if s.project_id == project_id]
 
 
+async def get_all_studies() -> list[Study]:
+    return list(STUDIES.values())
+
+
 async def update_case_status(
     study_id: str, case_id: str, update: CaseStatusUpdate
 ) -> CaseRun | None:
