@@ -214,6 +214,51 @@ async def get_all_studies() -> list[Study]:
     return studies
 
 
+async def update_study(study_id: str, payload: StudyCreate) -> Study | None:
+    """Update an existing study, upserting cases."""
+    conn = get_connection()
+
+    # Check if study exists
+    cursor = conn.execute("SELECT * FROM studies WHERE id = ?", (study_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return None
+
+    # Update study metadata
+    conn.execute(
+        """
+        UPDATE studies
+        SET name = ?, description = ?, tags = ?, plugins_declared = ?
+        WHERE id = ?
+        """,
+        (
+            payload.name,
+            payload.description,
+            json.dumps(payload.tags),
+            json.dumps(payload.plugins_declared),
+            study_id,
+        ),
+    )
+
+    # Upsert cases - insert new ones, ignore existing (they keep their status)
+    for c in payload.cases:
+        conn.execute(
+            """
+            INSERT INTO cases (study_id, case_id, handler_fqn, inputs, status)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(study_id, case_id) DO UPDATE SET
+                handler_fqn = excluded.handler_fqn,
+                inputs = excluded.inputs
+            """,
+            (study_id, c.case_id, c.handler_fqn, json.dumps(c.inputs), "pending"),
+        )
+
+    conn.commit()
+    conn.close()
+
+    return await get_study(study_id)
+
+
 async def update_case_status(
     study_id: str, case_id: str, update: CaseStatusUpdate
 ) -> CaseRun | None:

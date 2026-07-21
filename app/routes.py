@@ -135,6 +135,16 @@ async def get_study(study_id: str) -> Study:
     return study
 
 
+@router.put("/api/studies/{study_id}")
+async def update_study(study_id: str, payload: StudyCreate) -> Study:
+    """Update an existing study, upserting cases."""
+    study = await db.update_study(study_id, payload)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    log.info(f"Updated study {study.id} with {len(study.cases)} cases")
+    return study
+
+
 @router.get("/api/studies/{study_id}/detail")
 async def get_study_detail(study_id: str) -> StudyResponse:
     """Fetch a study in UI-friendly format."""
