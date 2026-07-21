@@ -16,6 +16,10 @@ internal_port = 8000
 min_machines_running = 0
 processes = ["app"]
 
+[mounts]
+destination = "/data"
+source = "lembas_data"
+
 [[vm]]
 cpu_kind = "shared"
 cpus = 1
