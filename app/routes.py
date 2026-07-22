@@ -151,17 +151,43 @@ async def update_case_status(
 
 # --- Artifact Storage Endpoints ---
 #
-# These endpoints support two modes:
-# 1. Direct: Backend doesn't support presigned URLs (local filesystem) - proxy through API
-# 2. Redirect: Backend supports presigned URLs (S3/R2) - redirect client to storage
+# Native sync protocol:
+# 1. Client builds manifest (path → SHA-256 hash) for case directory
+# 2. Client POSTs hashes to check-hashes, gets back missing list
+# 3. Client uploads only missing blobs
+# 4. Client stores manifest
 #
-# DVC HTTP remote follows redirects, so both modes work transparently.
+# Two modes for blob storage:
+# - Direct: Local filesystem backend proxies through API
+# - Redirect: S3/R2 backend returns 307 redirect to presigned URL
+
+
+@router.post("/api/storage/check-hashes")
+async def check_hashes(hashes: dict) -> dict:
+    """Check which blob hashes already exist in storage.
+
+    Args:
+        hashes: {"hashes": ["abc123", "def456", ...]}
+
+    Returns:
+        {"missing": ["def456", ...]} - hashes that need to be uploaded
+    """
+    storage = get_storage()
+    hash_list = hashes.get("hashes", [])
+    missing = []
+
+    for h in hash_list:
+        blob_key = f"blobs/{h[:2]}/{h}"
+        if not await storage.exists(blob_key):
+            missing.append(h)
+
+    return {"missing": missing}
 
 
 @router.put("/api/storage/blobs/{hash}", response_model=None)
 async def upload_blob(
+    request: Request,
     hash: str,
-    file: UploadFile,
 ) -> Response | dict:
     """Upload a content-addressed blob.
 
@@ -182,11 +208,7 @@ async def upload_blob(
             return RedirectResponse(url=upload_url, status_code=307)
 
     # Direct upload through API
-    data = await file.read()
-    actual_hash = compute_hash(data)
-    if actual_hash != hash:
-        raise HTTPException(status_code=400, detail="Hash mismatch")
-
+    data = await request.body()
     await storage.put(blob_key, data)
     log.info(f"Uploaded blob {hash[:8]} ({len(data)} bytes)")
     return {"status": "created", "hash": hash, "size": len(data)}
@@ -219,16 +241,41 @@ async def download_blob(hash: str) -> Response:
     return Response(content=data, media_type="application/octet-stream")
 
 
-@router.head("/api/storage/blobs/{hash}")
-async def check_blob_exists(hash: str) -> Response:
-    """Check if a blob exists (for DVC to check before upload)."""
+@router.put("/api/storage/manifests/{study_id}/{case_id}")
+async def store_manifest(
+    study_id: str,
+    case_id: str,
+    manifest: dict,
+) -> dict:
+    """Store a case manifest (path → hash mapping)."""
     storage = get_storage()
-    blob_key = f"blobs/{hash[:2]}/{hash}"
+    import json
 
-    if await storage.exists(blob_key):
-        return Response(status_code=200)
-    else:
-        raise HTTPException(status_code=404, detail="Blob not found")
+    manifest_key = f"manifests/{study_id}/{case_id}.json"
+    data = json.dumps(manifest).encode()
+    await storage.put(manifest_key, data)
+
+    file_count = len(manifest.get("files", {}))
+    log.info(f"Stored manifest for {study_id}/{case_id[:8]} ({file_count} files)")
+    return {"status": "ok", "files": file_count}
+
+
+@router.get("/api/storage/manifests/{study_id}/{case_id}")
+async def get_manifest(
+    study_id: str,
+    case_id: str,
+) -> dict:
+    """Get a case manifest (path → hash mapping)."""
+    storage = get_storage()
+    import json
+
+    manifest_key = f"manifests/{study_id}/{case_id}.json"
+    data = await storage.get(manifest_key)
+
+    if not data:
+        raise HTTPException(status_code=404, detail="Manifest not found")
+
+    return json.loads(data.decode())
 
 
 @router.put("/api/studies/{study_id}/cases/{case_id}/files/{path:path}")
@@ -318,19 +365,3 @@ async def get_case_manifest(
             manifest[path] = hash_data.decode()
 
     return {"case_id": case_id, "files": manifest}
-
-
-@router.post("/api/studies/{study_id}/cases/{case_id}/check-hashes")
-async def check_hashes(
-    study_id: str,
-    case_id: str,
-    hashes: list[str],
-) -> dict:
-    """Check which hashes already exist in storage (for efficient sync)."""
-    storage = get_storage()
-    missing = []
-    for h in hashes:
-        blob_key = f"blobs/{h[:2]}/{h}"
-        if not await storage.exists(blob_key):
-            missing.append(h)
-    return {"missing": missing}
