@@ -188,7 +188,295 @@ function CaseRow({ run, selected, onSelect, resultKeys }) {
   );
 }
 
-function CaseDetail({ run, onClose }) {
+// ---------------------------------------------------------------------------
+// File Browser Component
+// ---------------------------------------------------------------------------
+
+function FileBrowser({ studyId, caseId }) {
+  const [manifest, setManifest] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentPath, setCurrentPath] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileContent, setFileContent] = useState(null);
+  const [loadingContent, setLoadingContent] = useState(false);
+
+  // Fetch manifest on mount
+  useEffect(() => {
+    fetch(`/api/storage/manifests/${studyId}/${caseId}`)
+      .then((r) => {
+        if (!r.ok) {
+          if (r.status === 404) return { files: {} };
+          throw new Error("Failed to load manifest");
+        }
+        return r.json();
+      })
+      .then((data) => {
+        setManifest(data.files || {});
+        setLoading(false);
+      })
+      .catch(() => {
+        setManifest({});
+        setLoading(false);
+      });
+  }, [studyId, caseId]);
+
+  // Build directory tree from flat manifest
+  const tree = useMemo(() => {
+    if (!manifest) return { dirs: {}, files: {} };
+
+    const result = { dirs: {}, files: {} };
+
+    Object.keys(manifest).forEach((path) => {
+      const parts = path.split("/");
+      let current = result;
+
+      for (let i = 0; i < parts.length - 1; i++) {
+        const dir = parts[i];
+        if (!current.dirs[dir]) {
+          current.dirs[dir] = { dirs: {}, files: {} };
+        }
+        current = current.dirs[dir];
+      }
+
+      const filename = parts[parts.length - 1];
+      current.files[filename] = { path, hash: manifest[path] };
+    });
+
+    return result;
+  }, [manifest]);
+
+  // Get current directory contents
+  const currentDir = useMemo(() => {
+    if (!currentPath) return tree;
+
+    const parts = currentPath.split("/").filter(Boolean);
+    let current = tree;
+
+    for (const part of parts) {
+      if (current.dirs[part]) {
+        current = current.dirs[part];
+      } else {
+        return { dirs: {}, files: {} };
+      }
+    }
+
+    return current;
+  }, [tree, currentPath]);
+
+  // Fetch file content
+  const loadFileContent = async (fileInfo) => {
+    setSelectedFile(fileInfo);
+    setLoadingContent(true);
+    setFileContent(null);
+
+    try {
+      const response = await fetch(`/api/storage/blobs/${fileInfo.hash}`);
+      if (!response.ok) throw new Error("Failed to load file");
+
+      const text = await response.text();
+      setFileContent(text);
+    } catch {
+      setFileContent("(Failed to load file content)");
+    } finally {
+      setLoadingContent(false);
+    }
+  };
+
+  if (loading) {
+    return h(
+      "div",
+      { style: { color: "#4a6a8a", fontSize: 11 } },
+      "Loading files...",
+    );
+  }
+
+  const dirNames = Object.keys(currentDir.dirs).sort();
+  const fileNames = Object.keys(currentDir.files).sort();
+
+  if (dirNames.length === 0 && fileNames.length === 0) {
+    return h(
+      "div",
+      { style: { color: "#4a6a8a", fontSize: 11 } },
+      "No files synced",
+    );
+  }
+
+  const itemStyle = {
+    padding: "4px 8px",
+    fontSize: 11,
+    fontFamily: "monospace",
+    cursor: "pointer",
+    borderRadius: 3,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  };
+
+  const breadcrumbs = currentPath
+    ? h(
+        "div",
+        {
+          style: {
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            marginBottom: 8,
+            fontSize: 10,
+            color: "#4a6a8a",
+          },
+        },
+        h(
+          "span",
+          {
+            style: { cursor: "pointer", color: "#7eb8f7" },
+            onClick: () => {
+              setCurrentPath("");
+              setSelectedFile(null);
+              setFileContent(null);
+            },
+          },
+          "root",
+        ),
+        currentPath
+          .split("/")
+          .filter(Boolean)
+          .map((part, i, arr) =>
+            h(
+              React.Fragment,
+              { key: i },
+              h("span", { style: { color: "#1a3050" } }, "/"),
+              h(
+                "span",
+                {
+                  style: {
+                    cursor: "pointer",
+                    color: i === arr.length - 1 ? "#e2e8f0" : "#7eb8f7",
+                  },
+                  onClick: () => {
+                    const newPath = arr.slice(0, i + 1).join("/");
+                    setCurrentPath(newPath);
+                    setSelectedFile(null);
+                    setFileContent(null);
+                  },
+                },
+                part,
+              ),
+            ),
+          ),
+      )
+    : null;
+
+  const dirItems = dirNames.map((name) =>
+    h(
+      "div",
+      {
+        key: "d-" + name,
+        style: { ...itemStyle, color: "#7eb8f7" },
+        onClick: () => {
+          setCurrentPath(currentPath ? currentPath + "/" + name : name);
+          setSelectedFile(null);
+          setFileContent(null);
+        },
+        onMouseEnter: (e) => (e.currentTarget.style.background = "#0e2a40"),
+        onMouseLeave: (e) => (e.currentTarget.style.background = "transparent"),
+      },
+      h("span", null, "📁"),
+      name,
+    ),
+  );
+
+  const fileItems = fileNames.map((name) => {
+    const fileInfo = { name, ...currentDir.files[name] };
+    const isSelected = selectedFile?.path === fileInfo.path;
+
+    return h(
+      "div",
+      {
+        key: "f-" + name,
+        style: {
+          ...itemStyle,
+          color: isSelected ? "#22d3a0" : "#e2e8f0",
+          background: isSelected ? "#0e2a40" : "transparent",
+        },
+        onClick: () => loadFileContent(fileInfo),
+        onMouseEnter: (e) => {
+          if (!isSelected) e.currentTarget.style.background = "#091929";
+        },
+        onMouseLeave: (e) => {
+          if (!isSelected) e.currentTarget.style.background = "transparent";
+        },
+      },
+      h("span", null, "📄"),
+      name,
+    );
+  });
+
+  const filePreview = selectedFile
+    ? h(
+        "div",
+        {
+          style: {
+            marginTop: 12,
+            padding: 10,
+            background: "#060f1a",
+            border: "1px solid #0d2035",
+            borderRadius: 4,
+            maxHeight: 200,
+            overflowY: "auto",
+          },
+        },
+        h(
+          "div",
+          {
+            style: {
+              fontSize: 10,
+              color: "#4a6a8a",
+              marginBottom: 6,
+              fontFamily: "monospace",
+            },
+          },
+          selectedFile.name,
+        ),
+        loadingContent
+          ? h(
+              "div",
+              { style: { color: "#4a6a8a", fontSize: 11 } },
+              "Loading...",
+            )
+          : h(
+              "pre",
+              {
+                style: {
+                  margin: 0,
+                  fontSize: 10,
+                  color: "#c8d8e8",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-all",
+                  fontFamily: "monospace",
+                  lineHeight: 1.4,
+                },
+              },
+              fileContent?.slice(0, 4000) +
+                (fileContent?.length > 4000 ? "\n..." : ""),
+            ),
+      )
+    : null;
+
+  return h(
+    "div",
+    null,
+    breadcrumbs,
+    h(
+      "div",
+      { style: { maxHeight: 180, overflowY: "auto" } },
+      dirItems,
+      fileItems,
+    ),
+    filePreview,
+  );
+}
+
+function CaseDetail({ run, studyId, onClose }) {
   const results = run.results || {};
   const inputs = run.inputs || {};
 
@@ -260,7 +548,7 @@ function CaseDetail({ run, onClose }) {
         right: 0,
         top: 0,
         bottom: 0,
-        width: 360,
+        width: 400,
         background: "#07131f",
         borderLeft: "1px solid #1a3050",
         padding: "24px 20px",
@@ -307,6 +595,11 @@ function CaseDetail({ run, onClose }) {
       ),
     ),
     h(Section, { title: "Results" }, resultsContent),
+    h(
+      Section,
+      { title: "Files" },
+      h(FileBrowser, { studyId: studyId, caseId: run.case_id }),
+    ),
     h(
       Section,
       { title: "Environment" },
@@ -825,6 +1118,7 @@ function App() {
     selectedRun
       ? h(CaseDetail, {
           run: selectedRun,
+          studyId: study.study_id,
           onClose: function () {
             setSelectedRun(null);
           },
