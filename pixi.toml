@@ -1,4 +1,5 @@
 [dependencies]
+aioboto3 = "*"
 fastapi = "*"
 httpx = "*"
 jinja2 = "*"

@@ -1,14 +1,15 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
 from app import db
 from app.auth import exchange_code_for_token
 from app.dependencies import config, current_user
 from app.models import CaseStatusUpdate, Study, StudyCreate, StudyResponse, User
 from app.settings import Settings
+from app.storage import compute_hash, get_storage
 from app.templates import render_template
 
 log = logging.getLogger(__name__)
@@ -146,3 +147,103 @@ async def update_case_status(
         raise HTTPException(status_code=404, detail="Study or case not found")
     log.info(f"Updated case {case_id} in study {study_id} to {update.status}")
     return {"status": "ok", "case": case}
+
+
+# --- Artifact Storage Endpoints ---
+
+
+@router.put("/api/studies/{study_id}/cases/{case_id}/files/{path:path}")
+async def upload_case_file(
+    study_id: str,
+    case_id: str,
+    path: str,
+    file: UploadFile,
+) -> dict:
+    """Upload a file to a case's storage.
+
+    Files are stored content-addressed by SHA-256 hash, with a mapping
+    from path -> hash stored in the case manifest.
+    """
+    study = await db.get_study(study_id)
+    if not study or case_id not in study.cases:
+        raise HTTPException(status_code=404, detail="Study or case not found")
+
+    storage = get_storage()
+    data = await file.read()
+    content_hash = compute_hash(data)
+
+    blob_key = f"blobs/{content_hash[:2]}/{content_hash}"
+    if not await storage.exists(blob_key):
+        await storage.put(blob_key, data)
+
+    file_key = f"studies/{study_id}/cases/{case_id}/files/{path}"
+    await storage.put(file_key, content_hash.encode())
+
+    log.info(f"Uploaded {path} to case {case_id[:8]} ({len(data)} bytes, hash={content_hash[:8]})")
+    return {"path": path, "hash": content_hash, "size": len(data)}
+
+
+@router.get("/api/studies/{study_id}/cases/{case_id}/files/{path:path}")
+async def download_case_file(
+    study_id: str,
+    case_id: str,
+    path: str,
+) -> Response:
+    """Download a file from a case's storage."""
+    study = await db.get_study(study_id)
+    if not study or case_id not in study.cases:
+        raise HTTPException(status_code=404, detail="Study or case not found")
+
+    storage = get_storage()
+    file_key = f"studies/{study_id}/cases/{case_id}/files/{path}"
+
+    hash_data = await storage.get(file_key)
+    if not hash_data:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    content_hash = hash_data.decode()
+    blob_key = f"blobs/{content_hash[:2]}/{content_hash}"
+    data = await storage.get(blob_key)
+    if not data:
+        raise HTTPException(status_code=404, detail="Blob not found")
+
+    return Response(content=data, media_type="application/octet-stream")
+
+
+@router.get("/api/studies/{study_id}/cases/{case_id}/manifest")
+async def get_case_manifest(
+    study_id: str,
+    case_id: str,
+) -> dict:
+    """Get the file manifest for a case (path -> hash mapping)."""
+    study = await db.get_study(study_id)
+    if not study or case_id not in study.cases:
+        raise HTTPException(status_code=404, detail="Study or case not found")
+
+    storage = get_storage()
+    prefix = f"studies/{study_id}/cases/{case_id}/files/"
+    manifest = {}
+
+    async for key in storage.list_prefix(prefix):
+        path = key[len(prefix) :]
+        hash_data = await storage.get(key)
+        if hash_data:
+            manifest[path] = hash_data.decode()
+
+    return {"case_id": case_id, "files": manifest}
+
+
+@router.post("/api/studies/{study_id}/cases/{case_id}/check-hashes")
+async def check_hashes(
+    study_id: str,
+    case_id: str,
+    hashes: list[str],
+) -> dict:
+    """Check which hashes already exist in storage (for efficient sync)."""
+    storage = get_storage()
+    missing = []
+    for h in hashes:
+        blob_key = f"blobs/{h[:2]}/{h}"
+        if not await storage.exists(blob_key):
+            missing.append(h)
+    return {"missing": missing}
