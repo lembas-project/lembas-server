@@ -150,6 +150,85 @@ async def update_case_status(
 
 
 # --- Artifact Storage Endpoints ---
+#
+# These endpoints support two modes:
+# 1. Direct: Backend doesn't support presigned URLs (local filesystem) - proxy through API
+# 2. Redirect: Backend supports presigned URLs (S3/R2) - redirect client to storage
+#
+# DVC HTTP remote follows redirects, so both modes work transparently.
+
+
+@router.put("/api/storage/blobs/{hash}", response_model=None)
+async def upload_blob(
+    hash: str,
+    file: UploadFile,
+) -> Response | dict:
+    """Upload a content-addressed blob.
+
+    If backend supports presigned URLs, returns 307 redirect.
+    Otherwise, accepts the upload directly.
+    """
+    storage = get_storage()
+    blob_key = f"blobs/{hash[:2]}/{hash}"
+
+    # Check if blob already exists (deduplication)
+    if await storage.exists(blob_key):
+        return {"status": "exists", "hash": hash}
+
+    # If backend supports presigned URLs, redirect
+    if storage.supports_presigned_urls:
+        upload_url = await storage.get_upload_url(blob_key)
+        if upload_url:
+            return RedirectResponse(url=upload_url, status_code=307)
+
+    # Direct upload through API
+    data = await file.read()
+    actual_hash = compute_hash(data)
+    if actual_hash != hash:
+        raise HTTPException(status_code=400, detail="Hash mismatch")
+
+    await storage.put(blob_key, data)
+    log.info(f"Uploaded blob {hash[:8]} ({len(data)} bytes)")
+    return {"status": "created", "hash": hash, "size": len(data)}
+
+
+@router.get("/api/storage/blobs/{hash}", response_model=None)
+async def download_blob(hash: str) -> Response:
+    """Download a content-addressed blob.
+
+    If backend supports presigned URLs, returns 307 redirect.
+    Otherwise, streams the content directly.
+    """
+    storage = get_storage()
+    blob_key = f"blobs/{hash[:2]}/{hash}"
+
+    if not await storage.exists(blob_key):
+        raise HTTPException(status_code=404, detail="Blob not found")
+
+    # If backend supports presigned URLs, redirect
+    if storage.supports_presigned_urls:
+        download_url = await storage.get_url(blob_key)
+        if download_url:
+            return RedirectResponse(url=download_url, status_code=307)
+
+    # Direct download through API
+    data = await storage.get(blob_key)
+    if not data:
+        raise HTTPException(status_code=404, detail="Blob not found")
+
+    return Response(content=data, media_type="application/octet-stream")
+
+
+@router.head("/api/storage/blobs/{hash}")
+async def check_blob_exists(hash: str) -> Response:
+    """Check if a blob exists (for DVC to check before upload)."""
+    storage = get_storage()
+    blob_key = f"blobs/{hash[:2]}/{hash}"
+
+    if await storage.exists(blob_key):
+        return Response(status_code=200)
+    else:
+        raise HTTPException(status_code=404, detail="Blob not found")
 
 
 @router.put("/api/studies/{study_id}/cases/{case_id}/files/{path:path}")
@@ -183,7 +262,7 @@ async def upload_case_file(
     return {"path": path, "hash": content_hash, "size": len(data)}
 
 
-@router.get("/api/studies/{study_id}/cases/{case_id}/files/{path:path}")
+@router.get("/api/studies/{study_id}/cases/{case_id}/files/{path:path}", response_model=None)
 async def download_case_file(
     study_id: str,
     case_id: str,
@@ -203,6 +282,14 @@ async def download_case_file(
 
     content_hash = hash_data.decode()
     blob_key = f"blobs/{content_hash[:2]}/{content_hash}"
+
+    # If backend supports presigned URLs, redirect to blob
+    if storage.supports_presigned_urls:
+        download_url = await storage.get_url(blob_key)
+        if download_url:
+            return RedirectResponse(url=download_url, status_code=307)
+
+    # Direct download
     data = await storage.get(blob_key)
     if not data:
         raise HTTPException(status_code=404, detail="Blob not found")

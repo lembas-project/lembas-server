@@ -47,8 +47,18 @@ class StorageBackend(ABC):
 
     @abstractmethod
     async def get_url(self, key: str, expires_in: int = 3600) -> str | None:
-        """Get a URL for accessing the object. Returns None if not supported or not found."""
+        """Get a presigned URL for downloading the object. Returns None if not supported."""
         ...
+
+    @abstractmethod
+    async def get_upload_url(self, key: str, expires_in: int = 3600) -> str | None:
+        """Get a presigned URL for uploading to the key. Returns None if not supported."""
+        ...
+
+    @property
+    def supports_presigned_urls(self) -> bool:
+        """Whether this backend supports presigned URLs for direct client access."""
+        return False
 
 
 def compute_hash(data: bytes) -> str:
@@ -100,6 +110,9 @@ class LocalStorageBackend(StorageBackend):
                     yield str(path.relative_to(self.base_path))
 
     async def get_url(self, key: str, expires_in: int = 3600) -> str | None:
+        return None
+
+    async def get_upload_url(self, key: str, expires_in: int = 3600) -> str | None:
         return None
 
 
@@ -190,6 +203,18 @@ class S3StorageBackend(StorageBackend):
                 Params={"Bucket": self.bucket, "Key": self._full_key(key)},
                 ExpiresIn=expires_in,
             )
+
+    async def get_upload_url(self, key: str, expires_in: int = 3600) -> str | None:
+        async with self._session.client(**self._get_client_kwargs()) as client:
+            return await client.generate_presigned_url(
+                "put_object",
+                Params={"Bucket": self.bucket, "Key": self._full_key(key)},
+                ExpiresIn=expires_in,
+            )
+
+    @property
+    def supports_presigned_urls(self) -> bool:
+        return True
 
 
 def get_storage_backend() -> StorageBackend:
