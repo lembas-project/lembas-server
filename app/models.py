@@ -11,11 +11,6 @@ class User(BaseModel):
     avatar_url: str = ""
 
 
-class Project(BaseModel):
-    id: int | None = None
-    name: str
-
-
 class CaseStatus(str, Enum):
     pending = "pending"
     running = "running"
@@ -50,7 +45,6 @@ class StudyCreate(BaseModel):
     """Payload for creating/registering a study."""
 
     name: str
-    project_id: int
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
     plugins_declared: list[str] = Field(default_factory=list)
@@ -62,7 +56,6 @@ class Study(BaseModel):
 
     id: str
     name: str
-    project_id: int
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
     plugins_declared: list[str] = Field(default_factory=list)

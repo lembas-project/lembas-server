@@ -37,4 +37,3 @@ class Homepage(Component):
     user: User | None
     login_url: str
     logout_url: str
-    projects: list = []

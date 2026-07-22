@@ -9,7 +9,6 @@ from app.models import (
     CaseRun,
     CaseStatus,
     CaseStatusUpdate,
-    Project,
     Study,
     StudyCreate,
 )
@@ -31,15 +30,9 @@ def init_db() -> None:
     """Initialize database tables."""
     conn = get_connection()
     conn.executescript("""
-        CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
-        );
-
         CREATE TABLE IF NOT EXISTS studies (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
-            project_id INTEGER,
             description TEXT,
             tags TEXT,
             plugins_declared TEXT,
@@ -64,48 +57,12 @@ def init_db() -> None:
             UNIQUE(study_id, case_id)
         );
     """)
-    # Seed default projects if empty
-    cursor = conn.execute("SELECT COUNT(*) FROM projects")
-    if cursor.fetchone()[0] == 0:
-        for i in range(1, 11):
-            conn.execute("INSERT INTO projects (name) VALUES (?)", (f"Project {i}",))
     conn.commit()
     conn.close()
 
 
 # Initialize on module load
 init_db()
-
-
-async def get_projects() -> list[Project]:
-    conn = get_connection()
-    cursor = conn.execute("SELECT id, name FROM projects")
-    projects = [Project(id=row["id"], name=row["name"]) for row in cursor.fetchall()]
-    conn.close()
-    return projects
-
-
-async def add_project(name: str) -> Project:
-    conn = get_connection()
-    cursor = conn.execute("INSERT INTO projects (name) VALUES (?)", (name,))
-    project = Project(id=cursor.lastrowid, name=name)
-    conn.commit()
-    conn.close()
-    return project
-
-
-async def delete_project(id: int) -> Project | None:
-    conn = get_connection()
-    cursor = conn.execute("SELECT id, name FROM projects WHERE id = ?", (id,))
-    row = cursor.fetchone()
-    if row:
-        project = Project(id=row["id"], name=row["name"])
-        conn.execute("DELETE FROM projects WHERE id = ?", (id,))
-        conn.commit()
-        conn.close()
-        return project
-    conn.close()
-    return None
 
 
 async def create_study(payload: StudyCreate, pushed_by: str | None = None) -> Study:
@@ -116,13 +73,12 @@ async def create_study(payload: StudyCreate, pushed_by: str | None = None) -> St
     conn.execute(
         """
         INSERT INTO studies
-            (id, name, project_id, description, tags, plugins_declared, created_at, pushed_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (id, name, description, tags, plugins_declared, created_at, pushed_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             study_id,
             payload.name,
-            payload.project_id,
             payload.description,
             json.dumps(payload.tags),
             json.dumps(payload.plugins_declared),
@@ -150,7 +106,6 @@ def _row_to_study(row: sqlite3.Row, cases: dict[str, CaseRun]) -> Study:
     return Study(
         id=row["id"],
         name=row["name"],
-        project_id=row["project_id"],
         description=row["description"],
         tags=json.loads(row["tags"]) if row["tags"] else [],
         plugins_declared=json.loads(row["plugins_declared"]) if row["plugins_declared"] else [],
@@ -188,18 +143,6 @@ async def get_study(study_id: str) -> Study | None:
     conn.close()
 
     return _row_to_study(row, cases)
-
-
-async def get_studies_by_project(project_id: int) -> list[Study]:
-    conn = get_connection()
-    cursor = conn.execute("SELECT * FROM studies WHERE project_id = ?", (project_id,))
-    studies = []
-    for row in cursor.fetchall():
-        case_cursor = conn.execute("SELECT * FROM cases WHERE study_id = ?", (row["id"],))
-        cases = {r["case_id"]: _row_to_case(r) for r in case_cursor.fetchall()}
-        studies.append(_row_to_study(row, cases))
-    conn.close()
-    return studies
 
 
 async def get_all_studies() -> list[Study]:

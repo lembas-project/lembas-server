@@ -6,8 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import db
 from app.auth import exchange_code_for_token
-from app.components import Homepage
-from app.dependencies import config, current_user, is_partial_request
+from app.dependencies import config, current_user
 from app.models import CaseStatusUpdate, Study, StudyCreate, StudyResponse, User
 from app.settings import Settings
 from app.templates import render_template
@@ -41,34 +40,6 @@ async def study_ui(request: Request, study_id: str) -> HTMLResponse:
 async def demo_ui(request: Request) -> HTMLResponse:
     """Render demo UI with mock data."""
     return render_template("study.html", study_id="demo", study_name="Demo Study")
-
-
-@router.get("/projects")
-async def get_projects_list(
-    request: Request,
-    user: Annotated[User | None, Depends(current_user)],
-    config: Annotated[Settings, Depends(config)],
-    is_partial_request: Annotated[bool, Depends(is_partial_request)],
-) -> HTMLResponse:
-    projects = await db.get_projects()
-    if not is_partial_request:
-        return Homepage(
-            projects=projects,
-            login_url=str(request.url_for("auth_login")),
-            logout_url=str(request.url_for("auth_logout")),
-            user=user,
-        ).render()
-    else:
-        return render_template("partials/project_list.html", projects=projects)
-
-
-@router.delete("/projects/{id}")
-async def delete_project_by_id(request: Request, id: int) -> RedirectResponse:
-    """Delete a project by its ID and re-render the projects list."""
-    await db.delete_project(id)
-    return RedirectResponse(
-        request.url_for("get_projects_list"), status_code=status.HTTP_303_SEE_OTHER
-    )
 
 
 @router.get("/api/healthz")
@@ -161,12 +132,6 @@ async def get_study_detail(study_id: str) -> StudyResponse:
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
     return StudyResponse.from_study(study)
-
-
-@router.get("/api/projects/{project_id}/studies")
-async def get_project_studies(project_id: int) -> list[Study]:
-    """List all studies in a project."""
-    return await db.get_studies_by_project(project_id)
 
 
 @router.patch("/api/studies/{study_id}/cases/{case_id}")
