@@ -952,13 +952,15 @@ function App() {
         },
       },
       h(
-        "span",
+        "a",
         {
+          href: "/studies",
           style: {
             fontSize: 13,
             color: "#22d3a0",
             fontWeight: 600,
             letterSpacing: "0.08em",
+            textDecoration: "none",
           },
         },
         "LEMBAS",

@@ -36,14 +36,6 @@
         font-weight: 600;
         color: #fff;
       }
-      .demo-link {
-        color: #64b5f6;
-        text-decoration: none;
-        font-size: 0.875rem;
-      }
-      .demo-link:hover {
-        text-decoration: underline;
-      }
       .empty-state {
         text-align: center;
         padding: 4rem 2rem;
@@ -133,13 +125,12 @@
     <div class="container">
       <header>
         <h1>Studies</h1>
-        <a href="/ui/demo" class="demo-link">View Demo</a>
       </header>
 
       {% if studies %}
       <div class="studies-grid">
         {% for study in studies %}
-        <a href="/ui/studies/{{ study.id }}" class="study-card">
+        <a href="/studies/{{ study.id }}" class="study-card">
           <div class="study-name">{{ study.name }}</div>
           {% if study.description %}
           <div class="study-description">{{ study.description }}</div>

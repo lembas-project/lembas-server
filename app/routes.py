@@ -29,18 +29,12 @@ async def studies_gallery(request: Request) -> HTMLResponse:
     return render_template("studies_gallery.html", studies=studies)
 
 
-@router.get("/ui/studies/{study_id}")
+@router.get("/studies/{study_id}")
 async def study_ui(request: Request, study_id: str) -> HTMLResponse:
     """Render the study detail UI."""
     study = await db.get_study(study_id)
     study_name = study.name if study else "Study"
     return render_template("study.html", study_id=study_id, study_name=study_name)
-
-
-@router.get("/ui/demo")
-async def demo_ui(request: Request) -> HTMLResponse:
-    """Render demo UI with mock data."""
-    return render_template("study.html", study_id="demo", study_name="Demo Study")
 
 
 @router.get("/api/healthz")
