@@ -7,6 +7,7 @@ primary_region = "dfw"
 CLIENT_ID = "Ov23liZQ3GSRQrONST3V"
 # CLIENT_SECRET is set as a secret in fly.io
 REDIRECT_URL = "https://lembas.matt-kramer.com"
+STORAGE_LOCAL_PATH = "/data/artifacts"
 
 [http_service]
 auto_start_machines = true
