@@ -145,6 +145,15 @@ async def update_study(study_id: str, payload: StudyCreate) -> Study:
     return study
 
 
+@router.delete("/api/studies/{study_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_study(study_id: str) -> None:
+    """Delete a study and all its cases."""
+    deleted = await db.delete_study(study_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Study not found")
+    log.info(f"Deleted study {study_id}")
+
+
 @router.get("/api/studies/{study_id}/detail")
 async def get_study_detail(study_id: str) -> StudyResponse:
     """Fetch a study in UI-friendly format."""

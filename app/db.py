@@ -259,6 +259,21 @@ async def update_study(study_id: str, payload: StudyCreate) -> Study | None:
     return await get_study(study_id)
 
 
+async def delete_study(study_id: str) -> bool:
+    """Delete a study and all its cases."""
+    conn = get_connection()
+    cursor = conn.execute("SELECT id FROM studies WHERE id = ?", (study_id,))
+    if not cursor.fetchone():
+        conn.close()
+        return False
+
+    conn.execute("DELETE FROM cases WHERE study_id = ?", (study_id,))
+    conn.execute("DELETE FROM studies WHERE id = ?", (study_id,))
+    conn.commit()
+    conn.close()
+    return True
+
+
 async def update_case_status(
     study_id: str, case_id: str, update: CaseStatusUpdate
 ) -> CaseRun | None:
