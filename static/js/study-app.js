@@ -476,9 +476,23 @@ function FileBrowser({ studyId, caseId }) {
   );
 }
 
-function CaseDetail({ run, studyId, onClose }) {
+function CaseDetail({ run, studyId, handlers, onClose }) {
+  const [showSchema, setShowSchema] = useState(false);
   const results = run.results || {};
   const inputs = run.inputs || {};
+
+  // Find the handler schema for this case
+  const handlerName = run.handler;
+  const handlerSchema = useMemo(() => {
+    if (!handlers || !handlerName) return null;
+    // Find schema by matching handler name
+    for (const [fingerprint, schema] of Object.entries(handlers)) {
+      if (schema.title === handlerName) {
+        return { fingerprint, ...schema };
+      }
+    }
+    return null;
+  }, [handlers, handlerName]);
 
   const KV = ({ k, v, accent }) =>
     h(
@@ -502,7 +516,7 @@ function CaseDetail({ run, studyId, onClose }) {
       ),
     );
 
-  const Section = ({ title, children }) =>
+  const Section = ({ title, children, action }) =>
     h(
       "div",
       { style: { marginBottom: 24 } },
@@ -518,9 +532,13 @@ function CaseDetail({ run, studyId, onClose }) {
             marginBottom: 10,
             paddingBottom: 6,
             borderBottom: "1px solid #0d2035",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           },
         },
         title,
+        action,
       ),
       children,
     );
@@ -539,6 +557,184 @@ function CaseDetail({ run, studyId, onClose }) {
           });
         })
       : h("span", { style: { color: "#4a6a8a", fontSize: 12 } }, "No results");
+
+  // Schema view button
+  const schemaButton = handlerSchema
+    ? h(
+        "button",
+        {
+          onClick: () => setShowSchema(!showSchema),
+          style: {
+            background: showSchema ? "#0e2a40" : "none",
+            border: "1px solid #1a3050",
+            color: showSchema ? "#7eb8f7" : "#4a6a8a",
+            fontSize: 9,
+            padding: "2px 6px",
+            borderRadius: 3,
+            cursor: "pointer",
+            textTransform: "none",
+            fontWeight: 400,
+          },
+        },
+        showSchema ? "hide schema" : "view schema",
+      )
+    : null;
+
+  // Schema display
+  const schemaDisplay =
+    showSchema && handlerSchema
+      ? h(
+          "div",
+          {
+            style: {
+              marginTop: 12,
+              padding: 12,
+              background: "#060f1a",
+              border: "1px solid #0d2035",
+              borderRadius: 4,
+            },
+          },
+          h(
+            "div",
+            {
+              style: {
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              },
+            },
+            h(
+              "span",
+              {
+                style: {
+                  fontSize: 10,
+                  color: "#4a6a8a",
+                  fontFamily: "monospace",
+                },
+              },
+              handlerSchema.fingerprint,
+            ),
+            h(
+              "a",
+              {
+                href: "/schemas",
+                style: {
+                  fontSize: 9,
+                  color: "#7eb8f7",
+                  textDecoration: "none",
+                },
+              },
+              "open in browser →",
+            ),
+          ),
+          handlerSchema.description
+            ? h(
+                "div",
+                {
+                  style: {
+                    fontSize: 11,
+                    color: "#7eb8f7",
+                    marginBottom: 12,
+                    lineHeight: 1.4,
+                  },
+                },
+                handlerSchema.description,
+              )
+            : null,
+          h(
+            "div",
+            { style: { fontSize: 10, color: "#2a5070", marginBottom: 6 } },
+            "INPUTS",
+          ),
+          h(
+            "div",
+            { style: { marginBottom: 12 } },
+            Object.entries(handlerSchema.inputs?.properties || {}).map(
+              ([name, prop]) =>
+                h(
+                  "div",
+                  {
+                    key: name,
+                    style: {
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 4,
+                      fontSize: 10,
+                    },
+                  },
+                  h(
+                    "span",
+                    { style: { color: "#81c784", fontFamily: "monospace" } },
+                    name,
+                  ),
+                  h(
+                    "span",
+                    { style: { color: "#4a6a8a" } },
+                    prop.type || "any",
+                  ),
+                  prop.minimum !== undefined
+                    ? h(
+                        "span",
+                        { style: { color: "#4a6a8a" } },
+                        `[${prop.minimum}, ${prop.maximum}]`,
+                      )
+                    : null,
+                  prop["x-lembas-short-name"]
+                    ? h(
+                        "span",
+                        {
+                          style: {
+                            color: "#f59e0b",
+                            background: "#1a2a3a",
+                            padding: "1px 4px",
+                            borderRadius: 2,
+                          },
+                        },
+                        prop["x-lembas-short-name"],
+                      )
+                    : null,
+                ),
+            ),
+          ),
+          h(
+            "div",
+            { style: { fontSize: 10, color: "#2a5070", marginBottom: 6 } },
+            "RESULTS",
+          ),
+          h(
+            "div",
+            null,
+            Object.entries(handlerSchema.results?.properties || {}).map(
+              ([name, prop]) =>
+                h(
+                  "div",
+                  {
+                    key: name,
+                    style: {
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 4,
+                      fontSize: 10,
+                    },
+                  },
+                  h(
+                    "span",
+                    { style: { color: "#22d3a0", fontFamily: "monospace" } },
+                    name,
+                  ),
+                  h(
+                    "span",
+                    { style: { color: "#4a6a8a" } },
+                    prop.type || "any",
+                  ),
+                ),
+            ),
+          ),
+        )
+      : null;
 
   return h(
     "div",
@@ -564,7 +760,7 @@ function CaseDetail({ run, studyId, onClose }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 20,
+          marginBottom: 12,
         },
       },
       h(
@@ -587,6 +783,46 @@ function CaseDetail({ run, studyId, onClose }) {
         "✕",
       ),
     ),
+    // Handler name badge
+    h(
+      "div",
+      {
+        style: {
+          marginBottom: 20,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        },
+      },
+      h(
+        "span",
+        {
+          style: {
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#e2e8f0",
+            fontFamily: "monospace",
+          },
+        },
+        handlerName || "Unknown Handler",
+      ),
+      handlerSchema
+        ? h(
+            "span",
+            {
+              style: {
+                fontSize: 9,
+                color: "#4a6a8a",
+                background: "#0d2035",
+                padding: "2px 6px",
+                borderRadius: 3,
+                fontFamily: "monospace",
+              },
+            },
+            handlerSchema.fingerprint.slice(0, 8),
+          )
+        : null,
+    ),
     h(
       Section,
       { title: "Inputs" },
@@ -595,6 +831,24 @@ function CaseDetail({ run, studyId, onClose }) {
       ),
     ),
     h(Section, { title: "Results" }, resultsContent),
+    h(
+      Section,
+      { title: "Handler", action: schemaButton },
+      h(KV, { k: "name", v: handlerName }),
+      handlerSchema
+        ? h(KV, { k: "fingerprint", v: handlerSchema.fingerprint.slice(0, 12) })
+        : null,
+      handlerSchema?.["x-lembas-source"]?.git_ref
+        ? h(KV, {
+            k: "source",
+            v:
+              "git:" +
+              handlerSchema["x-lembas-source"].git_ref +
+              (handlerSchema["x-lembas-source"].dirty ? " (dirty)" : ""),
+          })
+        : null,
+      schemaDisplay,
+    ),
     h(
       Section,
       { title: "Files" },
@@ -1121,6 +1375,7 @@ function App() {
       ? h(CaseDetail, {
           run: selectedRun,
           studyId: study.study_id,
+          handlers: study.handlers || {},
           onClose: function () {
             setSelectedRun(null);
           },
