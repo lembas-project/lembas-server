@@ -36,6 +36,7 @@ def init_db() -> None:
             description TEXT,
             tags TEXT,
             plugins_declared TEXT,
+            handlers TEXT,
             created_at TEXT,
             pushed_by TEXT
         );
@@ -57,7 +58,12 @@ def init_db() -> None:
             UNIQUE(study_id, case_id)
         );
     """)
-    conn.commit()
+    # Add handlers column if it doesn't exist (migration for existing DBs)
+    try:
+        conn.execute("ALTER TABLE studies ADD COLUMN handlers TEXT")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # Column already exists
     conn.close()
 
 
@@ -69,12 +75,15 @@ async def create_study(payload: StudyCreate, pushed_by: str | None = None) -> St
     study_id = str(uuid4())
     created_at = datetime.now(UTC)
 
+    # Build handlers dict keyed by fingerprint
+    handlers_dict = {h.schema_fingerprint: h.schema_ for h in payload.handlers}
+
     conn = get_connection()
     conn.execute(
         """
         INSERT INTO studies
-            (id, name, description, tags, plugins_declared, created_at, pushed_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (id, name, description, tags, plugins_declared, handlers, created_at, pushed_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             study_id,
@@ -82,6 +91,7 @@ async def create_study(payload: StudyCreate, pushed_by: str | None = None) -> St
             payload.description,
             json.dumps(payload.tags),
             json.dumps(payload.plugins_declared),
+            json.dumps(handlers_dict),
             created_at.isoformat(),
             pushed_by,
         ),
@@ -109,6 +119,7 @@ def _row_to_study(row: sqlite3.Row, cases: dict[str, CaseRun]) -> Study:
         description=row["description"],
         tags=json.loads(row["tags"]) if row["tags"] else [],
         plugins_declared=json.loads(row["plugins_declared"]) if row["plugins_declared"] else [],
+        handlers=json.loads(row["handlers"]) if row["handlers"] else {},
         created_at=datetime.fromisoformat(row["created_at"]) if row["created_at"] else None,
         pushed_by=row["pushed_by"],
         cases=cases,
@@ -167,11 +178,14 @@ async def update_study(study_id: str, payload: StudyCreate) -> Study | None:
         conn.close()
         return None
 
+    # Build handlers dict keyed by fingerprint
+    handlers_dict = {h.schema_fingerprint: h.schema_ for h in payload.handlers}
+
     # Update study metadata
     conn.execute(
         """
         UPDATE studies
-        SET name = ?, description = ?, tags = ?, plugins_declared = ?
+        SET name = ?, description = ?, tags = ?, plugins_declared = ?, handlers = ?
         WHERE id = ?
         """,
         (
@@ -179,6 +193,7 @@ async def update_study(study_id: str, payload: StudyCreate) -> Study | None:
             payload.description,
             json.dumps(payload.tags),
             json.dumps(payload.plugins_declared),
+            json.dumps(handlers_dict),
             study_id,
         ),
     )

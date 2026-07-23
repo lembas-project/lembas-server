@@ -41,6 +41,14 @@ class CaseRun(BaseModel):
     error_message: str | None = None
 
 
+class HandlerSchema(BaseModel):
+    """A handler schema included with a study."""
+
+    name: str = Field(description="Handler class name")
+    schema_fingerprint: str = Field(description="Content-addressed fingerprint (SHA-256[:16])")
+    schema_: dict[str, Any] = Field(alias="schema", description="Full JSON Schema")
+
+
 class StudyCreate(BaseModel):
     """Payload for creating/registering a study."""
 
@@ -48,6 +56,7 @@ class StudyCreate(BaseModel):
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
     plugins_declared: list[str] = Field(default_factory=list)
+    handlers: list[HandlerSchema] = Field(default_factory=list)
     cases: list[CaseRunCreate] = Field(default_factory=list)
 
 
@@ -59,6 +68,7 @@ class Study(BaseModel):
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
     plugins_declared: list[str] = Field(default_factory=list)
+    handlers: dict[str, dict[str, Any]] = Field(default_factory=dict)
     cases: dict[str, CaseRun] = Field(default_factory=dict)
     created_at: datetime
     pushed_by: str | None = None
@@ -79,6 +89,7 @@ class StudyResponse(BaseModel):
 
     study_id: str
     meta: dict[str, Any]
+    handlers: dict[str, dict[str, Any]]
     pushed_at: datetime
     pushed_by: str | None
     runs: list[dict[str, Any]]
@@ -107,6 +118,7 @@ class StudyResponse(BaseModel):
                 "tags": study.tags,
                 "plugins": study.plugins_declared,
             },
+            handlers=study.handlers,
             pushed_at=study.created_at,
             pushed_by=study.pushed_by,
             runs=runs,

@@ -359,3 +359,63 @@ async def get_case_manifest(
             manifest[path] = hash_data.decode()
 
     return {"case_id": case_id, "files": manifest}
+
+
+# --- Schema Registry Endpoints ---
+
+
+@router.get("/schemas/case-handler/v1")
+async def get_case_handler_metaschema() -> dict:
+    """Return the meta-schema for case handler schemas."""
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://lembas.fly.dev/schemas/case-handler/v1",
+        "title": "Lembas Case Handler Schema",
+        "description": "JSON Schema for Lembas case handler definitions",
+        "type": "object",
+        "properties": {
+            "title": {"type": "string", "description": "Handler class name"},
+            "description": {"type": "string"},
+            "x-lembas-fingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{16}$",
+                "description": "Content-addressable schema fingerprint",
+            },
+            "x-lembas-source": {
+                "type": "object",
+                "properties": {
+                    "git_ref": {"type": "string"},
+                    "dirty": {"type": "boolean"},
+                },
+            },
+            "inputs": {
+                "type": "object",
+                "description": "JSON Schema for handler inputs",
+            },
+            "results": {
+                "type": "object",
+                "description": "JSON Schema for handler results",
+            },
+        },
+        "required": ["title", "inputs", "results"],
+    }
+
+
+@router.get("/schemas/handlers/{handler_name}/{fingerprint}")
+async def get_handler_schema(handler_name: str, fingerprint: str) -> dict:
+    """Fetch a handler schema by name and fingerprint.
+
+    Searches across all studies for a matching schema.
+    """
+    studies = await db.get_all_studies()
+
+    for study in studies:
+        if fingerprint in study.handlers:
+            schema = study.handlers[fingerprint]
+            if schema.get("title") == handler_name:
+                return schema
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"Schema not found for {handler_name}/{fingerprint}",
+    )
