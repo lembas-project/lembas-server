@@ -37,6 +37,12 @@ async def study_ui(request: Request, study_id: str) -> HTMLResponse:
     return render_template("study.html", study_id=study_id, study_name=study_name)
 
 
+@router.get("/schemas")
+async def schemas_gallery(request: Request) -> HTMLResponse:
+    """Show a gallery of all handler schemas."""
+    return render_template("schemas.html")
+
+
 @router.get("/api/healthz")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -399,6 +405,49 @@ async def get_case_handler_metaschema() -> dict:
         },
         "required": ["title", "inputs", "results"],
     }
+
+
+@router.get("/api/schemas")
+async def list_schemas() -> list[dict]:
+    """List all unique handler schemas across all studies.
+
+    Returns schemas deduplicated by fingerprint, with usage info.
+    """
+    studies = await db.get_all_studies()
+
+    # Collect unique schemas by fingerprint
+    schemas_by_fingerprint: dict[str, dict] = {}
+    usage_by_fingerprint: dict[str, list[dict]] = {}
+
+    for study in studies:
+        for fingerprint, schema in study.handlers.items():
+            if fingerprint not in schemas_by_fingerprint:
+                schemas_by_fingerprint[fingerprint] = schema
+                usage_by_fingerprint[fingerprint] = []
+
+            usage_by_fingerprint[fingerprint].append(
+                {
+                    "study_id": study.id,
+                    "study_name": study.name,
+                }
+            )
+
+    # Build response with usage info
+    result = []
+    for fingerprint, schema in schemas_by_fingerprint.items():
+        result.append(
+            {
+                "fingerprint": fingerprint,
+                "name": schema.get("title"),
+                "description": schema.get("description"),
+                "source": schema.get("x-lembas-source"),
+                "input_count": len(schema.get("inputs", {}).get("properties", {})),
+                "result_count": len(schema.get("results", {}).get("properties", {})),
+                "used_by": usage_by_fingerprint[fingerprint],
+            }
+        )
+
+    return result
 
 
 @router.get("/schemas/handlers/{handler_name}/{fingerprint}")

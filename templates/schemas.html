@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schemas - Lembas</title>
+    <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, sans-serif;
+        background: #0a1929;
+        color: #e0e0e0;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #1e3a5f;
+      }
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #fff;
+      }
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+      }
+      .nav-links a {
+        color: #64b5f6;
+        text-decoration: none;
+        font-size: 0.875rem;
+      }
+      .nav-links a:hover {
+        text-decoration: underline;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #90a4ae;
+      }
+      .empty-state h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: #b0bec5;
+      }
+      .loading {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #90a4ae;
+      }
+      .schemas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 1.5rem;
+      }
+      .schema-card {
+        background: #0d2137;
+        border: 1px solid #1e3a5f;
+        border-radius: 8px;
+        padding: 1.25rem;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+      }
+      .schema-card:hover {
+        border-color: #42a5f5;
+        transform: translateY(-2px);
+      }
+      .schema-card.selected {
+        border-color: #42a5f5;
+        background: #0f2942;
+      }
+      .schema-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 0.25rem;
+        font-family: monospace;
+      }
+      .schema-fingerprint {
+        font-size: 0.75rem;
+        color: #78909c;
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+      }
+      .schema-description {
+        font-size: 0.875rem;
+        color: #90a4ae;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+      }
+      .schema-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: #78909c;
+        margin-bottom: 0.5rem;
+      }
+      .schema-source {
+        font-size: 0.75rem;
+        color: #64b5f6;
+        font-family: monospace;
+      }
+      .schema-source.dirty {
+        color: #ffb74d;
+      }
+      .usage-list {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid #1e3a5f;
+      }
+      .usage-label {
+        font-size: 0.6875rem;
+        color: #78909c;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+      }
+      .usage-studies {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .usage-study {
+        background: #1e3a5f;
+        color: #64b5f6;
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.6875rem;
+        text-decoration: none;
+      }
+      .usage-study:hover {
+        background: #2a4a6f;
+      }
+
+      /* Schema detail panel */
+      .detail-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 50%;
+        max-width: 700px;
+        height: 100vh;
+        background: #0d2137;
+        border-left: 1px solid #1e3a5f;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        z-index: 100;
+      }
+      .detail-panel.open {
+        transform: translateX(0);
+      }
+      .detail-header {
+        position: sticky;
+        top: 0;
+        background: #0d2137;
+        padding: 1.5rem;
+        border-bottom: 1px solid #1e3a5f;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .detail-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #fff;
+        font-family: monospace;
+      }
+      .detail-fingerprint {
+        font-size: 0.75rem;
+        color: #78909c;
+        font-family: monospace;
+        margin-top: 0.25rem;
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        color: #90a4ae;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.25rem;
+      }
+      .close-btn:hover {
+        color: #fff;
+      }
+      .detail-content {
+        padding: 1.5rem;
+      }
+      .detail-section {
+        margin-bottom: 1.5rem;
+      }
+      .detail-section h3 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #78909c;
+        margin-bottom: 0.75rem;
+        letter-spacing: 0.05em;
+      }
+      .property-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .property-item {
+        background: #0a1929;
+        border: 1px solid #1e3a5f;
+        border-radius: 6px;
+        padding: 0.75rem;
+      }
+      .property-name {
+        font-family: monospace;
+        color: #81c784;
+        font-weight: 600;
+      }
+      .property-type {
+        font-family: monospace;
+        color: #64b5f6;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+      }
+      .property-meta {
+        font-size: 0.75rem;
+        color: #78909c;
+        margin-top: 0.25rem;
+      }
+      .property-meta span {
+        margin-right: 1rem;
+      }
+      .required-badge {
+        background: #ef5350;
+        color: #fff;
+        font-size: 0.625rem;
+        padding: 0.125rem 0.375rem;
+        border-radius: 3px;
+        margin-left: 0.5rem;
+        text-transform: uppercase;
+      }
+      .json-schema {
+        background: #0a1929;
+        border: 1px solid #1e3a5f;
+        border-radius: 6px;
+        padding: 1rem;
+        font-family: monospace;
+        font-size: 0.75rem;
+        overflow-x: auto;
+        white-space: pre;
+        color: #b0bec5;
+      }
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s,
+          visibility 0.3s;
+        z-index: 99;
+      }
+      .overlay.open {
+        opacity: 1;
+        visibility: visible;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Handler Schemas</h1>
+        <nav class="nav-links">
+          <a href="/studies">Studies</a>
+        </nav>
+      </header>
+
+      <div id="app">
+        <div class="loading">Loading schemas...</div>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-header">
+        <div>
+          <div class="detail-title" id="detail-title"></div>
+          <div class="detail-fingerprint" id="detail-fingerprint"></div>
+        </div>
+        <button class="close-btn" id="close-btn">&times;</button>
+      </div>
+      <div class="detail-content" id="detail-content"></div>
+    </div>
+
+    <script>
+      let schemas = [];
+      let selectedFingerprint = null;
+
+      async function loadSchemas() {
+        try {
+          const response = await fetch("/api/schemas");
+          schemas = await response.json();
+          renderSchemas();
+        } catch (error) {
+          document.getElementById("app").innerHTML = `
+            <div class="empty-state">
+              <h2>Error loading schemas</h2>
+              <p>${error.message}</p>
+            </div>
+          `;
+        }
+      }
+
+      function renderSchemas() {
+        const app = document.getElementById("app");
+
+        if (schemas.length === 0) {
+          app.innerHTML = `
+            <div class="empty-state">
+              <h2>No schemas yet</h2>
+              <p>Push a study with <code>lembas push</code> to register handler schemas.</p>
+            </div>
+          `;
+          return;
+        }
+
+        app.innerHTML = `
+          <div class="schemas-grid">
+            ${schemas
+              .map(
+                (schema) => `
+              <div class="schema-card ${
+                selectedFingerprint === schema.fingerprint ? "selected" : ""
+              }"
+                   onclick="selectSchema('${schema.fingerprint}')">
+                <div class="schema-name">${schema.name}</div>
+                <div class="schema-fingerprint">${schema.fingerprint}</div>
+                ${
+                  schema.description
+                    ? `<div class="schema-description">${schema.description}</div>`
+                    : ""
+                }
+                <div class="schema-meta">
+                  <span>${schema.input_count} inputs</span>
+                  <span>${schema.result_count} results</span>
+                </div>
+                ${
+                  schema.source
+                    ? `<div class="schema-source ${
+                        schema.source.dirty ? "dirty" : ""
+                      }">
+                    git:${schema.source.git_ref}${
+                      schema.source.dirty ? " (dirty)" : ""
+                    }
+                  </div>`
+                    : ""
+                }
+                <div class="usage-list">
+                  <div class="usage-label">Used by</div>
+                  <div class="usage-studies">
+                    ${schema.used_by
+                      .map(
+                        (u) => `
+                      <a href="/studies/${u.study_id}" class="usage-study">${u.study_name}</a>
+                    `,
+                      )
+                      .join("")}
+                  </div>
+                </div>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      async function selectSchema(fingerprint) {
+        selectedFingerprint = fingerprint;
+        renderSchemas();
+
+        const schema = schemas.find((s) => s.fingerprint === fingerprint);
+        if (!schema) return;
+
+        // Fetch full schema
+        const response = await fetch(
+          `/schemas/handlers/${schema.name}/${fingerprint}`,
+        );
+        const fullSchema = await response.json();
+
+        document.getElementById("detail-title").textContent = fullSchema.title;
+        document.getElementById("detail-fingerprint").textContent = fingerprint;
+
+        const inputs = fullSchema.inputs?.properties || {};
+        const required = fullSchema.inputs?.required || [];
+        const results = fullSchema.results?.properties || {};
+
+        document.getElementById("detail-content").innerHTML = `
+          <div class="detail-section">
+            <h3>Inputs</h3>
+            <div class="property-list">
+              ${Object.entries(inputs)
+                .map(
+                  ([name, prop]) => `
+                <div class="property-item">
+                  <span class="property-name">${name}</span>
+                  <span class="property-type">${prop.type || "any"}</span>
+                  ${
+                    required.includes(name)
+                      ? '<span class="required-badge">required</span>'
+                      : ""
+                  }
+                  <div class="property-meta">
+                    ${
+                      prop.minimum !== undefined
+                        ? `<span>min: ${prop.minimum}</span>`
+                        : ""
+                    }
+                    ${
+                      prop.maximum !== undefined
+                        ? `<span>max: ${prop.maximum}</span>`
+                        : ""
+                    }
+                    ${
+                      prop.default !== undefined
+                        ? `<span>default: ${prop.default}</span>`
+                        : ""
+                    }
+                    ${
+                      prop["x-lembas-short-name"]
+                        ? `<span>short: ${prop["x-lembas-short-name"]}</span>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `,
+                )
+                .join("")}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Results</h3>
+            <div class="property-list">
+              ${Object.entries(results)
+                .map(
+                  ([name, prop]) => `
+                <div class="property-item">
+                  <span class="property-name">${name}</span>
+                  <span class="property-type">${prop.type || "any"}</span>
+                </div>
+              `,
+                )
+                .join("")}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Raw JSON Schema</h3>
+            <pre class="json-schema">${JSON.stringify(
+              fullSchema,
+              null,
+              2,
+            )}</pre>
+          </div>
+        `;
+
+        document.getElementById("detail-panel").classList.add("open");
+        document.getElementById("overlay").classList.add("open");
+      }
+
+      function closePanel() {
+        selectedFingerprint = null;
+        renderSchemas();
+        document.getElementById("detail-panel").classList.remove("open");
+        document.getElementById("overlay").classList.remove("open");
+      }
+
+      document
+        .getElementById("close-btn")
+        .addEventListener("click", closePanel);
+      document.getElementById("overlay").addEventListener("click", closePanel);
+
+      // Load on page load
+      loadSchemas();
+    </script>
+  </body>
+</html>
