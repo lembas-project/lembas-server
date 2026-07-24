@@ -443,6 +443,7 @@ async def list_schemas() -> list[dict]:
                 "source": schema.get("x-lembas-source"),
                 "input_count": len(schema.get("inputs", {}).get("properties", {})),
                 "result_count": len(schema.get("results", {}).get("properties", {})),
+                "step_count": len(schema.get("steps", [])),
                 "used_by": usage_by_fingerprint[fingerprint],
             }
         )

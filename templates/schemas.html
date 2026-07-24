@@ -359,6 +359,7 @@
                 <div class="schema-meta">
                   <span>${schema.input_count} inputs</span>
                   <span>${schema.result_count} results</span>
+                  <span>${schema.step_count} steps</span>
                 </div>
                 ${
                   schema.source
@@ -411,7 +412,20 @@
         const required = fullSchema.inputs?.required || [];
         const results = fullSchema.results?.properties || {};
 
+        const steps = fullSchema.steps || [];
+
         document.getElementById("detail-content").innerHTML = `
+          ${
+            steps.length > 0
+              ? `
+          <div class="detail-section">
+            <h3>Step DAG</h3>
+            <div id="dag-container" style="background: #0a1929; border: 1px solid #1e3a5f; border-radius: 6px; padding: 1rem; overflow-x: auto;"></div>
+          </div>
+          `
+              : ""
+          }
+
           <div class="detail-section">
             <h3>Inputs</h3>
             <div class="property-list">
@@ -481,6 +495,11 @@
           </div>
         `;
 
+        // Render DAG if steps exist
+        if (steps.length > 0) {
+          renderStepDAG(steps);
+        }
+
         document.getElementById("detail-panel").classList.add("open");
         document.getElementById("overlay").classList.add("open");
       }
@@ -496,6 +515,165 @@
         .getElementById("close-btn")
         .addEventListener("click", closePanel);
       document.getElementById("overlay").addEventListener("click", closePanel);
+
+      function renderStepDAG(steps) {
+        const container = document.getElementById("dag-container");
+        if (!container) return;
+
+        // Build adjacency map and find levels
+        const stepMap = {};
+        steps.forEach((s) => {
+          stepMap[s.name] = s;
+        });
+
+        // Topological sort to assign levels
+        const levels = {};
+        const visited = new Set();
+
+        function getLevel(name) {
+          if (levels[name] !== undefined) return levels[name];
+          const step = stepMap[name];
+          if (!step) return 0;
+
+          if (step.requires.length === 0) {
+            levels[name] = 0;
+            return 0;
+          }
+
+          let maxParentLevel = -1;
+          for (const req of step.requires) {
+            maxParentLevel = Math.max(maxParentLevel, getLevel(req));
+          }
+          levels[name] = maxParentLevel + 1;
+          return levels[name];
+        }
+
+        steps.forEach((s) => getLevel(s.name));
+
+        // Group steps by level
+        const levelGroups = {};
+        let maxLevel = 0;
+        steps.forEach((s) => {
+          const level = levels[s.name] || 0;
+          if (!levelGroups[level]) levelGroups[level] = [];
+          levelGroups[level].push(s);
+          maxLevel = Math.max(maxLevel, level);
+        });
+
+        // Layout parameters
+        const nodeWidth = 140;
+        const nodeHeight = 50;
+        const levelGap = 80;
+        const nodeGap = 20;
+
+        // Calculate positions
+        const positions = {};
+        let svgWidth = 0;
+
+        for (let level = 0; level <= maxLevel; level++) {
+          const nodesAtLevel = levelGroups[level] || [];
+          const levelWidth =
+            nodesAtLevel.length * nodeWidth +
+            (nodesAtLevel.length - 1) * nodeGap;
+          svgWidth = Math.max(svgWidth, levelWidth);
+        }
+
+        svgWidth = Math.max(svgWidth + 40, 300);
+        const svgHeight = (maxLevel + 1) * (nodeHeight + levelGap) + 40;
+
+        for (let level = 0; level <= maxLevel; level++) {
+          const nodesAtLevel = levelGroups[level] || [];
+          const levelWidth =
+            nodesAtLevel.length * nodeWidth +
+            (nodesAtLevel.length - 1) * nodeGap;
+          const startX = (svgWidth - levelWidth) / 2;
+
+          nodesAtLevel.forEach((step, i) => {
+            positions[step.name] = {
+              x: startX + i * (nodeWidth + nodeGap) + nodeWidth / 2,
+              y: 30 + level * (nodeHeight + levelGap) + nodeHeight / 2,
+            };
+          });
+        }
+
+        // Generate SVG
+        let svg = `<svg width="${svgWidth}" height="${svgHeight}" style="display: block;">`;
+        svg += `<defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4a6a8a"/>
+          </marker>
+        </defs>`;
+
+        // Draw edges
+        steps.forEach((step) => {
+          const to = positions[step.name];
+          if (!to) return;
+
+          step.requires.forEach((req) => {
+            const from = positions[req];
+            if (!from) return;
+
+            svg += `<line
+              x1="${from.x}" y1="${from.y + nodeHeight / 2}"
+              x2="${to.x}" y2="${to.y - nodeHeight / 2 - 5}"
+              stroke="#4a6a8a" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+          });
+        });
+
+        // Draw nodes
+        steps.forEach((step) => {
+          const pos = positions[step.name];
+          if (!pos) return;
+
+          const hasCondition = step.has_condition;
+          const fillColor = hasCondition ? "#1a2a3a" : "#0d2137";
+          const strokeColor = hasCondition ? "#f59e0b" : "#1e3a5f";
+
+          svg += `<rect
+            x="${pos.x - nodeWidth / 2}" y="${pos.y - nodeHeight / 2}"
+            width="${nodeWidth}" height="${nodeHeight}"
+            rx="6" fill="${fillColor}" stroke="${strokeColor}" stroke-width="2"/>`;
+
+          // Step name
+          const displayName =
+            step.name.length > 16 ? step.name.slice(0, 14) + "..." : step.name;
+          svg += `<text x="${pos.x}" y="${pos.y - 4}"
+            text-anchor="middle" fill="#e0e0e0"
+            font-family="monospace" font-size="11">${displayName}</text>`;
+
+          // Description if available (truncated)
+          if (step.description) {
+            const desc =
+              step.description.length > 20
+                ? step.description.slice(0, 18) + "..."
+                : step.description;
+            svg += `<text x="${pos.x}" y="${pos.y + 12}"
+              text-anchor="middle" fill="#78909c"
+              font-family="sans-serif" font-size="9">${desc}</text>`;
+          }
+
+          // Condition indicator
+          if (hasCondition) {
+            svg += `<circle cx="${pos.x + nodeWidth / 2 - 8}" cy="${
+              pos.y - nodeHeight / 2 + 8
+            }"
+              r="4" fill="#f59e0b"/>`;
+          }
+        });
+
+        svg += "</svg>";
+
+        // Legend
+        const legend = `
+          <div style="display: flex; gap: 16px; margin-top: 10px; font-size: 10px; color: #78909c;">
+            <span><span style="display: inline-block; width: 12px; height: 12px; background: #0d2137; border: 2px solid #1e3a5f; border-radius: 3px; vertical-align: middle; margin-right: 4px;"></span> Step</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; vertical-align: middle; margin-right: 4px;"></span> Has condition</span>
+            <span style="color: #4a6a8a;">→ depends on</span>
+          </div>
+        `;
+
+        container.innerHTML = svg + legend;
+      }
 
       // Load on page load
       loadSchemas();
