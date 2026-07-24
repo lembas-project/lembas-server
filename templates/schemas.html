@@ -520,66 +520,37 @@
         const container = document.getElementById("dag-container");
         if (!container) return;
 
-        // Sort steps by their definition order
-        const sortedSteps = [...steps].sort(
-          (a, b) => (a.order ?? 0) - (b.order ?? 0),
-        );
-
         // Build adjacency map
         const stepMap = {};
-        sortedSteps.forEach((s) => {
+        steps.forEach((s) => {
           stepMap[s.name] = s;
         });
 
-        // Check if any step has explicit requires - if none do, show as sequential
-        const hasExplicitDeps = sortedSteps.some((s) => s.requires.length > 0);
-
-        // For implicit ordering: each step depends on the previous one
-        // For explicit ordering: use the requires field
-        const effectiveRequires = {};
-        sortedSteps.forEach((step, i) => {
-          if (hasExplicitDeps) {
-            effectiveRequires[step.name] = {
-              explicit: step.requires,
-              implicit: [],
-            };
-          } else {
-            // No explicit deps - show implicit sequential order
-            effectiveRequires[step.name] = {
-              explicit: [],
-              implicit: i > 0 ? [sortedSteps[i - 1].name] : [],
-            };
-          }
-        });
-
-        // Compute levels based on effective dependencies
+        // Compute levels based on requires dependencies
         const levels = {};
 
         function getLevel(name) {
           if (levels[name] !== undefined) return levels[name];
-          const deps = effectiveRequires[name];
-          if (!deps) return 0;
-
-          const allDeps = [...deps.explicit, ...deps.implicit];
-          if (allDeps.length === 0) {
+          const step = stepMap[name];
+          if (!step || step.requires.length === 0) {
             levels[name] = 0;
             return 0;
           }
 
           let maxParentLevel = -1;
-          for (const req of allDeps) {
+          for (const req of step.requires) {
             maxParentLevel = Math.max(maxParentLevel, getLevel(req));
           }
           levels[name] = maxParentLevel + 1;
           return levels[name];
         }
 
-        sortedSteps.forEach((s) => getLevel(s.name));
+        steps.forEach((s) => getLevel(s.name));
 
         // Group steps by level
         const levelGroups = {};
         let maxLevel = 0;
-        sortedSteps.forEach((s) => {
+        steps.forEach((s) => {
           const level = levels[s.name] || 0;
           if (!levelGroups[level]) levelGroups[level] = [];
           levelGroups[level].push(s);
@@ -628,20 +599,14 @@
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
             <polygon points="0 0, 10 3.5, 0 7" fill="#4a6a8a"/>
           </marker>
-          <marker id="arrowhead-implicit" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#2a5070"/>
-          </marker>
         </defs>`;
 
         // Draw edges
-        sortedSteps.forEach((step) => {
+        steps.forEach((step) => {
           const to = positions[step.name];
           if (!to) return;
-          const deps = effectiveRequires[step.name];
-          if (!deps) return;
 
-          // Draw explicit dependencies (solid lines)
-          deps.explicit.forEach((req) => {
+          step.requires.forEach((req) => {
             const from = positions[req];
             if (!from) return;
 
@@ -649,17 +614,6 @@
               x1="${from.x}" y1="${from.y + nodeHeight / 2}"
               x2="${to.x}" y2="${to.y - nodeHeight / 2 - 5}"
               stroke="#4a6a8a" stroke-width="2" marker-end="url(#arrowhead)"/>`;
-          });
-
-          // Draw implicit dependencies (dashed lines)
-          deps.implicit.forEach((req) => {
-            const from = positions[req];
-            if (!from) return;
-
-            svg += `<line
-              x1="${from.x}" y1="${from.y + nodeHeight / 2}"
-              x2="${to.x}" y2="${to.y - nodeHeight / 2 - 5}"
-              stroke="#2a5070" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-implicit)"/>`;
           });
         });
 
@@ -711,8 +665,7 @@
           <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: 10px; color: #78909c;">
             <span><span style="display: inline-block; width: 12px; height: 12px; background: #0d2137; border: 2px solid #1e3a5f; border-radius: 3px; vertical-align: middle; margin-right: 4px;"></span> Step</span>
             <span><span style="display: inline-block; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; vertical-align: middle; margin-right: 4px;"></span> Has condition</span>
-            <span><span style="display: inline-block; width: 20px; height: 2px; background: #4a6a8a; vertical-align: middle; margin-right: 4px;"></span> explicit requires=</span>
-            <span><span style="display: inline-block; width: 20px; height: 2px; background: repeating-linear-gradient(90deg, #2a5070 0px, #2a5070 5px, transparent 5px, transparent 8px); vertical-align: middle; margin-right: 4px;"></span> implicit (definition order)</span>
+            <span><span style="display: inline-block; width: 20px; height: 2px; background: #4a6a8a; vertical-align: middle; margin-right: 4px;"></span> requires</span>
           </div>
         `;
 
