@@ -28,7 +28,7 @@ jobs:
       run: |
         python -m pip install pre-commit
     - name: Install pixi
-      uses: prefix-dev/setup-pixi@2253d9c9310442c09975d64615591b5b381da6e7 # main
+      uses: prefix-dev/setup-pixi@d0c199d447010ea69c95ad4f7c145ec9794a0fba # main
       with:
         pixi-version: v0.70.2
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9   # v6.1.0
