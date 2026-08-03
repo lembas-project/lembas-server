@@ -1,5 +1,5 @@
 # Build stage: install pixi and create environment
-FROM ghcr.io/prefix-dev/pixi:0.75.0 AS builder
+FROM ghcr.io/prefix-dev/pixi:0.76.0 AS builder
 
 WORKDIR /app
 
