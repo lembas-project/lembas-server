@@ -24,8 +24,10 @@ WORKDIR /app
 # Copy the pixi environment from builder
 COPY --from=builder /app/.pixi /app/.pixi
 
-# Copy application code
+# Copy application code and alembic
 COPY app/ ./app/
+COPY alembic/ ./alembic/
+COPY alembic.ini ./
 
 # Set environment to use pixi's Python
 ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
@@ -33,4 +35,5 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run migrations then start the app
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

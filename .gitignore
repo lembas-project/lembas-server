@@ -19,3 +19,6 @@ __pycache__/
 
 # Generated build artifacts
 static/css/output.css
+
+# Local data directory (database, etc.)
+/data/

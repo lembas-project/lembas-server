@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     live_reload_mode: bool = False
     dummy_auth: bool = False
 
+    database_url: str = "sqlite+aiosqlite:///data/lembas.db"
+
     client_id: str
     client_secret: str
     redirect_url: str = "http://lembas.localhost"
