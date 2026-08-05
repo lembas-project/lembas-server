@@ -19,3 +19,9 @@ __pycache__/
 
 # Generated build artifacts
 static/css/output.css
+
+# Local SQLite database
+*.db
+
+# Artifacts directory
+artifacts/

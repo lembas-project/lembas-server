@@ -1,4 +1,6 @@
 [dependencies]
+aiosqlite = "*"
+cryptography = "*"
 fastapi = "*"
 httpx = "*"
 jinja2 = "*"
@@ -6,6 +8,7 @@ pydantic = "*"
 pydantic-settings = "*"
 python = ">=3.12"
 sentry-sdk = "*"
+sqlalchemy = ">=2.0"
 uvicorn = "*"
 
 [environments]

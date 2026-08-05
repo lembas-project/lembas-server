@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     live_reload_mode: bool = False
     dummy_auth: bool = False
 
+    database_url: str = "sqlite+aiosqlite:///./lembas.db"
+    token_default_expiry_days: int = 90
+    token_encryption_key: str = ""
+
     client_id: str
     client_secret: str
     redirect_url: str = "http://lembas.localhost"

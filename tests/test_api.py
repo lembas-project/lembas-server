@@ -11,7 +11,9 @@ async def test_get_health(client: AsyncClient) -> None:
 
 
 async def test_auth_callback_success(client: AsyncClient, mocker: Mock, base_url: str) -> None:
-    mock = mocker.patch("app.routes.exchange_code_for_token", return_value="valid-access-token")
+    mock = mocker.patch(
+        "app.routes.main.exchange_code_for_token", return_value="valid-access-token"
+    )
 
     response = await client.get(
         "/auth/callback", params={"code": "valid-code"}, follow_redirects=False
@@ -28,7 +30,7 @@ async def test_auth_callback_success(client: AsyncClient, mocker: Mock, base_url
 async def test_auth_callback_redirect_on_failure(
     client: AsyncClient, mocker: Mock, base_url: str
 ) -> None:
-    mock = mocker.patch("app.routes.exchange_code_for_token", return_value=None)
+    mock = mocker.patch("app.routes.main.exchange_code_for_token", return_value=None)
 
     response = await client.get(
         "/auth/callback", params={"code": "bad-code"}, follow_redirects=False

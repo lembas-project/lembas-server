@@ -3,12 +3,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import db
-from app.auth import exchange_code_for_token
+from app.auth import exchange_code_for_token, get_github_user_data
 from app.components import Homepage
+from app.database import get_db
 from app.dependencies import config, current_user, is_partial_request
 from app.models import User
+from app.services.user_service import get_or_create_user
 from app.settings import Settings
 from app.templates import render_template
 
@@ -73,11 +76,24 @@ async def auth_callback(
     request: Request,
     code: Annotated[str, Query],
     config: Annotated[Settings, Depends(config)],
+    db_session: Annotated[AsyncSession, Depends(get_db)],
 ) -> RedirectResponse:
     response = RedirectResponse(request.url_for("home"))
 
     if access_token := await exchange_code_for_token(code, config):
         response.set_cookie(key="access_token", value=access_token)
+
+        if not config.dummy_auth:
+            github_user = await get_github_user_data(access_token)
+            await get_or_create_user(
+                db_session,
+                github_id=github_user.id,
+                username=github_user.login,
+                name=github_user.name,
+                avatar_url=github_user.avatar_url,
+                github_access_token=access_token,
+                encryption_key=config.token_encryption_key,
+            )
 
     return response
 

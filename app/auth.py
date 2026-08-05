@@ -4,6 +4,16 @@ from app.models import User
 from app.settings import Settings
 
 
+class GitHubUserData:
+    """Raw GitHub user data."""
+
+    def __init__(self, data: dict):
+        self.id: int = data["id"]
+        self.login: str = data["login"]
+        self.name: str | None = data.get("name")
+        self.avatar_url: str = data.get("avatar_url", "")
+
+
 async def exchange_code_for_token(code: str, config: Settings) -> str | None:
     """Retrieve an access token based on the code from the authorization flow."""
     if config.dummy_auth:
@@ -28,7 +38,8 @@ async def exchange_code_for_token(code: str, config: Settings) -> str | None:
     return data.get("access_token")
 
 
-async def get_user_from_token(token: str) -> User:
+async def get_github_user_data(token: str) -> GitHubUserData:
+    """Fetch user data from GitHub API."""
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             "https://api.github.com/user",
@@ -38,5 +49,10 @@ async def get_user_from_token(token: str) -> User:
                 "X-GitHub-Api-Version": "2022-11-28",
             },
         )
-    data = resp.json()
-    return User(**data)
+    return GitHubUserData(resp.json())
+
+
+async def get_user_from_token(token: str) -> User:
+    """Get a User model from a GitHub access token."""
+    data = await get_github_user_data(token)
+    return User(login=data.login, name=data.name, avatar_url=data.avatar_url)

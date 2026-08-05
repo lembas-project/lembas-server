@@ -1,0 +1,48 @@
+"""Database initialization and session management."""
+
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from app.database.models import Base
+from app.settings import Settings
+
+_engine = None
+_session_factory: async_sessionmaker[AsyncSession] | None = None
+
+
+async def init_database(settings: Settings) -> None:
+    """Initialize the database engine and create tables."""
+    global _engine, _session_factory
+
+    _engine = create_async_engine(settings.database_url, echo=False)
+    _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
+
+    async with _engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def close_database() -> None:
+    """Close the database engine."""
+    global _engine
+    if _engine:
+        await _engine.dispose()
+        _engine = None
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Dependency that provides a database session."""
+    if _session_factory is None:
+        raise RuntimeError("Database not initialized. Call init_database first.")
+    async with _session_factory() as session:
+        yield session
+
+
+@asynccontextmanager
+async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
+    """Context manager for database sessions (for use outside FastAPI)."""
+    if _session_factory is None:
+        raise RuntimeError("Database not initialized. Call init_database first.")
+    async with _session_factory() as session:
+        yield session
