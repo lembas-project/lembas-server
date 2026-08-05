@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -15,6 +16,13 @@ _session_factory: async_sessionmaker[AsyncSession] | None = None
 async def init_database(settings: Settings) -> None:
     """Initialize the database engine and create tables."""
     global _engine, _session_factory
+
+    if settings.database_url.startswith("sqlite"):
+        db_path = settings.database_url.replace("sqlite+aiosqlite:///", "")
+        if db_path.startswith("./"):
+            db_path = db_path[2:]
+        if db_path != ":memory:":
+            Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
     _engine = create_async_engine(settings.database_url, echo=False)
     _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
