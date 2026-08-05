@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Cookie, Depends, Header, Request
+from fastapi import Cookie, Depends, Request
 
 from app.auth import get_user_from_token
 from app.models import User
@@ -22,9 +22,3 @@ async def current_user(
         return User(login="dummy")
 
     return await get_user_from_token(access_token)
-
-
-async def is_partial_request(
-    from_htmx: Annotated[str, Header(alias="hx-request")] = "",
-) -> bool:
-    return bool(from_htmx)

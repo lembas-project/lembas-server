@@ -1,7 +1,6 @@
 [dependencies]
 fastapi = "*"
 httpx = "*"
-jinja2 = "*"
 pydantic = "*"
 pydantic-settings = "*"
 python = ">=3.12"
@@ -19,9 +18,6 @@ pytest-asyncio = "*"
 pytest-env = "*"
 pytest-mock = "*"
 ruff = "*"
-
-[feature.dev.pypi-dependencies]
-jinja-partials = "*"
 
 [tasks]
 dev = "uvicorn app.main:app --reload --port 8001"

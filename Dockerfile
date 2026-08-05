@@ -26,8 +26,6 @@ COPY --from=builder /app/.pixi /app/.pixi
 
 # Copy application code
 COPY app/ ./app/
-COPY static/ ./static/
-COPY templates/ ./templates/
 
 # Set environment to use pixi's Python
 ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
