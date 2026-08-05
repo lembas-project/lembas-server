@@ -17,9 +17,6 @@ class Settings(BaseSettings):
     token_url: str = "https://github.com/login/oauth/access_token"
     login_url_base: str = "https://github.com/login/oauth/authorize"
 
-    static_dir: str = "static"
-    template_dir: str = "templates"
-
     sentry_dsn: str = ""
     sentry_environment: str = "dev"
     sentry_release: str = "unknown"
