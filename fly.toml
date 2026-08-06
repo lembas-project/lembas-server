@@ -3,8 +3,12 @@ primary_region = "dfw"
 
 [build]
 
+[deploy]
+release_command = "alembic upgrade head"
+
 [env]
 CLIENT_ID = "Ov23liZQ3GSRQrONST3V"
+DATABASE_URL = "sqlite+aiosqlite:///data/lembas.db"
 # CLIENT_SECRET is set as a secret in fly.io
 REDIRECT_URL = "https://lembas.matt-kramer.com"
 
@@ -15,6 +19,10 @@ force_https = true
 internal_port = 8000
 min_machines_running = 0
 processes = ["app"]
+
+[mounts]
+destination = "/app/data"
+source = "lembas_data"
 
 [[vm]]
 cpu_kind = "shared"

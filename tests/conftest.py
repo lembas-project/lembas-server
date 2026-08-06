@@ -4,6 +4,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
+from app.database import close_database, init_database
 from app.main import create_app
 from app.settings import Settings
 
@@ -11,12 +12,16 @@ ClientFactory = Callable[[], httpx.AsyncClient]
 
 
 @pytest.fixture(scope="session")
-def app() -> FastAPI:
+async def app() -> AsyncIterator[FastAPI]:
     config = Settings(
         client_id="test-client-id",
         client_secret="test-client-secret",
+        database_url="sqlite+aiosqlite:///:memory:",
     )
-    return create_app(config=config)
+    app = create_app(config=config)
+    await init_database(config)
+    yield app
+    await close_database()
 
 
 @pytest.fixture(scope="session")

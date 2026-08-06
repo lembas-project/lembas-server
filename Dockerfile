@@ -24,8 +24,10 @@ WORKDIR /app
 # Copy the pixi environment from builder
 COPY --from=builder /app/.pixi /app/.pixi
 
-# Copy application code
+# Copy application code and migrations
 COPY app/ ./app/
+COPY migrations/ ./migrations/
+COPY alembic.ini ./
 
 # Set environment to use pixi's Python
 ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
