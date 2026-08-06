@@ -5,5 +5,9 @@
 .idea/
 .ruff_cache/
 .pytest_cache/
+.mypy_cache/
+.pixi/
+node_modules/
 /envs/
 __pycache__/
+tests/
