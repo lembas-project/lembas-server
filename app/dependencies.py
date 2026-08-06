@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Cookie, Depends, Request
 
 from app.auth import get_user_from_token
-from app.models import User
+from app.schemas import User
 from app.settings import Settings
 
 
@@ -19,6 +19,6 @@ async def current_user(
         return None
 
     if config.dummy_auth:
-        return User(login="dummy")
+        return User(username="dummy")
 
     return await get_user_from_token(access_token)

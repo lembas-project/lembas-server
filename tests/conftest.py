@@ -3,8 +3,10 @@ from collections.abc import AsyncIterator, Callable
 import httpx
 import pytest
 from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import close_database, init_database
+from app.database import close_database, get_db_context, get_engine, init_database
+from app.database.models import Base
 from app.main import create_app
 from app.settings import Settings
 
@@ -20,8 +22,20 @@ async def app() -> AsyncIterator[FastAPI]:
     )
     app = create_app(config=config)
     await init_database(config)
+
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     yield app
     await close_database()
+
+
+@pytest.fixture
+async def db(app: FastAPI) -> AsyncIterator[AsyncSession]:
+    """Provide a database session for tests."""
+    async with get_db_context() as session:
+        yield session
 
 
 @pytest.fixture(scope="session")

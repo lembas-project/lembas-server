@@ -1,7 +1,16 @@
 import httpx
+from pydantic import BaseModel
 
-from app.models import User
+from app.schemas import User
 from app.settings import Settings
+
+
+class GitHubUserData(BaseModel):
+    """GitHub user data from the API."""
+
+    id: int
+    login: str
+    avatar_url: str = ""
 
 
 async def exchange_code_for_token(code: str, config: Settings) -> str | None:
@@ -28,7 +37,8 @@ async def exchange_code_for_token(code: str, config: Settings) -> str | None:
     return data.get("access_token")
 
 
-async def get_user_from_token(token: str) -> User:
+async def get_github_user_data(token: str) -> GitHubUserData:
+    """Fetch user data from GitHub API."""
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             "https://api.github.com/user",
@@ -38,5 +48,10 @@ async def get_user_from_token(token: str) -> User:
                 "X-GitHub-Api-Version": "2022-11-28",
             },
         )
-    data = resp.json()
-    return User(**data)
+    return GitHubUserData.model_validate(resp.json())
+
+
+async def get_user_from_token(token: str) -> User:
+    """Get a User model from a GitHub access token."""
+    data = await get_github_user_data(token)
+    return User(username=data.login, avatar_url=data.avatar_url)

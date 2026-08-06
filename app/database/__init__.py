@@ -4,7 +4,12 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.database.models import Base as Base
 from app.settings import Settings
@@ -14,7 +19,7 @@ _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 async def init_database(settings: Settings) -> None:
-    """Initialize the database engine and create tables."""
+    """Initialize the database engine."""
     global _engine, _session_factory
 
     if settings.database_url.startswith("sqlite"):
@@ -32,6 +37,13 @@ async def close_database() -> None:
     if _engine:
         await _engine.dispose()
         _engine = None
+
+
+def get_engine() -> AsyncEngine:
+    """Get the database engine. Raises if not initialized."""
+    if _engine is None:
+        raise RuntimeError("Database not initialized. Call init_database first.")
+    return _engine
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
