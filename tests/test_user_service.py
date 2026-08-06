@@ -1,3 +1,5 @@
+from datetime import UTC
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.user_service import (
@@ -19,6 +21,20 @@ async def test_create_new_user(db: AsyncSession) -> None:
     assert user.github_id == 1000001
     assert user.username == "newuser"
     assert user.avatar_url == "https://example.com/avatar.png"
+
+
+async def test_user_timestamps_are_timezone_aware(db: AsyncSession) -> None:
+    user = await get_or_create_user(
+        db,
+        github_id=2000001,
+        username="tzuser",
+        avatar_url=None,
+    )
+
+    assert user.created_at.tzinfo is not None
+    assert user.created_at.tzinfo == UTC
+    assert user.updated_at.tzinfo is not None
+    assert user.updated_at.tzinfo == UTC
 
 
 async def test_get_existing_user_returns_unchanged(db: AsyncSession) -> None:
