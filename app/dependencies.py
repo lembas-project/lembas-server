@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Cookie, Depends, Request
 
 from app.auth import get_user_from_token
-from app.models import User
+from app.schemas import User
 from app.settings import Settings
 
 

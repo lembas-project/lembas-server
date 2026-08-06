@@ -1,4 +1,4 @@
-from app.models import User
+from app.schemas import User
 
 
 def test_user_model_serialization() -> None:

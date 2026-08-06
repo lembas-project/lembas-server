@@ -1,12 +1,12 @@
 import httpx
 from pydantic import BaseModel
 
-from app.models import User
+from app.schemas import User
 from app.settings import Settings
 
 
 class GitHubUserData(BaseModel):
-    """Raw GitHub user data."""
+    """GitHub user data from the API."""
 
     id: int
     login: str
