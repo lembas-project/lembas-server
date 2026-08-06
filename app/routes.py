@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import RedirectResponse
@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import exchange_code_for_token, get_github_user_data
 from app.database import get_db
-from app.dependencies import config
+from app.dependencies import config, current_user
+from app.schemas import User
 from app.services.user_service import get_or_create_user
 from app.settings import Settings
 
@@ -17,8 +18,16 @@ router = APIRouter()
 
 
 @router.get("/")
-async def home() -> dict[str, str]:
-    return {"status": "ok"}
+async def home(
+    request: Request,
+    user: Annotated[User | None, Depends(current_user)],
+) -> dict[str, Any]:
+    return {
+        "status": "ok",
+        "user": user.model_dump() if user else None,
+        "login_url": str(request.url_for("auth_login")),
+        "logout_url": str(request.url_for("auth_logout")),
+    }
 
 
 @router.get("/api/healthz")
