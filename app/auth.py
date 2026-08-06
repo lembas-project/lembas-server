@@ -54,4 +54,4 @@ async def get_github_user_data(token: str) -> GitHubUserData:
 async def get_user_from_token(token: str) -> User:
     """Get a User model from a GitHub access token."""
     data = await get_github_user_data(token)
-    return User(login=data.login, avatar_url=data.avatar_url)
+    return User(username=data.login, avatar_url=data.avatar_url)

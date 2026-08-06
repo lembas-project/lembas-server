@@ -19,6 +19,6 @@ async def current_user(
         return None
 
     if config.dummy_auth:
-        return User(login="dummy")
+        return User(username="dummy")
 
     return await get_user_from_token(access_token)

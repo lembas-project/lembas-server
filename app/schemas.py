@@ -1,9 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class User(BaseModel):
     """User schema for API responses."""
 
-    username: str = Field(alias="login", serialization_alias="username")
+    username: str
     name: str | None = None
     avatar_url: str = ""
