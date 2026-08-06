@@ -10,13 +10,13 @@ from app.services.user_service import (
 async def test_create_new_user(db: AsyncSession) -> None:
     user = await get_or_create_user(
         db,
-        github_id=12345,
+        github_id=1000001,
         username="newuser",
         avatar_url="https://example.com/avatar.png",
     )
 
     assert user.id is not None
-    assert user.github_id == 12345
+    assert user.github_id == 1000001
     assert user.username == "newuser"
     assert user.avatar_url == "https://example.com/avatar.png"
 
