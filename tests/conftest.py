@@ -5,7 +5,8 @@ import pytest
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import close_database, get_db_context, init_database
+from app.database import close_database, get_db_context, get_engine, init_database
+from app.database.models import Base
 from app.main import create_app
 from app.settings import Settings
 
@@ -20,7 +21,12 @@ async def app() -> AsyncIterator[FastAPI]:
         database_url="sqlite+aiosqlite:///:memory:",
     )
     app = create_app(config=config)
-    await init_database(config, create_tables=True)
+    await init_database(config)
+
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     yield app
     await close_database()
 
