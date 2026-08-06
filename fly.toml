@@ -3,9 +3,6 @@ primary_region = "dfw"
 
 [build]
 
-[deploy]
-release_command = "alembic upgrade head"
-
 [env]
 CLIENT_ID = "Ov23liZQ3GSRQrONST3V"
 DATABASE_URL = "sqlite+aiosqlite:///data/lembas.db"
