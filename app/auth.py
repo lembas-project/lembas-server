@@ -1,16 +1,16 @@
 import httpx
+from pydantic import BaseModel
 
 from app.models import User
 from app.settings import Settings
 
 
-class GitHubUserData:
+class GitHubUserData(BaseModel):
     """Raw GitHub user data."""
 
-    def __init__(self, data: dict) -> None:
-        self.id: int = data["id"]
-        self.login: str = data["login"]
-        self.avatar_url: str = data.get("avatar_url", "")
+    id: int
+    login: str
+    avatar_url: str = ""
 
 
 async def exchange_code_for_token(code: str, config: Settings) -> str | None:
@@ -48,7 +48,7 @@ async def get_github_user_data(token: str) -> GitHubUserData:
                 "X-GitHub-Api-Version": "2022-11-28",
             },
         )
-    return GitHubUserData(resp.json())
+    return GitHubUserData.model_validate(resp.json())
 
 
 async def get_user_from_token(token: str) -> User:

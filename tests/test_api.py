@@ -15,11 +15,9 @@ async def test_get_health(client: AsyncClient) -> None:
 async def test_auth_callback_success(client: AsyncClient, mocker: Mock, base_url: str) -> None:
     mocker.patch("app.routes.exchange_code_for_token", return_value="valid-access-token")
     mock_github_user = GitHubUserData(
-        {
-            "id": 12345,
-            "login": "testuser",
-            "avatar_url": "https://example.com/avatar.png",
-        }
+        id=12345,
+        login="testuser",
+        avatar_url="https://example.com/avatar.png",
     )
     mocker.patch(
         "app.routes.get_github_user_data",
