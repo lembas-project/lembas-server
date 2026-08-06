@@ -13,8 +13,14 @@ _engine = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
-async def init_database(settings: Settings) -> None:
-    """Initialize the database engine and create tables."""
+async def init_database(settings: Settings, *, create_tables: bool = False) -> None:
+    """Initialize the database engine and optionally create tables.
+
+    Args:
+        settings: Application settings containing database_url.
+        create_tables: If True, create all tables directly (for testing).
+            In production, use Alembic migrations instead.
+    """
     global _engine, _session_factory
 
     if settings.database_url.startswith("sqlite"):
@@ -24,6 +30,10 @@ async def init_database(settings: Settings) -> None:
 
     _engine = create_async_engine(settings.database_url, echo=False)
     _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
+
+    if create_tables:
+        async with _engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
 
 
 async def close_database() -> None:

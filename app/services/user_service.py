@@ -1,7 +1,5 @@
 """User service for managing user records."""
 
-from datetime import datetime
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,15 +12,14 @@ async def get_or_create_user(
     username: str,
     avatar_url: str | None,
 ) -> User:
-    """Get an existing user by GitHub ID or create a new one."""
+    """Get an existing user by GitHub ID or create a new one.
+
+    If the user already exists, returns them unchanged.
+    """
     result = await db.execute(select(User).where(User.github_id == github_id))
     user = result.scalar_one_or_none()
 
     if user:
-        user.username = username
-        user.avatar_url = avatar_url
-        user.updated_at = datetime.utcnow()
-        await db.commit()
         return user
 
     user = User(
