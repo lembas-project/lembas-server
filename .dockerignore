@@ -3,7 +3,13 @@
 .git/
 .gitignore
 .idea/
-.ruff_cache/
+.mypy_cache/
+.pixi/
 .pytest_cache/
+.ruff_cache/
+/data/
 /envs/
 __pycache__/
+infra/
+node_modules/
+tests/
