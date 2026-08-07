@@ -28,6 +28,7 @@ COPY --from=builder /app/.pixi /app/.pixi
 COPY app/ ./app/
 COPY migrations/ ./migrations/
 COPY alembic.ini ./
+COPY entrypoint.sh ./
 
 # Set environment to use pixi's Python
 ENV PATH="/app/.pixi/envs/default/bin:${PATH}"
@@ -35,4 +36,5 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8000
 
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
