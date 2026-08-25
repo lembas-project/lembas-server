@@ -5,6 +5,7 @@ from datetime import UTC
 from datetime import datetime
 
 from sqlalchemy import Select
+from sqlalchemy import Update
 from sqlalchemy import case as sa_case
 from sqlalchemy import literal
 from sqlalchemy import select
@@ -164,11 +165,9 @@ async def delete_study(db: AsyncSession, study_id: str) -> bool:
     return True
 
 
-async def update_case_status(
-    db: AsyncSession, study_id: str, case_id: str, payload: CaseStatusUpdatePayload
-) -> CaseSchema | None:
-    now = datetime.now(UTC)
-
+def _build_case_status_update_stmt(
+    study_id: str, case_id: str, payload: CaseStatusUpdatePayload, now: datetime
+) -> Update:
     values: dict = {"status": payload.status}
 
     if payload.status == CaseStatus.running:
@@ -188,17 +187,21 @@ async def update_case_status(
     if payload.environment is not None:
         values["environment"] = json.dumps(payload.environment)
 
-    stmt = (
+    return (
         sa_update(Case)
         .where(Case.study_id == study_id, Case.id == case_id)
         .values(**values)
         .returning(Case)
     )
 
+
+async def update_case_status(
+    db: AsyncSession, study_id: str, case_id: str, payload: CaseStatusUpdatePayload
+) -> CaseSchema | None:
+    stmt = _build_case_status_update_stmt(study_id, case_id, payload, datetime.now(UTC))
     result = await db.execute(stmt)
     row = result.scalar_one_or_none()
     if row is None:
         return None
-
     await db.commit()
     return _orm_case_to_schema(row)
