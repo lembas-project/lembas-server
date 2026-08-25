@@ -158,9 +158,7 @@ async def delete_study(db: AsyncSession, study_id: str) -> bool:
 async def update_case_status(
     db: AsyncSession, study_id: str, case_id: str, update: CaseStatusUpdate
 ) -> CaseRun | None:
-    result = await db.execute(
-        select(Case).where(Case.study_id == study_id, Case.id == case_id)
-    )
+    result = await db.execute(select(Case).where(Case.study_id == study_id, Case.id == case_id))
     case = result.scalar_one_or_none()
     if case is None:
         return None
