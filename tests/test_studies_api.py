@@ -28,13 +28,24 @@ STUDY_PAYLOAD = {
     ],
 }
 
-FAKE_USER = User(id="00000000-0000-0000-0000-000000000001", github_id="99999", username="testuser", avatar_url="")
-OTHER_USER = User(id="00000000-0000-0000-0000-000000000002", github_id="88888", username="otheruser", avatar_url="")
+FAKE_USER = User(
+    id="00000000-0000-0000-0000-000000000001",
+    github_id="99999",
+    username="testuser",
+    avatar_url="",
+)
+OTHER_USER = User(
+    id="00000000-0000-0000-0000-000000000002",
+    github_id="88888",
+    username="otheruser",
+    avatar_url="",
+)
 
 
 @asynccontextmanager
 async def as_user(app: FastAPI, user: User | None) -> AsyncIterator[None]:
     """Context manager to override current_user for a block of code."""
+
     async def override() -> User | None:
         return user
 
