@@ -18,7 +18,12 @@ async def test_list_users_empty(client: AsyncClient) -> None:
 
 
 async def test_list_users_returns_known_users(app: FastAPI, client: AsyncClient) -> None:
-    dummy_user = User(id="user-uuid-1", github_id="99001", username="alice", avatar_url="https://example.com/alice.png")
+    dummy_user = User(
+        id="user-uuid-1",
+        github_id="99001",
+        username="alice",
+        avatar_url="https://example.com/alice.png",
+    )
 
     async def override() -> User:
         return dummy_user
