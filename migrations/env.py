@@ -40,16 +40,26 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    url = get_url()
+    # Allow pytest-alembic to inject a connection at runtime
+    connectable = context.config.attributes.get("connection", None)
 
-    if url.startswith("sqlite:///") and not url.endswith(":memory:"):
-        db_path = url.replace("sqlite:///", "")
-        Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+    if connectable is None:
+        url = get_url()
 
-    connectable = create_engine(url, poolclass=pool.NullPool)
+        if url.startswith("sqlite:///") and not url.endswith(":memory:"):
+            db_path = url.replace("sqlite:///", "")
+            Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+
+        connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            include_object=lambda obj, name, type_, *args, **kw: (
+                type_ != "table" or name in target_metadata.tables
+            ),
+        )
 
         with context.begin_transaction():
             context.run_migrations()

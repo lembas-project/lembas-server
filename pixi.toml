@@ -17,6 +17,7 @@ default = {features = ["dev"], solve-group = "default"}
 mypy = "*"
 pre-commit = ">=4"
 pytest = ">=8"
+pytest-alembic = "*"
 pytest-asyncio = "*"
 pytest-env = "*"
 pytest-mock = "*"
@@ -25,7 +26,7 @@ ruff = "*"
 [tasks]
 dev = "uvicorn app.main:app --reload --port 8001"
 lint = "ruff check app/ tests/"
-test = "pytest tests/"
+test = "pytest --test-alembic tests/"
 typecheck = "mypy"
 
 [workspace]

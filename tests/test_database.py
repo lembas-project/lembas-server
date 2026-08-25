@@ -9,14 +9,18 @@ import pytest
 from sqlalchemy import Integer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
-from app.database.models import Base
 from app.database.models import TZDateTime
 
 
-class TimestampModel(Base):
+class _TestBase(DeclarativeBase):
+    pass
+
+
+class TimestampModel(_TestBase):
     """Test model for TZDateTime tests."""
 
     __tablename__ = "test_timestamps"
