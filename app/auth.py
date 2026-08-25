@@ -1,7 +1,6 @@
 import httpx
 from pydantic import BaseModel
 
-from app.schemas import User
 from app.settings import Settings
 
 
@@ -49,9 +48,3 @@ async def get_github_user_data(token: str) -> GitHubUserData:
             },
         )
     return GitHubUserData.model_validate(resp.json())
-
-
-async def get_user_from_token(token: str) -> User:
-    """Get a User model from a GitHub access token."""
-    data = await get_github_user_data(token)
-    return User(username=data.login, avatar_url=data.avatar_url)
