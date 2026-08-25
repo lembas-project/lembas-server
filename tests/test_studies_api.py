@@ -64,9 +64,7 @@ async def _as_user_ctx(app: FastAPI, user: User | None) -> AsyncGenerator[None, 
         app.dependency_overrides.pop(current_user)
 
 
-async def test_create_study(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_create_study(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         response = await client.post("/api/studies", json=STUDY_PAYLOAD)
         assert response.status_code == 201
@@ -92,9 +90,7 @@ async def test_create_study_unauthenticated(
         assert response.status_code == 401
 
 
-async def test_list_studies(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_list_studies(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         for name in ("list-study-a", "list-study-b"):
             resp = await client.post("/api/studies", json={"name": name, "cases": []})
@@ -120,9 +116,7 @@ async def test_list_studies_empty_pagination_fields(client: AsyncClient) -> None
     assert data["offset"] is None
 
 
-async def test_get_study(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_get_study(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         create_resp = await client.post(
             "/api/studies",
@@ -144,9 +138,7 @@ async def test_get_study_not_found(client: AsyncClient) -> None:
     assert response.status_code == 404
 
 
-async def test_update_study(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_update_study(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         create_resp = await client.post(
             "/api/studies",
@@ -155,13 +147,16 @@ async def test_update_study(
         assert create_resp.status_code == 201
         study_id = create_resp.json()["id"]
 
-        response = await client.put(f"/api/studies/{study_id}", json={
-            "name": "update-test-renamed",
-            "cases": [
-                {"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 2}},
-                {"id": "case-b", "handler_fqn": "test.Case", "inputs": {"x": 3}},
-            ],
-        })
+        response = await client.put(
+            f"/api/studies/{study_id}",
+            json={
+                "name": "update-test-renamed",
+                "cases": [
+                    {"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 2}},
+                    {"id": "case-b", "handler_fqn": "test.Case", "inputs": {"x": 3}},
+                ],
+            },
+        )
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "update-test-renamed"
@@ -194,17 +189,13 @@ async def test_update_study_forbidden_wrong_user(
         assert response.status_code == 403
 
 
-async def test_update_study_not_found(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_update_study_not_found(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         response = await client.put("/api/studies/nonexistent-id", json={"name": "x", "cases": []})
         assert response.status_code == 404
 
 
-async def test_delete_study(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_delete_study(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         create_resp = await client.post("/api/studies", json={"name": "delete-test", "cases": []})
         assert create_resp.status_code == 201
@@ -241,17 +232,13 @@ async def test_delete_study_forbidden_wrong_user(
         assert response.status_code == 403
 
 
-async def test_delete_study_not_found(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_delete_study_not_found(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         response = await client.delete("/api/studies/nonexistent-id")
         assert response.status_code == 404
 
 
-async def test_get_study_detail(
-    app: FastAPI, client: AsyncClient, fake_user: User
-) -> None:
+async def test_get_study_detail(app: FastAPI, client: AsyncClient, fake_user: User) -> None:
     async with as_user(app, fake_user):
         create_resp = await client.post(
             "/api/studies",

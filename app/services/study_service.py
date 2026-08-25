@@ -58,9 +58,7 @@ def _study_query(study_id: str | None = None) -> Select[tuple[Study]]:
     return q
 
 
-async def create_study(
-    db: AsyncSession, payload: StudyCreate, pushed_by_id: str
-) -> StudySchema:
+async def create_study(db: AsyncSession, payload: StudyCreate, pushed_by_id: str) -> StudySchema:
     study = Study(
         name=payload.name,
         description=payload.description,
