@@ -16,7 +16,7 @@ async def test_create_new_user(db: AsyncSession) -> None:
     )
 
     assert user.id is not None
-    assert user.github_id == 1000001
+    assert user.github_id == "1000001"
     assert user.username == "newuser"
     assert user.avatar_url == "https://example.com/avatar.png"
 
@@ -68,7 +68,7 @@ async def test_get_user_by_id(db: AsyncSession) -> None:
     assert found is not None
     assert found.username == "findme"
 
-    not_found = await get_user_by_id(db, 999999)
+    not_found = await get_user_by_id(db, "nonexistent-uuid")
     assert not_found is None
 
 
