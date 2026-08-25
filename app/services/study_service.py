@@ -5,16 +5,13 @@ from datetime import UTC
 from datetime import datetime
 
 from sqlalchemy import Select
-from sqlalchemy import Update
-from sqlalchemy import case as sa_case
-from sqlalchemy import literal
 from sqlalchemy import select
-from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database.models import Case
 from app.database.models import Study
+from app.database.queries import build_case_status_update_stmt
 from app.enums import CaseStatus
 from app.schemas import CaseSchema
 from app.schemas import CaseStatusUpdatePayload
@@ -165,40 +162,10 @@ async def delete_study(db: AsyncSession, study_id: str) -> bool:
     return True
 
 
-def _build_case_status_update_stmt(
-    study_id: str, case_id: str, payload: CaseStatusUpdatePayload, now: datetime
-) -> Update:
-    values: dict = {"status": payload.status}
-
-    if payload.status == CaseStatus.running:
-        values["started_at"] = sa_case(
-            (Case.started_at.is_(None), literal(now)),
-            else_=Case.started_at,
-        )
-    elif payload.status in (CaseStatus.complete, CaseStatus.failed):
-        values["completed_at"] = now
-
-    if payload.error_message is not None:
-        values["error_message"] = payload.error_message
-    if payload.duration_seconds is not None:
-        values["duration_seconds"] = payload.duration_seconds
-    if payload.results is not None:
-        values["results"] = json.dumps(payload.results)
-    if payload.environment is not None:
-        values["environment"] = json.dumps(payload.environment)
-
-    return (
-        sa_update(Case)
-        .where(Case.study_id == study_id, Case.id == case_id)
-        .values(**values)
-        .returning(Case)
-    )
-
-
 async def update_case_status(
     db: AsyncSession, study_id: str, case_id: str, payload: CaseStatusUpdatePayload
 ) -> CaseSchema | None:
-    stmt = _build_case_status_update_stmt(study_id, case_id, payload, datetime.now(UTC))
+    stmt = build_case_status_update_stmt(study_id, case_id, payload, datetime.now(UTC))
     result = await db.execute(stmt)
     row = result.scalar_one_or_none()
     if row is None:
