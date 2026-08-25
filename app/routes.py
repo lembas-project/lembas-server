@@ -1,13 +1,19 @@
 import logging
-from typing import Annotated, Any
+from typing import Annotated
+from typing import Any
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter
+from fastapi import Depends
+from fastapi import Query
+from fastapi import Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import exchange_code_for_token, get_github_user_data
+from app.auth import exchange_code_for_token
+from app.auth import get_github_user_data
 from app.database import get_db
-from app.dependencies import config, current_user
+from app.dependencies import config
+from app.dependencies import current_user
 from app.schemas import User
 from app.services.user_service import get_or_create_user
 from app.settings import Settings

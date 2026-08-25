@@ -30,3 +30,6 @@ target-version = "py312"
 fixable = ["ALL"]
 # see https://docs.astral.sh/ruff/rules/
 select = ["F", "E", "W", "C90", "I", "UP"]
+
+[tool.ruff.lint.isort]
+force-single-line = true

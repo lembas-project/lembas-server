@@ -2,7 +2,8 @@
 
 from urllib.parse import urlencode
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):

@@ -2,11 +2,9 @@ from datetime import UTC
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.user_service import (
-    get_or_create_user,
-    get_user_by_github_id,
-    get_user_by_id,
-)
+from app.services.user_service import get_or_create_user
+from app.services.user_service import get_user_by_github_id
+from app.services.user_service import get_user_by_id
 
 
 async def test_create_new_user(db: AsyncSession) -> None:
