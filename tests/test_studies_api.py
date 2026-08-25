@@ -40,9 +40,13 @@ async def test_create_study(client: AsyncClient) -> None:
 
 
 async def test_get_study(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "fetch-test", "cases": [
-        {"case_id": "xyz789", "handler_fqn": "test.Case", "inputs": {}}
-    ]})
+    create_resp = await client.post(
+        "/api/studies",
+        json={
+            "name": "fetch-test",
+            "cases": [{"case_id": "xyz789", "handler_fqn": "test.Case", "inputs": {}}],
+        },
+    )
     assert create_resp.status_code == 201
     study_id = create_resp.json()["id"]
 
@@ -60,9 +64,13 @@ async def test_get_study_not_found(client: AsyncClient) -> None:
 
 
 async def test_update_study(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "update-test", "cases": [
-        {"case_id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 1}}
-    ]})
+    create_resp = await client.post(
+        "/api/studies",
+        json={
+            "name": "update-test",
+            "cases": [{"case_id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 1}}],
+        },
+    )
     assert create_resp.status_code == 201
     study_id = create_resp.json()["id"]
 
@@ -85,9 +93,7 @@ async def test_update_study(client: AsyncClient) -> None:
 
 
 async def test_update_study_not_found(client: AsyncClient) -> None:
-    response = await client.put(
-        "/api/studies/nonexistent-id", json={"name": "x", "cases": []}
-    )
+    response = await client.put("/api/studies/nonexistent-id", json={"name": "x", "cases": []})
     assert response.status_code == 404
 
 
@@ -110,9 +116,13 @@ async def test_delete_study_not_found(client: AsyncClient) -> None:
 
 
 async def test_get_study_detail(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "detail-test", "cases": [
-        {"case_id": "c1", "handler_fqn": "test.Case", "inputs": {"param": "value"}}
-    ]})
+    create_resp = await client.post(
+        "/api/studies",
+        json={
+            "name": "detail-test",
+            "cases": [{"case_id": "c1", "handler_fqn": "test.Case", "inputs": {"param": "value"}}],
+        },
+    )
     assert create_resp.status_code == 201
     study_id = create_resp.json()["id"]
 
@@ -127,9 +137,13 @@ async def test_get_study_detail(client: AsyncClient) -> None:
 
 
 async def test_update_case_status_to_running(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "status-test", "cases": [
-        {"case_id": "case001", "handler_fqn": "test.Case", "inputs": {}}
-    ]})
+    create_resp = await client.post(
+        "/api/studies",
+        json={
+            "name": "status-test",
+            "cases": [{"case_id": "case001", "handler_fqn": "test.Case", "inputs": {}}],
+        },
+    )
     assert create_resp.status_code == 201
     study_id = create_resp.json()["id"]
 
@@ -144,16 +158,18 @@ async def test_update_case_status_to_running(client: AsyncClient) -> None:
 
 
 async def test_update_case_status_to_complete(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "complete-test", "cases": [
-        {"case_id": "case002", "handler_fqn": "test.Case", "inputs": {}}
-    ]})
+    create_resp = await client.post(
+        "/api/studies",
+        json={
+            "name": "complete-test",
+            "cases": [{"case_id": "case002", "handler_fqn": "test.Case", "inputs": {}}],
+        },
+    )
     assert create_resp.status_code == 201
     study_id = create_resp.json()["id"]
 
     # running → complete
-    await client.patch(
-        f"/api/studies/{study_id}/cases/case002", json={"status": "running"}
-    )
+    await client.patch(f"/api/studies/{study_id}/cases/case002", json={"status": "running"})
     response = await client.patch(
         f"/api/studies/{study_id}/cases/case002",
         json={"status": "complete", "duration_seconds": 1.5, "results": {"lift": 42.0}},
@@ -167,9 +183,13 @@ async def test_update_case_status_to_complete(client: AsyncClient) -> None:
 
 
 async def test_update_case_status_failed_with_error(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "fail-test", "cases": [
-        {"case_id": "case003", "handler_fqn": "test.Case", "inputs": {}}
-    ]})
+    create_resp = await client.post(
+        "/api/studies",
+        json={
+            "name": "fail-test",
+            "cases": [{"case_id": "case003", "handler_fqn": "test.Case", "inputs": {}}],
+        },
+    )
     assert create_resp.status_code == 201
     study_id = create_resp.json()["id"]
 
@@ -207,9 +227,7 @@ async def test_study_with_handler_schemas(client: AsyncClient) -> None:
                 "schema_fingerprint": "abcdef012345",
             }
         ],
-        "cases": [
-            {"case_id": "h1", "handler_fqn": "test.PlaningPlateCase", "inputs": {}}
-        ],
+        "cases": [{"case_id": "h1", "handler_fqn": "test.PlaningPlateCase", "inputs": {}}],
     }
     response = await client.post("/api/studies", json=payload)
     assert response.status_code == 201

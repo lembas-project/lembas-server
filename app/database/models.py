@@ -98,4 +98,3 @@ class Case(Base):
     environment: Mapped[str | None] = mapped_column(Text)  # JSON dict
 
     study: Mapped["Study"] = relationship("Study", back_populates="cases")
-
