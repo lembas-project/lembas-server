@@ -14,8 +14,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import exchange_code_for_token
 from app.auth import get_github_user_data
 from app.database import get_db
+from app.database.models import User as UserOrm
 from app.dependencies import config
 from app.dependencies import current_user
+from app.dependencies import current_user_orm
 from app.schemas import CaseStatusUpdate
 from app.schemas import Study
 from app.schemas import StudyCreate
@@ -98,12 +100,11 @@ async def auth_logout(request: Request) -> RedirectResponse:
 @router.post("/api/studies", status_code=status.HTTP_201_CREATED)
 async def create_study(
     payload: StudyCreate,
-    user: Annotated[User | None, Depends(current_user)],
+    user: Annotated[UserOrm | None, Depends(current_user_orm)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
     """Register a new study with its cases."""
-    pushed_by = user.username if user else None
-    study = await study_service.create_study(db, payload, pushed_by=pushed_by)
+    study = await study_service.create_study(db, payload, pushed_by_id=user.id if user else None)
     log.info(f"Created study {study.id} with {len(study.cases)} cases")
     return study
 

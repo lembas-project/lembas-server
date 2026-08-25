@@ -63,7 +63,8 @@ class Study(BaseModel):
     plugins_declared: list[str] = Field(default_factory=list)
     cases: dict[str, CaseRun] = Field(default_factory=dict)
     created_at: datetime
-    pushed_by: str | None = None
+    pushed_by_id: str | None = None
+    pushed_by: str | None = None  # username, resolved from pushed_by_id via join
 
 
 class CaseStatusUpdate(BaseModel):

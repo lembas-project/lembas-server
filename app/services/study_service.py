@@ -4,6 +4,7 @@ import json
 from datetime import UTC
 from datetime import datetime
 
+from sqlalchemy import Select
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -41,20 +42,31 @@ def _orm_study_to_schema(study: Study) -> StudySchema:
         tags=json.loads(study.tags) if study.tags else [],
         plugins_declared=json.loads(study.plugins_declared) if study.plugins_declared else [],
         created_at=study.created_at,
-        pushed_by=study.pushed_by,
+        pushed_by_id=study.pushed_by_id,
+        pushed_by=study.pushed_by.username if study.pushed_by else None,
         cases=cases,
     )
 
 
+def _study_query(study_id: str | None = None) -> Select[tuple[Study]]:
+    q = select(Study).options(
+        selectinload(Study.cases),
+        selectinload(Study.pushed_by),
+    )
+    if study_id is not None:
+        q = q.where(Study.id == study_id)
+    return q
+
+
 async def create_study(
-    db: AsyncSession, payload: StudyCreate, pushed_by: str | None = None
+    db: AsyncSession, payload: StudyCreate, pushed_by_id: str | None = None
 ) -> StudySchema:
     study = Study(
         name=payload.name,
         description=payload.description,
         tags=json.dumps(payload.tags),
         plugins_declared=json.dumps(payload.plugins_declared),
-        pushed_by=pushed_by,
+        pushed_by_id=pushed_by_id,
     )
     db.add(study)
     await db.flush()  # populate study.id from ORM default
@@ -72,17 +84,13 @@ async def create_study(
 
     await db.commit()
 
-    result = await db.execute(
-        select(Study).where(Study.id == study.id).options(selectinload(Study.cases))
-    )
+    result = await db.execute(_study_query(study.id))
     study = result.scalar_one()
     return _orm_study_to_schema(study)
 
 
 async def get_study(db: AsyncSession, study_id: str) -> StudySchema | None:
-    result = await db.execute(
-        select(Study).where(Study.id == study_id).options(selectinload(Study.cases))
-    )
+    result = await db.execute(_study_query(study_id))
     study = result.scalar_one_or_none()
     if study is None:
         return None
@@ -91,7 +99,9 @@ async def get_study(db: AsyncSession, study_id: str) -> StudySchema | None:
 
 async def get_all_studies(db: AsyncSession) -> list[StudySchema]:
     result = await db.execute(
-        select(Study).order_by(Study.created_at.desc()).options(selectinload(Study.cases))
+        select(Study)
+        .order_by(Study.created_at.desc())
+        .options(selectinload(Study.cases), selectinload(Study.pushed_by))
     )
     return [_orm_study_to_schema(s) for s in result.scalars().all()]
 
@@ -99,9 +109,7 @@ async def get_all_studies(db: AsyncSession) -> list[StudySchema]:
 async def update_study(
     db: AsyncSession, study_id: str, payload: StudyCreate
 ) -> StudySchema | None:
-    result = await db.execute(
-        select(Study).where(Study.id == study_id).options(selectinload(Study.cases))
-    )
+    result = await db.execute(_study_query(study_id))
     study = result.scalar_one_or_none()
     if study is None:
         return None
@@ -132,9 +140,7 @@ async def update_study(
     await db.commit()
     db.expire_all()
 
-    result = await db.execute(
-        select(Study).where(Study.id == study_id).options(selectinload(Study.cases))
-    )
+    result = await db.execute(_study_query(study_id))
     study = result.scalar_one()
     return _orm_study_to_schema(study)
 

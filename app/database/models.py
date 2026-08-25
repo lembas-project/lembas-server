@@ -70,8 +70,11 @@ class Study(Base):
     tags: Mapped[str | None] = mapped_column(Text)  # JSON array
     plugins_declared: Mapped[str | None] = mapped_column(Text)  # JSON array
     created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
-    pushed_by: Mapped[str | None] = mapped_column(String(255))
+    pushed_by_id: Mapped[str | None] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("users.id"), nullable=True
+    )
 
+    pushed_by: Mapped["User | None"] = relationship("User")
     cases: Mapped[list["Case"]] = relationship(
         "Case", back_populates="study", cascade="all, delete-orphan"
     )

@@ -26,7 +26,8 @@ def upgrade() -> None:
         sa.Column("tags", sa.Text(), nullable=True),
         sa.Column("plugins_declared", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("pushed_by", sa.String(length=255), nullable=True),
+        sa.Column("pushed_by_id", sa.Uuid(), nullable=True),
+        sa.ForeignKeyConstraint(["pushed_by_id"], ["users.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
