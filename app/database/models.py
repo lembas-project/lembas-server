@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import DateTime
+from sqlalchemy import Enum
 from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import String
@@ -17,6 +18,8 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Uuid
+
+from app.enums import CaseStatus
 
 
 class TZDateTime(TypeDecorator[datetime]):
@@ -70,11 +73,11 @@ class Study(Base):
     tags: Mapped[str | None] = mapped_column(Text)  # JSON array
     plugins_declared: Mapped[str | None] = mapped_column(Text)  # JSON array
     created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
-    pushed_by_id: Mapped[str | None] = mapped_column(
-        Uuid(as_uuid=False), ForeignKey("users.id"), nullable=True
+    pushed_by_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("users.id"), nullable=False
     )
 
-    pushed_by: Mapped["User | None"] = relationship("User")
+    pushed_by: Mapped["User"] = relationship("User")
     cases: Mapped[list["Case"]] = relationship(
         "Case", back_populates="study", cascade="all, delete-orphan"
     )
@@ -91,7 +94,9 @@ class Case(Base):
     id: Mapped[str] = mapped_column(String(64), nullable=False, primary_key=True)
     handler_fqn: Mapped[str] = mapped_column(Text, nullable=False)
     inputs: Mapped[str | None] = mapped_column(Text)  # JSON dict
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    status: Mapped[CaseStatus] = mapped_column(
+        Enum(CaseStatus), nullable=False, default=CaseStatus.pending
+    )
     started_at: Mapped[datetime | None] = mapped_column(TZDateTime)
     completed_at: Mapped[datetime | None] = mapped_column(TZDateTime)
     duration_seconds: Mapped[float | None] = mapped_column(Float)

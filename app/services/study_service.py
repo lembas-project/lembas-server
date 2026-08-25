@@ -11,8 +11,8 @@ from sqlalchemy.orm import selectinload
 
 from app.database.models import Case
 from app.database.models import Study
+from app.enums import CaseStatus
 from app.schemas import CaseRun
-from app.schemas import CaseStatus
 from app.schemas import CaseStatusUpdate
 from app.schemas import Study as StudySchema
 from app.schemas import StudyCreate
@@ -23,7 +23,7 @@ def _orm_case_to_schema(case: Case) -> CaseRun:
         id=case.id,
         handler_fqn=case.handler_fqn,
         inputs=json.loads(case.inputs) if case.inputs else {},
-        status=CaseStatus(case.status),
+        status=case.status,
         started_at=case.started_at,
         completed_at=case.completed_at,
         duration_seconds=case.duration_seconds,
@@ -43,7 +43,7 @@ def _orm_study_to_schema(study: Study) -> StudySchema:
         plugins_declared=json.loads(study.plugins_declared) if study.plugins_declared else [],
         created_at=study.created_at,
         pushed_by_id=study.pushed_by_id,
-        pushed_by=study.pushed_by.username if study.pushed_by else None,
+        pushed_by=study.pushed_by.username,
         cases=cases,
     )
 
@@ -78,7 +78,7 @@ async def create_study(
                 id=c.id,
                 handler_fqn=c.handler_fqn,
                 inputs=json.dumps(c.inputs),
-                status="pending",
+                status=CaseStatus.pending,
             )
         )
 
@@ -133,7 +133,7 @@ async def update_study(
                     id=c.id,
                     handler_fqn=c.handler_fqn,
                     inputs=json.dumps(c.inputs),
-                    status="pending",
+                    status=CaseStatus.pending,
                 )
             )
 
@@ -164,7 +164,7 @@ async def update_case_status(
         return None
 
     now = datetime.now(UTC)
-    case.status = update.status.value
+    case.status = update.status
 
     if update.status == CaseStatus.running and case.started_at is None:
         case.started_at = now

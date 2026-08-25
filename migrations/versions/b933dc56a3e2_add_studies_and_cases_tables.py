@@ -11,6 +11,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
+from app.enums import CaseStatus
+
 revision: str = "b933dc56a3e2"
 down_revision: str | Sequence[str] | None = "ee252c2d7beb"
 branch_labels: str | Sequence[str] | None = None
@@ -26,7 +28,7 @@ def upgrade() -> None:
         sa.Column("tags", sa.Text(), nullable=True),
         sa.Column("plugins_declared", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("pushed_by_id", sa.Uuid(), nullable=True),
+        sa.Column("pushed_by_id", sa.Uuid(), nullable=False),
         sa.ForeignKeyConstraint(["pushed_by_id"], ["users.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -36,7 +38,12 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=64), nullable=False),
         sa.Column("handler_fqn", sa.Text(), nullable=False),
         sa.Column("inputs", sa.Text(), nullable=True),
-        sa.Column("status", sa.String(length=16), nullable=False, server_default="pending"),
+        sa.Column(
+            "status",
+            sa.Enum(CaseStatus),
+            nullable=False,
+            server_default=CaseStatus.pending,
+        ),
         sa.Column("started_at", sa.DateTime(), nullable=True),
         sa.Column("completed_at", sa.DateTime(), nullable=True),
         sa.Column("duration_seconds", sa.Float(), nullable=True),

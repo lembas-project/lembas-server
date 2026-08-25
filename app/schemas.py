@@ -1,9 +1,10 @@
 from datetime import datetime
-from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel
 from pydantic import Field
+
+from app.enums import CaseStatus as CaseStatus  # re-exported for API consumers
 
 
 class Page[T](BaseModel):
@@ -26,20 +27,6 @@ class UserResponse(BaseModel):
     id: str
     username: str
     avatar_url: str | None = None
-
-
-class User(BaseModel):
-    """User schema for API responses."""
-
-    username: str
-    avatar_url: str = ""
-
-
-class CaseStatus(StrEnum):
-    pending = "pending"
-    running = "running"
-    complete = "complete"
-    failed = "failed"
 
 
 class CaseRunCreate(BaseModel):
@@ -85,8 +72,8 @@ class Study(BaseModel):
     plugins_declared: list[str] = Field(default_factory=list)
     cases: dict[str, CaseRun] = Field(default_factory=dict)
     created_at: datetime
-    pushed_by_id: str | None = None
-    pushed_by: str | None = None  # username, resolved from pushed_by_id via join
+    pushed_by_id: str
+    pushed_by: str  # username, resolved from pushed_by_id via join
 
 
 class CaseStatusUpdate(BaseModel):
@@ -105,7 +92,7 @@ class StudyResponse(BaseModel):
     study_id: str
     meta: dict[str, Any]
     pushed_at: datetime
-    pushed_by: str | None
+    pushed_by: str
     runs: list[dict[str, Any]]
 
     @classmethod
