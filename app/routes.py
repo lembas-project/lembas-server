@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import exchange_code_for_token
 from app.auth import get_github_user_data
 from app.database import get_db
-from app.database.models import User as UserOrm
+from app.database.models import User
 from app.dependencies import config
 from app.dependencies import current_user
 from app.schemas import CaseStatusUpdate
@@ -34,7 +34,7 @@ router = APIRouter()
 @router.get("/")
 async def home(
     request: Request,
-    user: Annotated[UserOrm | None, Depends(current_user)],
+    user: Annotated[User | None, Depends(current_user)],
 ) -> dict[str, Any]:
     return {
         "status": "ok",
@@ -108,7 +108,7 @@ async def list_studies(
 @router.post("/api/studies", status_code=status.HTTP_201_CREATED)
 async def create_study(
     payload: StudyCreate,
-    user: Annotated[UserOrm | None, Depends(current_user)],
+    user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
     """Register a new study with its cases."""
