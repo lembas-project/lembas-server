@@ -4,8 +4,10 @@ from typing import Any
 
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
 from fastapi import Query
 from fastapi import Request
+from fastapi import status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +16,12 @@ from app.auth import get_github_user_data
 from app.database import get_db
 from app.dependencies import config
 from app.dependencies import current_user
+from app.schemas import CaseStatusUpdate
+from app.schemas import Study
+from app.schemas import StudyCreate
+from app.schemas import StudyResponse
 from app.schemas import User
+from app.services import study_service
 from app.services.user_service import get_or_create_user
 from app.settings import Settings
 
@@ -83,3 +90,85 @@ async def auth_logout(request: Request) -> RedirectResponse:
     response = RedirectResponse(request.url_for("home"))
     response.delete_cookie(key="access_token")
     return response
+
+
+# --- Study API Endpoints ---
+
+
+@router.post("/api/studies", status_code=status.HTTP_201_CREATED)
+async def create_study(
+    payload: StudyCreate,
+    user: Annotated[User | None, Depends(current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Study:
+    """Register a new study with its cases."""
+    pushed_by = user.username if user else None
+    study = await study_service.create_study(db, payload, pushed_by=pushed_by)
+    log.info(f"Created study {study.id} with {len(study.cases)} cases")
+    return study
+
+
+@router.get("/api/studies/{study_id}")
+async def get_study(
+    study_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Study:
+    """Fetch a study by ID (raw format)."""
+    study = await study_service.get_study(db, study_id)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    return study
+
+
+@router.put("/api/studies/{study_id}")
+async def update_study(
+    study_id: str,
+    payload: StudyCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Study:
+    """Update an existing study, upserting cases."""
+    study = await study_service.update_study(db, study_id, payload)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    log.info(f"Updated study {study.id} with {len(study.cases)} cases")
+    return study
+
+
+@router.delete("/api/studies/{study_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_study(
+    study_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """Delete a study and all its cases."""
+    deleted = await study_service.delete_study(db, study_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Study not found")
+    log.info(f"Deleted study {study_id}")
+
+
+@router.get("/api/studies/{study_id}/detail")
+async def get_study_detail(
+    study_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> StudyResponse:
+    """Fetch a study in UI-friendly format."""
+    study = await study_service.get_study(db, study_id)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    return StudyResponse.from_study(study)
+
+
+@router.patch("/api/studies/{study_id}/cases/{case_id}")
+async def update_case_status(
+    study_id: str,
+    case_id: str,
+    update: CaseStatusUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict:
+    """Update the status of a case within a study."""
+    case = await study_service.update_case_status(db, study_id, case_id, update)
+    if not case:
+        raise HTTPException(status_code=404, detail="Study or case not found")
+    log.info(f"Updated case {case_id} in study {study_id} to {update.status}")
+    return {"status": "ok", "case": case}
+
