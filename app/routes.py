@@ -17,13 +17,11 @@ from app.database import get_db
 from app.database.models import User as UserOrm
 from app.dependencies import config
 from app.dependencies import current_user
-from app.dependencies import current_user_orm
 from app.schemas import CaseStatusUpdate
 from app.schemas import Page
 from app.schemas import Study
 from app.schemas import StudyCreate
 from app.schemas import StudyResponse
-from app.schemas import User
 from app.services import study_service
 from app.services.user_service import get_or_create_user
 from app.settings import Settings
@@ -36,11 +34,11 @@ router = APIRouter()
 @router.get("/")
 async def home(
     request: Request,
-    user: Annotated[User | None, Depends(current_user)],
+    user: Annotated[UserOrm | None, Depends(current_user)],
 ) -> dict[str, Any]:
     return {
         "status": "ok",
-        "user": user.model_dump() if user else None,
+        "user": {"username": user.username, "avatar_url": user.avatar_url} if user else None,
         "login_url": str(request.url_for("auth_login")),
         "logout_url": str(request.url_for("auth_logout")),
     }
@@ -110,7 +108,7 @@ async def list_studies(
 @router.post("/api/studies", status_code=status.HTTP_201_CREATED)
 async def create_study(
     payload: StudyCreate,
-    user: Annotated[UserOrm | None, Depends(current_user_orm)],
+    user: Annotated[UserOrm | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
     """Register a new study with its cases."""
