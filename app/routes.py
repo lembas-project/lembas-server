@@ -171,4 +171,3 @@ async def update_case_status(
         raise HTTPException(status_code=404, detail="Study or case not found")
     log.info(f"Updated case {case_id} in study {study_id} to {update.status}")
     return {"status": "ok", "case": case}
-
