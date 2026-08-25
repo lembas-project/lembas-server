@@ -1,6 +1,13 @@
 """Tests for the Study API endpoints."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
 from httpx import AsyncClient
+
+from app.database.models import User
+from app.dependencies import current_user
 
 STUDY_PAYLOAD = {
     "name": "test-study",
@@ -20,6 +27,22 @@ STUDY_PAYLOAD = {
         },
     ],
 }
+
+FAKE_USER = User(id="00000000-0000-0000-0000-000000000001", github_id="99999", username="testuser", avatar_url="")
+OTHER_USER = User(id="00000000-0000-0000-0000-000000000002", github_id="88888", username="otheruser", avatar_url="")
+
+
+@asynccontextmanager
+async def as_user(app: FastAPI, user: User | None) -> AsyncIterator[None]:
+    """Context manager to override current_user for a block of code."""
+    async def override() -> User | None:
+        return user
+
+    app.dependency_overrides[current_user] = override
+    try:
+        yield
+    finally:
+        app.dependency_overrides.pop(current_user)
 
 
 async def test_list_studies(client: AsyncClient) -> None:
@@ -88,56 +111,98 @@ async def test_get_study_not_found(client: AsyncClient) -> None:
     assert response.status_code == 404
 
 
-async def test_update_study(client: AsyncClient) -> None:
-    create_resp = await client.post(
-        "/api/studies",
-        json={
-            "name": "update-test",
-            "cases": [{"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 1}}],
-        },
-    )
-    assert create_resp.status_code == 201
-    study_id = create_resp.json()["id"]
+async def test_update_study(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        create_resp = await client.post(
+            "/api/studies",
+            json={
+                "name": "update-test",
+                "cases": [{"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 1}}],
+            },
+        )
+        assert create_resp.status_code == 201
+        study_id = create_resp.json()["id"]
 
-    # Update study: rename, add a new case
-    update_payload = {
-        "name": "update-test-renamed",
-        "cases": [
-            {"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 2}},
-            {"id": "case-b", "handler_fqn": "test.Case", "inputs": {"x": 3}},
-        ],
-    }
-    response = await client.put(f"/api/studies/{study_id}", json=update_payload)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "update-test-renamed"
-    assert len(data["cases"]) == 2
-    assert "case-b" in data["cases"]
-    # Existing case inputs should be updated
-    assert data["cases"]["case-a"]["inputs"] == {"x": 2}
-
-
-async def test_update_study_not_found(client: AsyncClient) -> None:
-    response = await client.put("/api/studies/nonexistent-id", json={"name": "x", "cases": []})
-    assert response.status_code == 404
+        update_payload = {
+            "name": "update-test-renamed",
+            "cases": [
+                {"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 2}},
+                {"id": "case-b", "handler_fqn": "test.Case", "inputs": {"x": 3}},
+            ],
+        }
+        response = await client.put(f"/api/studies/{study_id}", json=update_payload)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "update-test-renamed"
+        assert len(data["cases"]) == 2
+        assert "case-b" in data["cases"]
+        assert data["cases"]["case-a"]["inputs"] == {"x": 2}
 
 
-async def test_delete_study(client: AsyncClient) -> None:
-    create_resp = await client.post("/api/studies", json={"name": "delete-test", "cases": []})
-    assert create_resp.status_code == 201
-    study_id = create_resp.json()["id"]
+async def test_update_study_forbidden_unauthenticated(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        create_resp = await client.post("/api/studies", json={"name": "owned", "cases": []})
+        study_id = create_resp.json()["id"]
 
-    response = await client.delete(f"/api/studies/{study_id}")
-    assert response.status_code == 204
+    # Unauthenticated (no user)
+    async with as_user(app, None):
+        response = await client.put(f"/api/studies/{study_id}", json={"name": "x", "cases": []})
+        assert response.status_code == 403
 
-    # Verify it's gone
+
+async def test_update_study_forbidden_wrong_user(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        create_resp = await client.post("/api/studies", json={"name": "owned", "cases": []})
+        study_id = create_resp.json()["id"]
+
+    async with as_user(app, OTHER_USER):
+        response = await client.put(f"/api/studies/{study_id}", json={"name": "x", "cases": []})
+        assert response.status_code == 403
+
+
+async def test_update_study_not_found(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        response = await client.put("/api/studies/nonexistent-id", json={"name": "x", "cases": []})
+        assert response.status_code == 404
+
+
+async def test_delete_study(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        create_resp = await client.post("/api/studies", json={"name": "delete-test", "cases": []})
+        assert create_resp.status_code == 201
+        study_id = create_resp.json()["id"]
+
+        response = await client.delete(f"/api/studies/{study_id}")
+        assert response.status_code == 204
+
     response = await client.get(f"/api/studies/{study_id}")
     assert response.status_code == 404
 
 
-async def test_delete_study_not_found(client: AsyncClient) -> None:
-    response = await client.delete("/api/studies/nonexistent-id")
-    assert response.status_code == 404
+async def test_delete_study_forbidden_unauthenticated(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        create_resp = await client.post("/api/studies", json={"name": "owned", "cases": []})
+        study_id = create_resp.json()["id"]
+
+    async with as_user(app, None):
+        response = await client.delete(f"/api/studies/{study_id}")
+        assert response.status_code == 403
+
+
+async def test_delete_study_forbidden_wrong_user(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        create_resp = await client.post("/api/studies", json={"name": "owned", "cases": []})
+        study_id = create_resp.json()["id"]
+
+    async with as_user(app, OTHER_USER):
+        response = await client.delete(f"/api/studies/{study_id}")
+        assert response.status_code == 403
+
+
+async def test_delete_study_not_found(app: FastAPI, client: AsyncClient) -> None:
+    async with as_user(app, FAKE_USER):
+        response = await client.delete("/api/studies/nonexistent-id")
+        assert response.status_code == 404
 
 
 async def test_get_study_detail(client: AsyncClient) -> None:

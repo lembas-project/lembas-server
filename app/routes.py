@@ -148,25 +148,34 @@ async def get_study(
 async def update_study(
     study_id: str,
     payload: StudyCreate,
+    user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
     """Update an existing study, upserting cases."""
-    study = await study_service.update_study(db, study_id, payload)
+    study = await study_service.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
-    log.info(f"Updated study {study.id} with {len(study.cases)} cases")
-    return study
+    if study.pushed_by_id is None or not user or study.pushed_by_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorised to update this study")
+    updated = await study_service.update_study(db, study_id, payload)
+    assert updated is not None  # we already verified the study exists above
+    log.info(f"Updated study {study_id} with {len(updated.cases)} cases")
+    return updated
 
 
 @router.delete("/api/studies/{study_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_study(
     study_id: str,
+    user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
     """Delete a study and all its cases."""
-    deleted = await study_service.delete_study(db, study_id)
-    if not deleted:
+    study = await study_service.get_study(db, study_id)
+    if not study:
         raise HTTPException(status_code=404, detail="Study not found")
+    if study.pushed_by_id is None or not user or study.pushed_by_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorised to delete this study")
+    await study_service.delete_study(db, study_id)
     log.info(f"Deleted study {study_id}")
 
 
