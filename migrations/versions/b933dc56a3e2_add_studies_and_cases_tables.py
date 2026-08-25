@@ -33,7 +33,7 @@ def upgrade() -> None:
     op.create_table(
         "cases",
         sa.Column("study_id", sa.Uuid(), nullable=False),
-        sa.Column("case_id", sa.String(length=64), nullable=False),
+        sa.Column("id", sa.String(length=64), nullable=False),
         sa.Column("handler_fqn", sa.Text(), nullable=False),
         sa.Column("inputs", sa.Text(), nullable=True),
         sa.Column("status", sa.String(length=16), nullable=False, server_default="pending"),
@@ -44,7 +44,7 @@ def upgrade() -> None:
         sa.Column("error_message", sa.Text(), nullable=True),
         sa.Column("environment", sa.Text(), nullable=True),
         sa.ForeignKeyConstraint(["study_id"], ["studies.id"]),
-        sa.PrimaryKeyConstraint("study_id", "case_id"),
+        sa.PrimaryKeyConstraint("study_id", "id"),
     )
 
 

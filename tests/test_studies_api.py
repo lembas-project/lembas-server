@@ -9,12 +9,12 @@ STUDY_PAYLOAD = {
     "plugins_declared": ["lembas-planing-plate"],
     "cases": [
         {
-            "case_id": "abc123",
+            "id": "abc123",
             "handler_fqn": "lembas_planing_plate.PlaningPlateCase",
             "inputs": {"froude_num": 0.5, "angle_of_attack": 5.0},
         },
         {
-            "case_id": "def456",
+            "id": "def456",
             "handler_fqn": "lembas_planing_plate.PlaningPlateCase",
             "inputs": {"froude_num": 0.8, "angle_of_attack": 10.0},
         },
@@ -69,7 +69,7 @@ async def test_get_study(client: AsyncClient) -> None:
         "/api/studies",
         json={
             "name": "fetch-test",
-            "cases": [{"case_id": "xyz789", "handler_fqn": "test.Case", "inputs": {}}],
+            "cases": [{"id": "xyz789", "handler_fqn": "test.Case", "inputs": {}}],
         },
     )
     assert create_resp.status_code == 201
@@ -93,7 +93,7 @@ async def test_update_study(client: AsyncClient) -> None:
         "/api/studies",
         json={
             "name": "update-test",
-            "cases": [{"case_id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 1}}],
+            "cases": [{"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 1}}],
         },
     )
     assert create_resp.status_code == 201
@@ -103,8 +103,8 @@ async def test_update_study(client: AsyncClient) -> None:
     update_payload = {
         "name": "update-test-renamed",
         "cases": [
-            {"case_id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 2}},
-            {"case_id": "case-b", "handler_fqn": "test.Case", "inputs": {"x": 3}},
+            {"id": "case-a", "handler_fqn": "test.Case", "inputs": {"x": 2}},
+            {"id": "case-b", "handler_fqn": "test.Case", "inputs": {"x": 3}},
         ],
     }
     response = await client.put(f"/api/studies/{study_id}", json=update_payload)
@@ -145,7 +145,7 @@ async def test_get_study_detail(client: AsyncClient) -> None:
         "/api/studies",
         json={
             "name": "detail-test",
-            "cases": [{"case_id": "c1", "handler_fqn": "test.Case", "inputs": {"param": "value"}}],
+            "cases": [{"id": "c1", "handler_fqn": "test.Case", "inputs": {"param": "value"}}],
         },
     )
     assert create_resp.status_code == 201
@@ -166,7 +166,7 @@ async def test_update_case_status_to_running(client: AsyncClient) -> None:
         "/api/studies",
         json={
             "name": "status-test",
-            "cases": [{"case_id": "case001", "handler_fqn": "test.Case", "inputs": {}}],
+            "cases": [{"id": "case001", "handler_fqn": "test.Case", "inputs": {}}],
         },
     )
     assert create_resp.status_code == 201
@@ -187,7 +187,7 @@ async def test_update_case_status_to_complete(client: AsyncClient) -> None:
         "/api/studies",
         json={
             "name": "complete-test",
-            "cases": [{"case_id": "case002", "handler_fqn": "test.Case", "inputs": {}}],
+            "cases": [{"id": "case002", "handler_fqn": "test.Case", "inputs": {}}],
         },
     )
     assert create_resp.status_code == 201
@@ -212,7 +212,7 @@ async def test_update_case_status_failed_with_error(client: AsyncClient) -> None
         "/api/studies",
         json={
             "name": "fail-test",
-            "cases": [{"case_id": "case003", "handler_fqn": "test.Case", "inputs": {}}],
+            "cases": [{"id": "case003", "handler_fqn": "test.Case", "inputs": {}}],
         },
     )
     assert create_resp.status_code == 201

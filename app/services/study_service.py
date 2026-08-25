@@ -20,7 +20,7 @@ from app.schemas import StudyCreate
 
 def _orm_case_to_schema(case: Case) -> CaseRun:
     return CaseRun(
-        case_id=case.case_id,
+        id=case.id,
         handler_fqn=case.handler_fqn,
         inputs=json.loads(case.inputs) if case.inputs else {},
         status=CaseStatus(case.status),
@@ -34,7 +34,7 @@ def _orm_case_to_schema(case: Case) -> CaseRun:
 
 
 def _orm_study_to_schema(study: Study) -> StudySchema:
-    cases = {c.case_id: _orm_case_to_schema(c) for c in study.cases}
+    cases = {c.id: _orm_case_to_schema(c) for c in study.cases}
     return StudySchema(
         id=study.id,
         name=study.name,
@@ -75,7 +75,7 @@ async def create_study(
         db.add(
             Case(
                 study_id=study.id,
-                case_id=c.case_id,
+                id=c.id,
                 handler_fqn=c.handler_fqn,
                 inputs=json.dumps(c.inputs),
                 status="pending",
@@ -120,17 +120,17 @@ async def update_study(
     study.plugins_declared = json.dumps(payload.plugins_declared)
 
     # Upsert cases: update existing, insert new ones
-    existing = {c.case_id: c for c in study.cases}
+    existing = {c.id: c for c in study.cases}
     for c in payload.cases:
-        if c.case_id in existing:
-            orm_case = existing[c.case_id]
+        if c.id in existing:
+            orm_case = existing[c.id]
             orm_case.handler_fqn = c.handler_fqn
             orm_case.inputs = json.dumps(c.inputs)
         else:
             db.add(
                 Case(
                     study_id=study_id,
-                    case_id=c.case_id,
+                    id=c.id,
                     handler_fqn=c.handler_fqn,
                     inputs=json.dumps(c.inputs),
                     status="pending",
@@ -159,7 +159,7 @@ async def update_case_status(
     db: AsyncSession, study_id: str, case_id: str, update: CaseStatusUpdate
 ) -> CaseRun | None:
     result = await db.execute(
-        select(Case).where(Case.study_id == study_id, Case.case_id == case_id)
+        select(Case).where(Case.study_id == study_id, Case.id == case_id)
     )
     case = result.scalar_one_or_none()
     if case is None:

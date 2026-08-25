@@ -37,7 +37,7 @@ class CaseStatus(StrEnum):
 class CaseRunCreate(BaseModel):
     """Payload for creating a case run."""
 
-    case_id: str = Field(description="Content-addressed case ID (SHA-256 hash)")
+    id: str = Field(description="Content-addressed case ID (SHA-256 hash)")
     handler_fqn: str = Field(description="Fully qualified name of the case handler")
     inputs: dict[str, Any] = Field(description="Case input parameters")
 
@@ -45,7 +45,7 @@ class CaseRunCreate(BaseModel):
 class CaseRun(BaseModel):
     """A single case execution within a study."""
 
-    case_id: str = Field(description="Content-addressed case ID (SHA-256 hash)")
+    id: str = Field(description="Content-addressed case ID (SHA-256 hash)")
     handler_fqn: str = Field(description="Fully qualified name of the case handler")
     inputs: dict[str, Any] = Field(description="Case input parameters")
     status: CaseStatus = CaseStatus.pending
@@ -104,7 +104,7 @@ class StudyResponse(BaseModel):
     def from_study(cls, study: "Study") -> "StudyResponse":
         runs = [
             {
-                "case_id": case.case_id,
+                "case_id": case.id,
                 "handler": case.handler_fqn.split(".")[-1],
                 "inputs": case.inputs,
                 "status": case.status.value,

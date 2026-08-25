@@ -88,7 +88,7 @@ class Case(Base):
     study_id: Mapped[str] = mapped_column(
         Uuid(as_uuid=False), ForeignKey("studies.id"), nullable=False, primary_key=True
     )
-    case_id: Mapped[str] = mapped_column(String(64), nullable=False, primary_key=True)
+    id: Mapped[str] = mapped_column(String(64), nullable=False, primary_key=True)
     handler_fqn: Mapped[str] = mapped_column(Text, nullable=False)
     inputs: Mapped[str | None] = mapped_column(Text)  # JSON dict
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
