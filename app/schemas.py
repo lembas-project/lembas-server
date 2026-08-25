@@ -20,6 +20,14 @@ class Page[T](BaseModel):
     offset: int | None = Field(default=None, description="Offset of this page")
 
 
+class UserResponse(BaseModel):
+    """Public-facing user representation."""
+
+    id: str
+    username: str
+    avatar_url: str | None = None
+
+
 class User(BaseModel):
     """User schema for API responses."""
 

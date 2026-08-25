@@ -22,7 +22,9 @@ from app.schemas import Page
 from app.schemas import Study
 from app.schemas import StudyCreate
 from app.schemas import StudyResponse
+from app.schemas import UserResponse
 from app.services import study_service
+from app.services.user_service import get_all_users
 from app.services.user_service import get_or_create_user
 from app.settings import Settings
 
@@ -91,6 +93,19 @@ async def auth_logout(request: Request) -> RedirectResponse:
     response = RedirectResponse(request.url_for("home"))
     response.delete_cookie(key="access_token")
     return response
+
+
+# --- User API Endpoints ---
+
+
+@router.get("/api/users")
+async def list_users(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Page[UserResponse]:
+    """List all known users."""
+    users = await get_all_users(db)
+    items = [UserResponse(id=u.id, username=u.username, avatar_url=u.avatar_url) for u in users]
+    return Page(items=items, total=len(items))
 
 
 # --- Study API Endpoints ---

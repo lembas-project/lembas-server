@@ -43,3 +43,9 @@ async def get_user_by_github_id(db: AsyncSession, github_id: int) -> User | None
     """Get a user by their GitHub ID."""
     result = await db.execute(select(User).where(User.github_id == str(github_id)))
     return result.scalar_one_or_none()
+
+
+async def get_all_users(db: AsyncSession) -> list[User]:
+    """Return all users ordered by username."""
+    result = await db.execute(select(User).order_by(User.username))
+    return list(result.scalars().all())
