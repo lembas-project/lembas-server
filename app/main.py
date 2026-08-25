@@ -4,7 +4,8 @@ from contextlib import asynccontextmanager
 import sentry_sdk
 from fastapi import FastAPI
 
-from app.database import close_database, init_database
+from app.database import close_database
+from app.database import init_database
 from app.routes import router
 from app.settings import Settings
 

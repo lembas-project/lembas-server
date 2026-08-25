@@ -1,4 +1,5 @@
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
+from unittest.mock import Mock
 
 from httpx import AsyncClient
 

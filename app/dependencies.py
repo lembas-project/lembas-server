@@ -1,6 +1,8 @@
 from typing import Annotated
 
-from fastapi import Cookie, Depends, Request
+from fastapi import Cookie
+from fastapi import Depends
+from fastapi import Request
 
 from app.auth import get_user_from_token
 from app.schemas import User

@@ -1,11 +1,15 @@
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator
+from collections.abc import Callable
 
 import httpx
 import pytest
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import close_database, get_db_context, get_engine, init_database
+from app.database import close_database
+from app.database import get_db_context
+from app.database import get_engine
+from app.database import init_database
 from app.database.models import Base
 from app.main import create_app
 from app.settings import Settings
