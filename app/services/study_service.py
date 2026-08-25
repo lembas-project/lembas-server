@@ -1,23 +1,21 @@
 """Study service for managing study and case records."""
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC
+from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.database.models import Case, Study
-from app.schemas import (
-    CaseRun,
-    CaseStatus,
-    CaseStatusUpdate,
-    StudyCreate,
-)
-from app.schemas import (
-    Study as StudySchema,
-)
+from app.database.models import Case
+from app.database.models import Study
+from app.schemas import CaseRun
+from app.schemas import CaseStatus
+from app.schemas import CaseStatusUpdate
+from app.schemas import Study as StudySchema
+from app.schemas import StudyCreate
 
 
 def _orm_case_to_schema(case: Case) -> CaseRun:
