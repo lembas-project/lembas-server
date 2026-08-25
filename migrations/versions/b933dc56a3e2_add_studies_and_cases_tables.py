@@ -20,7 +20,7 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.create_table(
         "studies",
-        sa.Column("id", sa.String(length=36), nullable=False),
+        sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("tags", sa.Text(), nullable=True),
@@ -32,8 +32,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "cases",
-        sa.Column("id", sa.Integer(), nullable=False, autoincrement=True),
-        sa.Column("study_id", sa.String(length=36), nullable=False),
+        sa.Column("study_id", sa.Uuid(), nullable=False),
         sa.Column("case_id", sa.String(length=64), nullable=False),
         sa.Column("handler_fqn", sa.Text(), nullable=False),
         sa.Column("inputs", sa.Text(), nullable=True),
@@ -45,12 +44,10 @@ def upgrade() -> None:
         sa.Column("error_message", sa.Text(), nullable=True),
         sa.Column("environment", sa.Text(), nullable=True),
         sa.ForeignKeyConstraint(["study_id"], ["studies.id"]),
-        sa.PrimaryKeyConstraint("id"),
+        sa.PrimaryKeyConstraint("study_id", "case_id"),
     )
-    op.create_index(op.f("ix_cases_study_id"), "cases", ["study_id"], unique=False)
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_cases_study_id"), table_name="cases")
     op.drop_table("cases")
     op.drop_table("studies")

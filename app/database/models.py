@@ -3,19 +3,21 @@
 from datetime import UTC
 from datetime import datetime
 from typing import Any
+from uuid import uuid4
 
 from sqlalchemy import DateTime
 from sqlalchemy import Float
 from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import TypeDecorator
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import Uuid
 
 
 class TZDateTime(TypeDecorator[datetime]):
@@ -39,6 +41,10 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
+def _new_uuid() -> str:
+    return str(uuid4())
+
+
 class Base(DeclarativeBase):
     pass
 
@@ -46,8 +52,8 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    github_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False, index=True)
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=_new_uuid)
+    github_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     username: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
@@ -59,7 +65,7 @@ class Study(Base):
 
     __tablename__ = "studies"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=_new_uuid)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     tags: Mapped[str | None] = mapped_column(Text)  # JSON array
@@ -77,12 +83,12 @@ class Case(Base):
     """A single case execution within a study."""
 
     __tablename__ = "cases"
+    __table_args__ = (UniqueConstraint("study_id", "case_id"),)
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     study_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("studies.id"), nullable=False, index=True
+        Uuid(as_uuid=False), ForeignKey("studies.id"), nullable=False, primary_key=True
     )
-    case_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    case_id: Mapped[str] = mapped_column(String(64), nullable=False, primary_key=True)
     handler_fqn: Mapped[str] = mapped_column(Text, nullable=False)
     inputs: Mapped[str | None] = mapped_column(Text)  # JSON dict
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")

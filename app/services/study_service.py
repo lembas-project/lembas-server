@@ -3,7 +3,6 @@
 import json
 from datetime import UTC
 from datetime import datetime
-from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,11 +50,9 @@ def _orm_study_to_schema(study: Study) -> StudySchema:
 async def create_study(
     db: AsyncSession, payload: StudyCreate, pushed_by: str | None = None
 ) -> StudySchema:
-    study_id = str(uuid4())
     handlers_dict = {h.schema_fingerprint: h.schema_ for h in payload.handlers}
 
     study = Study(
-        id=study_id,
         name=payload.name,
         description=payload.description,
         tags=json.dumps(payload.tags),
@@ -64,11 +61,12 @@ async def create_study(
         pushed_by=pushed_by,
     )
     db.add(study)
+    await db.flush()  # populate study.id from ORM default
 
     for c in payload.cases:
         db.add(
             Case(
-                study_id=study_id,
+                study_id=study.id,
                 case_id=c.case_id,
                 handler_fqn=c.handler_fqn,
                 inputs=json.dumps(c.inputs),
@@ -79,7 +77,7 @@ async def create_study(
     await db.commit()
 
     result = await db.execute(
-        select(Study).where(Study.id == study_id).options(selectinload(Study.cases))
+        select(Study).where(Study.id == study.id).options(selectinload(Study.cases))
     )
     study = result.scalar_one()
     return _orm_study_to_schema(study)
