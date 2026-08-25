@@ -3,7 +3,8 @@ from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
-from sqlalchemy import create_engine, pool
+from sqlalchemy import create_engine
+from sqlalchemy import pool
 
 from app.database.models import Base
 
