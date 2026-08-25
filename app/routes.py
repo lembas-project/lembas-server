@@ -126,8 +126,10 @@ async def create_study(
     user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
-    """Register a new study with its cases."""
-    study = await study_service.create_study(db, payload, pushed_by_id=user.id if user else None)
+    """Register a new study with its cases. Requires authentication."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    study = await study_service.create_study(db, payload, pushed_by_id=user.id)
     log.info(f"Created study {study.id} with {len(study.cases)} cases")
     return study
 
