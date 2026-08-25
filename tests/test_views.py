@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from httpx import AsyncClient
 
@@ -16,9 +15,7 @@ async def test_get_home_anonymous(client: AsyncClient, base_url: str) -> None:
     assert data["logout_url"] == f"{base_url}/auth/logout"
 
 
-async def test_get_home_logged_in(
-    app: FastAPI, client: AsyncClient, base_url: str
-) -> None:
+async def test_get_home_logged_in(app: FastAPI, client: AsyncClient, base_url: str) -> None:
     dummy_user = User(id="test-uuid", github_id="12345", username="dummy", avatar_url="")
 
     async def override_current_user() -> User:
