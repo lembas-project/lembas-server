@@ -69,7 +69,6 @@ class Study(Base):
     description: Mapped[str | None] = mapped_column(Text)
     tags: Mapped[str | None] = mapped_column(Text)  # JSON array
     plugins_declared: Mapped[str | None] = mapped_column(Text)  # JSON array
-    handlers: Mapped[str | None] = mapped_column(Text)  # JSON dict keyed by fingerprint
     created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
     pushed_by: Mapped[str | None] = mapped_column(String(255))
 

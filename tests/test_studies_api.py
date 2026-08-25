@@ -209,28 +209,3 @@ async def test_update_case_status_not_found(client: AsyncClient) -> None:
         json={"status": "running"},
     )
     assert response.status_code == 404
-
-
-async def test_study_with_handler_schemas(client: AsyncClient) -> None:
-    """Test that handler schemas are stored and returned with the study."""
-    payload = {
-        "name": "schema-test",
-        "handlers": [
-            {
-                "name": "PlaningPlateCase",
-                "schema": {
-                    "title": "PlaningPlateCase",
-                    "inputs": {"properties": {"froude_num": {"type": "number"}}},
-                    "results": {"properties": {"lift": {"type": "number"}}},
-                    "steps": [],
-                },
-                "schema_fingerprint": "abcdef012345",
-            }
-        ],
-        "cases": [{"case_id": "h1", "handler_fqn": "test.PlaningPlateCase", "inputs": {}}],
-    }
-    response = await client.post("/api/studies", json=payload)
-    assert response.status_code == 201
-    data = response.json()
-    assert "abcdef012345" in data["handlers"]
-    assert data["handlers"]["abcdef012345"]["title"] == "PlaningPlateCase"

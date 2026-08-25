@@ -3,7 +3,6 @@
 import json
 from datetime import UTC
 from datetime import datetime
-from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,7 +40,6 @@ def _orm_study_to_schema(study: Study) -> StudySchema:
         description=study.description,
         tags=json.loads(study.tags) if study.tags else [],
         plugins_declared=json.loads(study.plugins_declared) if study.plugins_declared else [],
-        handlers=json.loads(study.handlers) if study.handlers else {},
         created_at=study.created_at,
         pushed_by=study.pushed_by,
         cases=cases,
@@ -51,24 +49,20 @@ def _orm_study_to_schema(study: Study) -> StudySchema:
 async def create_study(
     db: AsyncSession, payload: StudyCreate, pushed_by: str | None = None
 ) -> StudySchema:
-    study_id = str(uuid4())
-    handlers_dict = {h.schema_fingerprint: h.schema_ for h in payload.handlers}
-
     study = Study(
-        id=study_id,
         name=payload.name,
         description=payload.description,
         tags=json.dumps(payload.tags),
         plugins_declared=json.dumps(payload.plugins_declared),
-        handlers=json.dumps(handlers_dict),
         pushed_by=pushed_by,
     )
     db.add(study)
+    await db.flush()  # populate study.id from ORM default
 
     for c in payload.cases:
         db.add(
             Case(
-                study_id=study_id,
+                study_id=study.id,
                 case_id=c.case_id,
                 handler_fqn=c.handler_fqn,
                 inputs=json.dumps(c.inputs),
@@ -79,7 +73,7 @@ async def create_study(
     await db.commit()
 
     result = await db.execute(
-        select(Study).where(Study.id == study_id).options(selectinload(Study.cases))
+        select(Study).where(Study.id == study.id).options(selectinload(Study.cases))
     )
     study = result.scalar_one()
     return _orm_study_to_schema(study)
@@ -112,12 +106,10 @@ async def update_study(
     if study is None:
         return None
 
-    handlers_dict = {h.schema_fingerprint: h.schema_ for h in payload.handlers}
     study.name = payload.name
     study.description = payload.description
     study.tags = json.dumps(payload.tags)
     study.plugins_declared = json.dumps(payload.plugins_declared)
-    study.handlers = json.dumps(handlers_dict)
 
     # Upsert cases: update existing, insert new ones
     existing = {c.case_id: c for c in study.cases}

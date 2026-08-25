@@ -25,7 +25,6 @@ def upgrade() -> None:
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("tags", sa.Text(), nullable=True),
         sa.Column("plugins_declared", sa.Text(), nullable=True),
-        sa.Column("handlers", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("pushed_by", sa.String(length=255), nullable=True),
         sa.PrimaryKeyConstraint("id"),
