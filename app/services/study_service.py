@@ -149,9 +149,7 @@ async def update_study(
 
 async def get_study_owner_id(db: AsyncSession, study_id: str) -> str | None:
     """Return just the pushed_by_id for a study, for ownership checks."""
-    result = await db.execute(
-        select(Study.pushed_by_id).where(Study.id == study_id)
-    )
+    result = await db.execute(select(Study.pushed_by_id).where(Study.id == study_id))
     row = result.one_or_none()
     return row[0] if row else None
 
