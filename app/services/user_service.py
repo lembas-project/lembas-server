@@ -16,14 +16,14 @@ async def get_or_create_user(
 
     If the user already exists, returns them unchanged.
     """
-    result = await db.execute(select(User).where(User.github_id == github_id))
+    result = await db.execute(select(User).where(User.github_id == str(github_id)))
     user = result.scalar_one_or_none()
 
     if user:
         return user
 
     user = User(
-        github_id=github_id,
+        github_id=str(github_id),
         username=username,
         avatar_url=avatar_url,
     )
@@ -33,7 +33,7 @@ async def get_or_create_user(
     return user
 
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+async def get_user_by_id(db: AsyncSession, user_id: str) -> User | None:
     """Get a user by their database ID."""
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalar_one_or_none()
@@ -41,5 +41,5 @@ async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
 
 async def get_user_by_github_id(db: AsyncSession, github_id: int) -> User | None:
     """Get a user by their GitHub ID."""
-    result = await db.execute(select(User).where(User.github_id == github_id))
+    result = await db.execute(select(User).where(User.github_id == str(github_id)))
     return result.scalar_one_or_none()

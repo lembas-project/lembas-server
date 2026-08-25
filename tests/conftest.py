@@ -3,7 +3,9 @@ from collections.abc import Callable
 
 import httpx
 import pytest
+import sqlalchemy
 from fastapi import FastAPI
+from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import close_database
@@ -68,3 +70,9 @@ async def client_factory(app: FastAPI, base_url: str) -> AsyncIterator[ClientFac
 def client(client_factory: ClientFactory) -> httpx.AsyncClient:
     """An HTTP session."""
     return client_factory()
+
+
+@pytest.fixture
+def alembic_engine() -> Engine:
+    """Synchronous SQLite engine for pytest-alembic migration tests."""
+    return sqlalchemy.create_engine("sqlite://")
