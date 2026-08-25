@@ -158,7 +158,7 @@ async def update_study(
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
     if study.pushed_by_id is None or not user or study.pushed_by_id != user.id:
-        raise HTTPException(status_code=403, detail="Not authorised to update this study")
+        raise HTTPException(status_code=403, detail="Not authorized to update this study")
     updated = await study_service.update_study(db, study_id, payload)
     assert updated is not None  # we already verified the study exists above
     log.info(f"Updated study {study_id} with {len(updated.cases)} cases")
@@ -176,7 +176,7 @@ async def delete_study(
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
     if study.pushed_by_id is None or not user or study.pushed_by_id != user.id:
-        raise HTTPException(status_code=403, detail="Not authorised to delete this study")
+        raise HTTPException(status_code=403, detail="Not authorized to delete this study")
     await study_service.delete_study(db, study_id)
     log.info(f"Deleted study {study_id}")
 
