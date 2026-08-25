@@ -48,8 +48,6 @@ async def test_list_studies_empty_pagination_fields(client: AsyncClient) -> None
     assert data["limit"] is None
     assert data["offset"] is None
 
-
-
     response = await client.post("/api/studies", json=STUDY_PAYLOAD)
     assert response.status_code == 201
 

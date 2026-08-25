@@ -20,7 +20,6 @@ class Page[T](BaseModel):
     offset: int | None = Field(default=None, description="Offset of this page")
 
 
-
 class User(BaseModel):
     """User schema for API responses."""
 
