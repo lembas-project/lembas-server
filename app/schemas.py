@@ -37,7 +37,7 @@ class CaseRunCreate(BaseModel):
     inputs: dict[str, Any] = Field(description="Case input parameters")
 
 
-class CaseRun(BaseModel):
+class CaseSchema(BaseModel):
     """A single case execution within a study."""
 
     id: str = Field(description="Content-addressed case ID (SHA-256 hash)")
@@ -70,7 +70,7 @@ class Study(BaseModel):
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
     plugins_declared: list[str] = Field(default_factory=list)
-    cases: dict[str, CaseRun] = Field(default_factory=dict)
+    cases: dict[str, CaseSchema] = Field(default_factory=dict)
     created_at: datetime
     pushed_by: str
 

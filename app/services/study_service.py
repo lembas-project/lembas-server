@@ -15,7 +15,7 @@ from sqlalchemy.orm import selectinload
 from app.database.models import Case
 from app.database.models import Study
 from app.enums import CaseStatus
-from app.schemas import CaseRun as CaseSchema
+from app.schemas import CaseSchema
 from app.schemas import CaseStatusUpdatePayload
 from app.schemas import Study as StudySchema
 from app.schemas import StudyCreatePayload
