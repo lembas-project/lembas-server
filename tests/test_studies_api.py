@@ -250,7 +250,7 @@ async def test_get_study_detail(app: FastAPI, client: AsyncClient, fake_user: Us
     response = await client.get(f"/api/studies/{study_id}/detail")
     assert response.status_code == 200
     data = response.json()
-    assert data["study_id"] == study_id
+    assert data["id"] == study_id
     assert data["meta"]["name"] == "detail-test"
     assert len(data["runs"]) == 1
     assert data["runs"][0]["case_id"] == "c1"

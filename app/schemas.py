@@ -52,7 +52,7 @@ class CaseRun(BaseModel):
     error_message: str | None = None
 
 
-class StudyCreate(BaseModel):
+class StudyCreatePayload(BaseModel):
     """Payload for creating/registering a study."""
 
     name: str
@@ -72,11 +72,10 @@ class Study(BaseModel):
     plugins_declared: list[str] = Field(default_factory=list)
     cases: dict[str, CaseRun] = Field(default_factory=dict)
     created_at: datetime
-    pushed_by_id: str
-    pushed_by: str  # username, resolved from pushed_by_id via join
+    pushed_by: str
 
 
-class CaseStatusUpdate(BaseModel):
+class CaseStatusUpdatePayload(BaseModel):
     """Payload for updating a case's status."""
 
     status: CaseStatus
@@ -89,7 +88,7 @@ class CaseStatusUpdate(BaseModel):
 class StudyResponse(BaseModel):
     """API response format for study detail (matches UI expectations)."""
 
-    study_id: str
+    id: str
     meta: dict[str, Any]
     pushed_at: datetime
     pushed_by: str
@@ -112,7 +111,7 @@ class StudyResponse(BaseModel):
             for case in study.cases.values()
         ]
         return cls(
-            study_id=study.id,
+            id=study.id,
             meta={
                 "name": study.name,
                 "description": study.description,

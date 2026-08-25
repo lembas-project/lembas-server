@@ -17,10 +17,10 @@ from app.database import get_db
 from app.database.models import User
 from app.dependencies import config
 from app.dependencies import current_user
-from app.schemas import CaseStatusUpdate
+from app.schemas import CaseStatusUpdatePayload
 from app.schemas import Page
 from app.schemas import Study
-from app.schemas import StudyCreate
+from app.schemas import StudyCreatePayload
 from app.schemas import StudyResponse
 from app.schemas import UserResponse
 from app.services import study_service
@@ -122,7 +122,7 @@ async def list_studies(
 
 @router.post("/api/studies", status_code=status.HTTP_201_CREATED)
 async def create_study(
-    payload: StudyCreate,
+    payload: StudyCreatePayload,
     user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
@@ -149,18 +149,18 @@ async def get_study(
 @router.put("/api/studies/{study_id}")
 async def update_study(
     study_id: str,
-    payload: StudyCreate,
+    payload: StudyCreatePayload,
     user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
     """Update an existing study, upserting cases."""
-    study = await study_service.get_study(db, study_id)
-    if not study:
+    owner_id = await study_service.get_study_owner_id(db, study_id)
+    if owner_id is None:
         raise HTTPException(status_code=404, detail="Study not found")
-    if study.pushed_by_id is None or not user or study.pushed_by_id != user.id:
+    if not user or owner_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized to update this study")
     updated = await study_service.update_study(db, study_id, payload)
-    assert updated is not None  # we already verified the study exists above
+    assert updated is not None
     log.info(f"Updated study {study_id} with {len(updated.cases)} cases")
     return updated
 
@@ -172,10 +172,10 @@ async def delete_study(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
     """Delete a study and all its cases."""
-    study = await study_service.get_study(db, study_id)
-    if not study:
+    owner_id = await study_service.get_study_owner_id(db, study_id)
+    if owner_id is None:
         raise HTTPException(status_code=404, detail="Study not found")
-    if study.pushed_by_id is None or not user or study.pushed_by_id != user.id:
+    if not user or owner_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this study")
     await study_service.delete_study(db, study_id)
     log.info(f"Deleted study {study_id}")
@@ -197,12 +197,12 @@ async def get_study_detail(
 async def update_case_status(
     study_id: str,
     case_id: str,
-    update: CaseStatusUpdate,
+    payload: CaseStatusUpdatePayload,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict:
     """Update the status of a case within a study."""
-    case = await study_service.update_case_status(db, study_id, case_id, update)
+    case = await study_service.update_case_status(db, study_id, case_id, payload)
     if not case:
         raise HTTPException(status_code=404, detail="Study or case not found")
-    log.info(f"Updated case {case_id} in study {study_id} to {update.status}")
+    log.info(f"Updated case {case_id} in study {study_id} to {payload.status}")
     return {"status": "ok", "case": case}

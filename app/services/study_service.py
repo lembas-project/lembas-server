@@ -5,21 +5,24 @@ from datetime import UTC
 from datetime import datetime
 
 from sqlalchemy import Select
+from sqlalchemy import case as sa_case
+from sqlalchemy import literal
 from sqlalchemy import select
+from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database.models import Case
 from app.database.models import Study
 from app.enums import CaseStatus
-from app.schemas import CaseRun
-from app.schemas import CaseStatusUpdate
+from app.schemas import CaseRun as CaseSchema
+from app.schemas import CaseStatusUpdatePayload
 from app.schemas import Study as StudySchema
-from app.schemas import StudyCreate
+from app.schemas import StudyCreatePayload
 
 
-def _orm_case_to_schema(case: Case) -> CaseRun:
-    return CaseRun(
+def _orm_case_to_schema(case: Case) -> CaseSchema:
+    return CaseSchema(
         id=case.id,
         handler_fqn=case.handler_fqn,
         inputs=json.loads(case.inputs) if case.inputs else {},
@@ -42,7 +45,6 @@ def _orm_study_to_schema(study: Study) -> StudySchema:
         tags=json.loads(study.tags) if study.tags else [],
         plugins_declared=json.loads(study.plugins_declared) if study.plugins_declared else [],
         created_at=study.created_at,
-        pushed_by_id=study.pushed_by_id,
         pushed_by=study.pushed_by.username,
         cases=cases,
     )
@@ -58,7 +60,9 @@ def _study_query(study_id: str | None = None) -> Select[tuple[Study]]:
     return q
 
 
-async def create_study(db: AsyncSession, payload: StudyCreate, pushed_by_id: str) -> StudySchema:
+async def create_study(
+    db: AsyncSession, payload: StudyCreatePayload, pushed_by_id: str
+) -> StudySchema:
     study = Study(
         name=payload.name,
         description=payload.description,
@@ -105,7 +109,7 @@ async def get_all_studies(db: AsyncSession) -> list[StudySchema]:
 
 
 async def update_study(
-    db: AsyncSession, study_id: str, payload: StudyCreate
+    db: AsyncSession, study_id: str, payload: StudyCreatePayload
 ) -> StudySchema | None:
     result = await db.execute(_study_query(study_id))
     study = result.scalar_one_or_none()
@@ -143,6 +147,15 @@ async def update_study(
     return _orm_study_to_schema(study)
 
 
+async def get_study_owner_id(db: AsyncSession, study_id: str) -> str | None:
+    """Return just the pushed_by_id for a study, for ownership checks."""
+    result = await db.execute(
+        select(Study.pushed_by_id).where(Study.id == study_id)
+    )
+    row = result.one_or_none()
+    return row[0] if row else None
+
+
 async def delete_study(db: AsyncSession, study_id: str) -> bool:
     result = await db.execute(select(Study).where(Study.id == study_id))
     study = result.scalar_one_or_none()
@@ -154,30 +167,40 @@ async def delete_study(db: AsyncSession, study_id: str) -> bool:
 
 
 async def update_case_status(
-    db: AsyncSession, study_id: str, case_id: str, update: CaseStatusUpdate
-) -> CaseRun | None:
-    result = await db.execute(select(Case).where(Case.study_id == study_id, Case.id == case_id))
-    case = result.scalar_one_or_none()
-    if case is None:
+    db: AsyncSession, study_id: str, case_id: str, payload: CaseStatusUpdatePayload
+) -> CaseSchema | None:
+    now = datetime.now(UTC)
+
+    values: dict = {"status": payload.status}
+
+    if payload.status == CaseStatus.running:
+        values["started_at"] = sa_case(
+            (Case.started_at.is_(None), literal(now)),
+            else_=Case.started_at,
+        )
+    elif payload.status in (CaseStatus.complete, CaseStatus.failed):
+        values["completed_at"] = now
+
+    if payload.error_message is not None:
+        values["error_message"] = payload.error_message
+    if payload.duration_seconds is not None:
+        values["duration_seconds"] = payload.duration_seconds
+    if payload.results is not None:
+        values["results"] = json.dumps(payload.results)
+    if payload.environment is not None:
+        values["environment"] = json.dumps(payload.environment)
+
+    stmt = (
+        sa_update(Case)
+        .where(Case.study_id == study_id, Case.id == case_id)
+        .values(**values)
+        .returning(Case)
+    )
+
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+    if row is None:
         return None
 
-    now = datetime.now(UTC)
-    case.status = update.status
-
-    if update.status == CaseStatus.running and case.started_at is None:
-        case.started_at = now
-    elif update.status in (CaseStatus.complete, CaseStatus.failed):
-        case.completed_at = now
-
-    if update.error_message is not None:
-        case.error_message = update.error_message
-    if update.duration_seconds is not None:
-        case.duration_seconds = update.duration_seconds
-    if update.results is not None:
-        case.results = json.dumps(update.results)
-    if update.environment is not None:
-        case.environment = json.dumps(update.environment)
-
     await db.commit()
-    await db.refresh(case)
-    return _orm_case_to_schema(case)
+    return _orm_case_to_schema(row)
