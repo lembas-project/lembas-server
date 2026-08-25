@@ -6,6 +6,21 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
+class Page[T](BaseModel):
+    """Generic paginated response envelope.
+
+    Wraps a list of items with pagination metadata. Callers should treat
+    ``total`` and ``next`` as optional — they will be populated once
+    cursor/offset pagination is implemented.
+    """
+
+    items: list[T]
+    total: int | None = Field(default=None, description="Total number of matching records")
+    limit: int | None = Field(default=None, description="Max items returned in this page")
+    offset: int | None = Field(default=None, description="Offset of this page")
+
+
+
 class User(BaseModel):
     """User schema for API responses."""
 

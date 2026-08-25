@@ -22,7 +22,34 @@ STUDY_PAYLOAD = {
 }
 
 
-async def test_create_study(client: AsyncClient) -> None:
+async def test_list_studies(client: AsyncClient) -> None:
+    # Create two studies
+    for name in ("list-study-a", "list-study-b"):
+        resp = await client.post("/api/studies", json={"name": name, "cases": []})
+        assert resp.status_code == 201
+
+    response = await client.get("/api/studies")
+    assert response.status_code == 200
+    data = response.json()
+    assert "items" in data
+    assert "total" in data
+    assert isinstance(data["items"], list)
+    names = [s["name"] for s in data["items"]]
+    assert "list-study-a" in names
+    assert "list-study-b" in names
+    assert data["total"] == len(data["items"])
+
+
+async def test_list_studies_empty_pagination_fields(client: AsyncClient) -> None:
+    response = await client.get("/api/studies")
+    assert response.status_code == 200
+    data = response.json()
+    # limit and offset are null until pagination is implemented
+    assert data["limit"] is None
+    assert data["offset"] is None
+
+
+
     response = await client.post("/api/studies", json=STUDY_PAYLOAD)
     assert response.status_code == 201
 

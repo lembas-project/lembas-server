@@ -19,6 +19,7 @@ from app.dependencies import config
 from app.dependencies import current_user
 from app.dependencies import current_user_orm
 from app.schemas import CaseStatusUpdate
+from app.schemas import Page
 from app.schemas import Study
 from app.schemas import StudyCreate
 from app.schemas import StudyResponse
@@ -95,6 +96,15 @@ async def auth_logout(request: Request) -> RedirectResponse:
 
 
 # --- Study API Endpoints ---
+
+
+@router.get("/api/studies")
+async def list_studies(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Page[Study]:
+    """List all studies."""
+    studies = await study_service.get_all_studies(db)
+    return Page(items=studies, total=len(studies))
 
 
 @router.post("/api/studies", status_code=status.HTTP_201_CREATED)
