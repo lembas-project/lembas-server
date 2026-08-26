@@ -105,3 +105,20 @@ class Case(Base):
     environment: Mapped[str | None] = mapped_column(Text)  # JSON dict
 
     study: Mapped["Study"] = relationship("Study", back_populates="cases")
+
+
+class APIToken(Base):
+    """A long-lived API token associated with a user account."""
+
+    __tablename__ = "api_tokens"
+
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=_new_uuid)
+    user_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("users.id"), nullable=False, index=True
+    )
+    token: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, index=True)
+    name: Mapped[str | None] = mapped_column(String(255))  # optional human label
+    created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
+    last_used_at: Mapped[datetime | None] = mapped_column(TZDateTime)
+
+    user: Mapped["User"] = relationship("User")
