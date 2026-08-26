@@ -21,6 +21,10 @@ class Page[T](BaseModel):
     offset: int | None = Field(default=None, description="Offset of this page")
 
 
+class HealthResponse(BaseModel):
+    status: str
+
+
 class UserResponse(BaseModel):
     """Public-facing user representation."""
 

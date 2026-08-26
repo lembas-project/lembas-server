@@ -18,6 +18,7 @@ from app.database.models import User
 from app.dependencies import config
 from app.dependencies import current_user
 from app.schemas import CaseStatusUpdatePayload
+from app.schemas import HealthResponse
 from app.schemas import Page
 from app.schemas import Study
 from app.schemas import StudyCreatePayload
@@ -100,8 +101,8 @@ async def auth_logout(request: Request) -> RedirectResponse:
 
 
 @api_router.get("/healthz")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+async def health() -> HealthResponse:
+    return HealthResponse(status="ok")
 
 
 # --- User API Endpoints ---
