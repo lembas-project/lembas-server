@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any
+from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -22,7 +23,7 @@ class Page[T](BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: str
+    status: Literal["ok"]
 
 
 class UserResponse(BaseModel):
