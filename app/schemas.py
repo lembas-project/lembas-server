@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any
+from typing import Literal
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -19,6 +20,10 @@ class Page[T](BaseModel):
     total: int | None = Field(default=None, description="Total number of matching records")
     limit: int | None = Field(default=None, description="Max items returned in this page")
     offset: int | None = Field(default=None, description="Offset of this page")
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"]
 
 
 class UserResponse(BaseModel):

@@ -6,7 +6,8 @@ from fastapi import FastAPI
 
 from app.database import close_database
 from app.database import init_database
-from app.routes import router
+from app.routes import api_router
+from app.routes import hidden_router
 from app.settings import Settings
 
 
@@ -29,8 +30,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app(config: Settings | None = None) -> FastAPI:
     config = config or Settings()  # type: ignore[call-arg]
 
-    app = FastAPI(lifespan=lifespan)
-    app.include_router(router)
+    app = FastAPI(
+        lifespan=lifespan,
+        title="lembas API",
+        docs_url=None,
+        redoc_url="/api/docs",
+    )
+    app.include_router(api_router, prefix="/api")
+    app.include_router(hidden_router)
 
     app.extra["config"] = config
 

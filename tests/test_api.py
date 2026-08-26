@@ -6,6 +6,13 @@ from httpx import AsyncClient
 from app.auth import GitHubUserData
 
 
+async def test_api_docs_available(client: AsyncClient) -> None:
+    response = await client.get("/api/docs")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert b"lembas API" in response.content
+
+
 async def test_get_health(client: AsyncClient) -> None:
     response = await client.get("/api/healthz")
     assert response.status_code == 200
