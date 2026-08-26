@@ -34,6 +34,30 @@ class UserResponse(BaseModel):
     avatar_url: str | None = None
 
 
+class TokenCreatePayload(BaseModel):
+    """Payload for creating an API token."""
+
+    name: str | None = Field(default=None, description="Optional human-readable label")
+
+
+class TokenResponse(BaseModel):
+    """Response after creating a token. The raw token is only returned once."""
+
+    id: str
+    name: str | None
+    token: str
+    created_at: datetime
+
+
+class TokenMetadata(BaseModel):
+    """Token metadata for listing — does not include the raw token value."""
+
+    id: str
+    name: str | None
+    created_at: datetime
+    last_used_at: datetime | None
+
+
 class CaseRunCreate(BaseModel):
     """Payload for creating a case run."""
 

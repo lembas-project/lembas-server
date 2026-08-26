@@ -23,8 +23,14 @@ from app.schemas import Page
 from app.schemas import Study
 from app.schemas import StudyCreatePayload
 from app.schemas import StudyResponse
+from app.schemas import TokenCreatePayload
+from app.schemas import TokenMetadata
+from app.schemas import TokenResponse
 from app.schemas import UserResponse
 from app.services import study_service
+from app.services.token_service import create_token
+from app.services.token_service import delete_token
+from app.services.token_service import list_tokens
 from app.services.user_service import get_all_users
 from app.services.user_service import get_or_create_user
 from app.settings import Settings
@@ -116,6 +122,65 @@ async def list_users(
     users = await get_all_users(db)
     items = [UserResponse(id=u.id, username=u.username, avatar_url=u.avatar_url) for u in users]
     return Page(items=items, total=len(items))
+
+
+# --- Token API Endpoints ---
+
+
+@api_router.post("/auth/tokens", status_code=status.HTTP_201_CREATED)
+async def create_api_token(
+    payload: TokenCreatePayload,
+    user: Annotated[User | None, Depends(current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> TokenResponse:
+    """Create a new API token for the authenticated user.
+
+    The token value is only returned once — store it securely.
+    Requires authentication via GitHub OAuth session.
+    """
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    token = await create_token(db, user, name=payload.name)
+    return TokenResponse(
+        id=token.id,
+        name=token.name,
+        token=token.token,
+        created_at=token.created_at,
+    )
+
+
+@api_router.get("/auth/tokens")
+async def list_api_tokens(
+    user: Annotated[User | None, Depends(current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[TokenMetadata]:
+    """List all API tokens for the authenticated user (no token values)."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    tokens = await list_tokens(db, user)
+    return [
+        TokenMetadata(
+            id=t.id,
+            name=t.name,
+            created_at=t.created_at,
+            last_used_at=t.last_used_at,
+        )
+        for t in tokens
+    ]
+
+
+@api_router.delete("/auth/tokens/{token_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_api_token(
+    token_id: str,
+    user: Annotated[User | None, Depends(current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """Revoke an API token. Only the owning user can delete their own tokens."""
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    deleted = await delete_token(db, token_id, user)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Token not found")
 
 
 # --- Study API Endpoints ---
