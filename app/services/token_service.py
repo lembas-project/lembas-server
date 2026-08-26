@@ -17,9 +17,7 @@ def _generate_token() -> str:
     return secrets.token_hex(32)
 
 
-async def create_token(
-    db: AsyncSession, user: User, name: str | None = None
-) -> APIToken:
+async def create_token(db: AsyncSession, user: User, name: str | None = None) -> APIToken:
     """Create and persist a new API token for the given user."""
     token = APIToken(
         user_id=user.id,
@@ -35,9 +33,7 @@ async def create_token(
 async def get_user_by_token(db: AsyncSession, raw_token: str) -> User | None:
     """Look up the user associated with a raw token string, updating last_used_at."""
     result = await db.execute(
-        select(APIToken)
-        .where(APIToken.token == raw_token)
-        .options(selectinload(APIToken.user))
+        select(APIToken).where(APIToken.token == raw_token).options(selectinload(APIToken.user))
     )
     api_token = result.scalar_one_or_none()
     if api_token is None:
@@ -52,9 +48,7 @@ async def get_user_by_token(db: AsyncSession, raw_token: str) -> User | None:
 async def list_tokens(db: AsyncSession, user: User) -> list[APIToken]:
     """List all tokens for a user."""
     result = await db.execute(
-        select(APIToken)
-        .where(APIToken.user_id == user.id)
-        .order_by(APIToken.created_at.desc())
+        select(APIToken).where(APIToken.user_id == user.id).order_by(APIToken.created_at.desc())
     )
     return list(result.scalars().all())
 
