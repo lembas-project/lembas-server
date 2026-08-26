@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app(config: Settings | None = None) -> FastAPI:
     config = config or Settings()  # type: ignore[call-arg]
 
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(lifespan=lifespan, docs_url="/api/docs", redoc_url="/api/redoc")
     app.include_router(router)
 
     app.extra["config"] = config
