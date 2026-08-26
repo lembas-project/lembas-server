@@ -30,10 +30,17 @@ from app.settings import Settings
 
 log = logging.getLogger(__name__)
 
-router = APIRouter()
+# Routes excluded from API docs (non-REST: redirects, OAuth flow, HTML pages)
+hidden_router = APIRouter(include_in_schema=False)
+
+# REST API routes — all mounted under /api in main.py
+api_router = APIRouter()
 
 
-@router.get("/")
+# --- Hidden routes ---
+
+
+@hidden_router.get("/")
 async def home(
     request: Request,
     user: Annotated[User | None, Depends(current_user)],
@@ -46,12 +53,7 @@ async def home(
     }
 
 
-@router.get("/api/healthz")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@router.get("/auth/login")
+@hidden_router.get("/auth/login")
 async def auth_login(
     request: Request,
     config: Annotated[Settings, Depends(config)],
@@ -60,11 +62,10 @@ async def auth_login(
         return RedirectResponse(
             request.url_for("auth_callback").include_query_params(code="dummy-code")
         )
-
     return RedirectResponse(config.login_url)
 
 
-@router.get("/auth/callback")
+@hidden_router.get("/auth/callback")
 async def auth_callback(
     request: Request,
     code: Annotated[str, Query],
@@ -88,17 +89,25 @@ async def auth_callback(
     return response
 
 
-@router.get("/auth/logout")
+@hidden_router.get("/auth/logout")
 async def auth_logout(request: Request) -> RedirectResponse:
     response = RedirectResponse(request.url_for("home"))
     response.delete_cookie(key="access_token")
     return response
 
 
+# --- API routes ---
+
+
+@api_router.get("/healthz")
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 # --- User API Endpoints ---
 
 
-@router.get("/api/users")
+@api_router.get("/users")
 async def list_users(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Page[UserResponse]:
@@ -111,7 +120,7 @@ async def list_users(
 # --- Study API Endpoints ---
 
 
-@router.get("/api/studies")
+@api_router.get("/studies")
 async def list_studies(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Page[Study]:
@@ -120,7 +129,7 @@ async def list_studies(
     return Page(items=studies, total=len(studies))
 
 
-@router.post("/api/studies", status_code=status.HTTP_201_CREATED)
+@api_router.post("/studies", status_code=status.HTTP_201_CREATED)
 async def create_study(
     payload: StudyCreatePayload,
     user: Annotated[User | None, Depends(current_user)],
@@ -134,19 +143,19 @@ async def create_study(
     return study
 
 
-@router.get("/api/studies/{study_id}")
+@api_router.get("/studies/{study_id}")
 async def get_study(
     study_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> Study:
-    """Fetch a study by ID (raw format)."""
+    """Fetch a study by ID."""
     study = await study_service.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
     return study
 
 
-@router.put("/api/studies/{study_id}")
+@api_router.put("/studies/{study_id}")
 async def update_study(
     study_id: str,
     payload: StudyCreatePayload,
@@ -165,7 +174,7 @@ async def update_study(
     return updated
 
 
-@router.delete("/api/studies/{study_id}", status_code=status.HTTP_204_NO_CONTENT)
+@api_router.delete("/studies/{study_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_study(
     study_id: str,
     user: Annotated[User | None, Depends(current_user)],
@@ -181,7 +190,7 @@ async def delete_study(
     log.info(f"Deleted study {study_id}")
 
 
-@router.get("/api/studies/{study_id}/detail")
+@api_router.get("/studies/{study_id}/detail")
 async def get_study_detail(
     study_id: str,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -193,7 +202,7 @@ async def get_study_detail(
     return StudyResponse.from_study(study)
 
 
-@router.patch("/api/studies/{study_id}/cases/{case_id}")
+@api_router.patch("/studies/{study_id}/cases/{case_id}")
 async def update_case_status(
     study_id: str,
     case_id: str,

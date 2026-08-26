@@ -6,7 +6,8 @@ from fastapi import FastAPI
 
 from app.database import close_database
 from app.database import init_database
-from app.routes import router
+from app.routes import api_router
+from app.routes import hidden_router
 from app.settings import Settings
 
 
@@ -30,7 +31,8 @@ def create_app(config: Settings | None = None) -> FastAPI:
     config = config or Settings()  # type: ignore[call-arg]
 
     app = FastAPI(lifespan=lifespan, docs_url="/api/docs", redoc_url="/api/redoc")
-    app.include_router(router)
+    app.include_router(api_router, prefix="/api")
+    app.include_router(hidden_router)
 
     app.extra["config"] = config
 
