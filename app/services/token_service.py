@@ -1,5 +1,6 @@
 """Service functions for API token management."""
 
+import logging
 import secrets
 from datetime import UTC
 from datetime import datetime
@@ -10,6 +11,8 @@ from sqlalchemy.orm import selectinload
 
 from app.database.models import APIToken
 from app.database.models import User
+
+log = logging.getLogger(__name__)
 
 TOKEN_PREFIX = "lb_v1"
 
@@ -37,10 +40,21 @@ async def create_token(db: AsyncSession, user: User, name: str | None = None) ->
 
 
 async def get_user_by_token(db: AsyncSession, raw_token: str) -> User | None:
-    """Look up the user associated with a raw token string, updating last_used_at."""
-    result = await db.execute(
-        select(APIToken).where(APIToken.token == raw_token).options(selectinload(APIToken.user))
-    )
+    """Look up the user associated with a raw token string, updating last_used_at.
+
+    Returns None (rather than raising) on any DB error so that auth failures
+    always produce a 4xx response rather than a 500.
+    """
+    try:
+        result = await db.execute(
+            select(APIToken)
+            .where(APIToken.token == raw_token)
+            .options(selectinload(APIToken.user))
+        )
+    except Exception:
+        log.warning("Failed to look up token — DB error", exc_info=True)
+        return None
+
     api_token = result.scalar_one_or_none()
     if api_token is None:
         return None
