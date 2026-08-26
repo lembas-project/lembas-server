@@ -9,7 +9,7 @@ from app.dependencies import current_user
 
 
 async def test_create_token_unauthenticated(client: AsyncClient) -> None:
-    response = await client.post("/api/auth/tokens", json={})
+    response = await client.post("/api/tokens", json={})
     assert response.status_code == 401
 
 
@@ -23,7 +23,7 @@ async def test_create_token(app: FastAPI, client: AsyncClient, db: AsyncSession)
 
     app.dependency_overrides[current_user] = override
     try:
-        response = await client.post("/api/auth/tokens", json={"name": "ci-token"})
+        response = await client.post("/api/tokens", json={"name": "ci-token"})
         assert response.status_code == 201
         data = response.json()
         assert data["name"] == "ci-token"
@@ -39,7 +39,7 @@ async def test_create_token(app: FastAPI, client: AsyncClient, db: AsyncSession)
     # Token value must not appear in listing
     app.dependency_overrides[current_user] = override
     try:
-        list_resp = await client.get("/api/auth/tokens")
+        list_resp = await client.get("/api/tokens")
         assert list_resp.status_code == 200
         tokens = list_resp.json()
         assert any(t["name"] == "ci-token" for t in tokens)
@@ -61,7 +61,7 @@ async def test_bearer_token_authenticates_user(
 
     # Use the token via Authorization header — no dependency override needed
     response = await client.get(
-        "/api/auth/tokens",
+        "/api/tokens",
         headers={"Authorization": f"Bearer {token.token}"},
     )
     assert response.status_code == 200
@@ -90,11 +90,11 @@ async def test_delete_token(app: FastAPI, client: AsyncClient, db: AsyncSession)
 
     app.dependency_overrides[current_user] = override
     try:
-        response = await client.delete(f"/api/auth/tokens/{token.id}")
+        response = await client.delete(f"/api/tokens/{token.id}")
         assert response.status_code == 204
 
         # Confirm it's gone
-        list_resp = await client.get("/api/auth/tokens")
+        list_resp = await client.get("/api/tokens")
         assert not any(t["id"] == token.id for t in list_resp.json())
     finally:
         app.dependency_overrides.pop(current_user)
@@ -110,7 +110,7 @@ async def test_delete_token_not_found(app: FastAPI, client: AsyncClient, db: Asy
 
     app.dependency_overrides[current_user] = override
     try:
-        response = await client.delete("/api/auth/tokens/nonexistent-id")
+        response = await client.delete("/api/tokens/nonexistent-id")
         assert response.status_code == 404
     finally:
         app.dependency_overrides.pop(current_user)

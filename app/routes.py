@@ -127,7 +127,7 @@ async def list_users(
 # --- Token API Endpoints ---
 
 
-@api_router.post("/auth/tokens", status_code=status.HTTP_201_CREATED)
+@api_router.post("/tokens", status_code=status.HTTP_201_CREATED)
 async def create_api_token(
     payload: TokenCreatePayload,
     user: Annotated[User | None, Depends(current_user)],
@@ -149,7 +149,7 @@ async def create_api_token(
     )
 
 
-@api_router.get("/auth/tokens")
+@api_router.get("/tokens")
 async def list_api_tokens(
     user: Annotated[User | None, Depends(current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -169,7 +169,7 @@ async def list_api_tokens(
     ]
 
 
-@api_router.delete("/auth/tokens/{token_id}", status_code=status.HTTP_204_NO_CONTENT)
+@api_router.delete("/tokens/{token_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_api_token(
     token_id: str,
     user: Annotated[User | None, Depends(current_user)],
