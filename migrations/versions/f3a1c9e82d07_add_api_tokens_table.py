@@ -22,7 +22,7 @@ def upgrade() -> None:
         "api_tokens",
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column("user_id", sa.Uuid(), nullable=False),
-        sa.Column("token", sa.String(length=64), nullable=False),
+        sa.Column("token", sa.String(length=80), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("last_used_at", sa.DateTime(), nullable=True),

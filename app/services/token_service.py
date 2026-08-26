@@ -11,10 +11,16 @@ from sqlalchemy.orm import selectinload
 from app.database.models import APIToken
 from app.database.models import User
 
+TOKEN_PREFIX = "lb_v1"
+
 
 def _generate_token() -> str:
-    """Generate a cryptographically secure 32-byte (64 hex char) token."""
-    return secrets.token_hex(32)
+    """Generate a prefixed, cryptographically secure token.
+
+    Format: lb_v1_<32 random bytes as hex>
+    Example: lb_v1_a3f1c9...
+    """
+    return f"{TOKEN_PREFIX}_{secrets.token_hex(32)}"
 
 
 async def create_token(db: AsyncSession, user: User, name: str | None = None) -> APIToken:

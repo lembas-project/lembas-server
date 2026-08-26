@@ -27,7 +27,8 @@ async def test_create_token(app: FastAPI, client: AsyncClient, db: AsyncSession)
         assert response.status_code == 201
         data = response.json()
         assert data["name"] == "ci-token"
-        assert len(data["token"]) == 64
+        assert data["token"].startswith("lb_v1_")
+        assert len(data["token"]) == 70  # lb_v1_ (6) + 64 hex chars
         assert "id" in data
         assert "created_at" in data
         # token must not be re-exposed on subsequent listing
