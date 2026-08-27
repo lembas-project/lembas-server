@@ -1,5 +1,6 @@
 """Service functions for API token management."""
 
+import hashlib
 import logging
 import secrets
 from datetime import UTC
@@ -26,17 +27,33 @@ def _generate_token() -> str:
     return f"{TOKEN_PREFIX}_{secrets.token_hex(32)}"
 
 
-async def create_token(db: AsyncSession, user: User, name: str | None = None) -> APIToken:
-    """Create and persist a new API token for the given user."""
+def hash_token(raw_token: str) -> str:
+    """Return the SHA-256 hex digest of a raw token value.
+
+    Only the hash is stored in the database. The raw token is shown to the
+    user once at creation time and never persisted.
+    """
+    return hashlib.sha256(raw_token.encode()).hexdigest()
+
+
+async def create_token(
+    db: AsyncSession, user: User, name: str | None = None
+) -> tuple[APIToken, str]:
+    """Create a new API token, storing only its hash.
+
+    Returns a (APIToken, raw_token) tuple. The raw token must be shown to
+    the user immediately — it is not stored and cannot be recovered later.
+    """
+    raw_token = _generate_token()
     token = APIToken(
         user_id=user.id,
-        token=_generate_token(),
+        token_hash=hash_token(raw_token),
         name=name,
     )
     db.add(token)
     await db.commit()
     await db.refresh(token)
-    return token
+    return token, raw_token
 
 
 async def get_user_by_token(db: AsyncSession, raw_token: str) -> User | None:
@@ -48,7 +65,7 @@ async def get_user_by_token(db: AsyncSession, raw_token: str) -> User | None:
     try:
         result = await db.execute(
             select(APIToken)
-            .where(APIToken.token == raw_token)
+            .where(APIToken.token_hash == hash_token(raw_token))
             .options(selectinload(APIToken.user))
         )
     except Exception:
@@ -78,6 +95,17 @@ async def delete_token(db: AsyncSession, token_id: str, user: User) -> bool:
     result = await db.execute(
         select(APIToken).where(APIToken.id == token_id, APIToken.user_id == user.id)
     )
+    token = result.scalar_one_or_none()
+    if token is None:
+        return False
+    await db.delete(token)
+    await db.commit()
+    return True
+
+
+async def delete_token_by_value(db: AsyncSession, raw_token: str) -> bool:
+    """Delete a token by its raw value. Used for self-revocation on logout."""
+    result = await db.execute(select(APIToken).where(APIToken.token_hash == hash_token(raw_token)))
     token = result.scalar_one_or_none()
     if token is None:
         return False

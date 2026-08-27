@@ -116,7 +116,7 @@ class APIToken(Base):
     user_id: Mapped[str] = mapped_column(
         Uuid(as_uuid=False), ForeignKey("users.id"), nullable=False, index=True
     )
-    token: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, index=True)
     name: Mapped[str | None] = mapped_column(String(255))  # optional human label
     created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
     last_used_at: Mapped[datetime | None] = mapped_column(TZDateTime)

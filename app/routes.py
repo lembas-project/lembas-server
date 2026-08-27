@@ -10,6 +10,8 @@ from fastapi import Request
 from fastapi import Response
 from fastapi import status
 from fastapi.responses import RedirectResponse
+from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import exchange_code_for_token
@@ -37,6 +39,7 @@ from app.schemas import UserResponse
 from app.services import study_service
 from app.services.token_service import create_token
 from app.services.token_service import delete_token
+from app.services.token_service import delete_token_by_value
 from app.services.token_service import list_tokens
 from app.services.user_service import get_all_users
 from app.services.user_service import get_or_create_user
@@ -186,9 +189,9 @@ async def device_flow_token(
         username=github_user.login,
         avatar_url=github_user.avatar_url,
     )
-    token = await create_token(db, user, name=payload.token_name or "cli")
+    api_token, raw_token = await create_token(db, user, name=payload.token_name or "cli")
     response.status_code = status.HTTP_201_CREATED
-    return DeviceTokenResponse(token=token.token, token_name=token.name)
+    return DeviceTokenResponse(token=raw_token, token_name=api_token.name)
 
 
 @api_router.post("/tokens", status_code=status.HTTP_201_CREATED)
@@ -204,12 +207,12 @@ async def create_api_token(
     """
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required")
-    token = await create_token(db, user, name=payload.name)
+    api_token, raw_token = await create_token(db, user, name=payload.name)
     return TokenResponse(
-        id=token.id,
-        name=token.name,
-        token=token.token,
-        created_at=token.created_at,
+        id=api_token.id,
+        name=api_token.name,
+        token=raw_token,
+        created_at=api_token.created_at,
     )
 
 
@@ -231,6 +234,20 @@ async def list_api_tokens(
         )
         for t in tokens
     ]
+
+
+_bearer = HTTPBearer(auto_error=False)
+
+
+@api_router.delete("/tokens/current", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_current_token(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """Revoke the token used to authenticate this request (self-revocation for logout)."""
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    await delete_token_by_value(db, credentials.credentials)
 
 
 @api_router.delete("/tokens/{token_id}", status_code=status.HTTP_204_NO_CONTENT)
