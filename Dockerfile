@@ -27,6 +27,8 @@ COPY --from=builder /app/.pixi /app/.pixi
 # Copy application code and migrations
 COPY app/ ./app/
 COPY migrations/ ./migrations/
+COPY templates/ ./templates/
+COPY static/ ./static/
 COPY alembic.ini ./
 COPY entrypoint.sh ./
 
