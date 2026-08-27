@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}404 Not Found – lembas{% endblock %}
+
+{% block content %}
+<div class="not-found">
+  <div class="not-found__code">404</div>
+  <div class="not-found__message">{{ message }}</div>
+  <a href="/studies">← Back to studies</a>
+</div>
+{% endblock %}

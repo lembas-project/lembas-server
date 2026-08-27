@@ -1,0 +1,5 @@
+# Vendored/minified files — do not reformat
+static/js/htmx.min.js
+
+# Jinja2 templates — prettier mangles template syntax
+templates/

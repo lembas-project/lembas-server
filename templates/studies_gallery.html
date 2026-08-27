@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Studies – lembas{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>Studies</h1>
+  </div>
+
+  {% if studies %}
+  <div class="studies-grid">
+    {% for study in studies %}
+    {% set total = study.cases | length %}
+    {% set complete = study.cases.values() | selectattr('status', 'equalto', 'complete') | list | length %}
+    {% set failed = study.cases.values() | selectattr('status', 'equalto', 'failed') | list | length %}
+    <a href="/studies/{{ study.id }}" class="study-card">
+      <div class="study-name">{{ study.name }}</div>
+      {% if study.description %}
+      <div class="study-description">{{ study.description }}</div>
+      {% endif %}
+      <div class="study-meta">
+        <span>
+          {% if failed > 0 %}
+          <span class="badge badge-failed">{{ failed }} failed</span>
+          {% elif complete == total %}
+          <span class="badge badge-complete">{{ total }} complete</span>
+          {% else %}
+          <span class="badge badge-running">{{ complete }}/{{ total }} complete</span>
+          {% endif %}
+        </span>
+        {% if study.pushed_by %}<span>by {{ study.pushed_by }}</span>{% endif %}
+        {% if study.created_at %}<span>{{ study.created_at.strftime('%Y-%m-%d') }}</span>{% endif %}
+      </div>
+      {% if study.tags %}
+      <div class="study-tags">
+        {% for tag in study.tags[:6] %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h2>No studies yet</h2>
+    <p>Push your first study with <code>lembas push</code>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

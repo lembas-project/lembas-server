@@ -1,0 +1,34 @@
+{% for case in cases %}
+<tr
+  class="case-row"
+  data-case-id="{{ case.id }}"
+  hx-get="/studies/{{ study_id }}/cases/{{ case.id }}"
+  hx-target="#case-detail"
+  hx-swap="innerHTML"
+>
+  <td><span class="badge badge-{{ case.status }}">{{ case.status }}</span></td>
+  {% for key in input_keys %}
+  <td class="input-val">{{ case.inputs.get(key, '–') }}</td>
+  {% endfor %} {% for key in result_keys %}
+  <td class="input-val">
+    {% if case.results and case.results.get(key) is not none %} {{ "%.4g" |
+    format(case.results[key]) if case.results[key] is number else
+    case.results[key] }} {% else %}–{% endif %}
+  </td>
+  {% endfor %}
+  <td class="duration">
+    {% if case.duration_seconds %} {{ "%.2f" | format(case.duration_seconds) }}s
+    {% else %}–{% endif %}
+  </td>
+  <td class="case-id">{{ case.id[:8] }}</td>
+</tr>
+{% else %}
+<tr>
+  <td
+    colspan="99"
+    class="empty-row"
+  >
+    No cases match this filter.
+  </td>
+</tr>
+{% endfor %}

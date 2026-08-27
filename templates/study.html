@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{{ study.name }} – lembas{% endblock %}
+
+
+{% block content %}
+<div class="container">
+  <a href="/studies" class="back-link">← Studies</a>
+
+  <div class="study-header">
+    <h1>{{ study.name }}</h1>
+    <div class="meta">
+      {% if study.pushed_by %}<span>by {{ study.pushed_by }}</span>{% endif %}
+      <span>{{ study.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+      {% if study.description %}<span>{{ study.description }}</span>{% endif %}
+    </div>
+    {% if study.tags %}
+    <div class="study-tags">
+      {% for tag in study.tags %}
+      <span class="tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% set total    = cases | length %}
+  {% set complete = cases | selectattr('status', 'equalto', 'complete') | list | length %}
+  {% set failed   = cases | selectattr('status', 'equalto', 'failed')   | list | length %}
+  {% set running  = cases | selectattr('status', 'equalto', 'running')  | list | length %}
+  {% set pending  = cases | selectattr('status', 'equalto', 'pending')  | list | length %}
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="label">Total</div>
+      <div class="value">{{ total }}</div>
+    </div>
+    {% if complete %}
+    <div class="stat-card complete">
+      <div class="label">Complete</div>
+      <div class="value">{{ complete }}</div>
+    </div>
+    {% endif %}
+    {% if running %}
+    <div class="stat-card running">
+      <div class="label">Running</div>
+      <div class="value">{{ running }}</div>
+    </div>
+    {% endif %}
+    {% if failed %}
+    <div class="stat-card failed">
+      <div class="label">Failed</div>
+      <div class="value">{{ failed }}</div>
+    </div>
+    {% endif %}
+    {% if pending %}
+    <div class="stat-card">
+      <div class="label">Pending</div>
+      <div class="value">{{ pending }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active"
+      hx-get="/studies/{{ study.id }}/cases"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      hx-push-url="false"
+      onclick="setActive(this)">All</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=complete"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Complete</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=running"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Running</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=failed"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Failed</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=pending"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Pending</button>
+  </div>
+
+  <div class="layout" id="study-layout">
+    <div>
+      <table class="cases-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            {% for key in input_keys %}
+            <th>{{ key }}</th>
+            {% endfor %}
+            {% for key in result_keys %}
+            <th>{{ key }} <span class="result-marker">result</span></th>
+            {% endfor %}
+            <th>Duration</th>
+            <th>ID</th>
+          </tr>
+        </thead>
+        <tbody id="cases-table-body">
+          {% include "partials/case_rows.html" %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="case-detail">
+      <div class="detail-placeholder">
+        Click a case to see details
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setActive(btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // Expand layout when detail panel is loaded
+  document.body.addEventListener('htmx:afterSwap', function(e) {
+    if (e.detail.target.id === 'case-detail') {
+      document.getElementById('study-layout').className = 'layout with-panel';
+      // Mark selected row
+      document.querySelectorAll('.case-row').forEach(r => r.classList.remove('selected'));
+      const caseId = e.detail.requestConfig?.path?.split('/cases/')[1];
+      if (caseId) {
+        const row = document.querySelector(`[data-case-id="${caseId}"]`);
+        if (row) row.classList.add('selected');
+      }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+<div class="detail-body">
+  <div class="detail-header">
+    <div>
+      <div class="section-label">Case</div>
+      <div class="mono-id">{{ case.id[:16] }}…</div>
+    </div>
+    <span class="badge badge-{{ case.status }}">{{ case.status }}</span>
+  </div>
+
+  <div class="mono-fqn">{{ case.handler_fqn }}</div>
+
+  <!-- Inputs -->
+  <div class="detail-section">
+    <div class="section-label">Inputs</div>
+    <table class="kv-table">
+      {% for key, val in case.inputs.items() %}
+      <tr>
+        <td class="kv-key">{{ key }}</td>
+        <td class="kv-val">{{ val }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Results -->
+  {% if case.results %}
+  <div class="detail-section">
+    <div class="section-label">Results</div>
+    <table class="kv-table">
+      {% for key, val in case.results.items() %}
+      <tr>
+        <td class="kv-key">{{ key }}</td>
+        <td class="kv-val kv-val--result">
+          {{ "%.6g" | format(val) if val is number else val }}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Timing -->
+  {% if case.duration_seconds or case.started_at or case.completed_at %}
+  <div class="detail-section">
+    <div class="section-label">Timing</div>
+    <table class="kv-table">
+      {% if case.duration_seconds %}
+      <tr>
+        <td class="kv-key">Duration</td>
+        <td class="kv-val">{{ "%.3f" | format(case.duration_seconds) }}s</td>
+      </tr>
+      {% endif %}
+      {% if case.completed_at %}
+      <tr>
+        <td class="kv-key">Completed</td>
+        <td class="kv-val kv-val--muted">
+          {{ case.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}
+        </td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- Error -->
+  {% if case.error_message %}
+  <div class="detail-section">
+    <div class="section-label section-label--error">Error</div>
+    <pre class="error-block">{{ case.error_message }}</pre>
+  </div>
+  {% endif %}
+
+  <!-- Environment -->
+  {% if case.environment %}
+  <div class="detail-section">
+    <div class="section-label">Environment</div>
+    <table class="kv-table kv-table--sm">
+      {% for key, val in case.environment.items() %}
+      <tr>
+        <td class="kv-key">{{ key }}</td>
+        <td class="kv-val kv-val--env">{{ val }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+</div>
