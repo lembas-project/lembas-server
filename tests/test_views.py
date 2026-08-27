@@ -19,9 +19,7 @@ async def test_studies_gallery_renders(client: AsyncClient) -> None:
     assert "text/html" in response.headers["content-type"]
 
 
-async def test_study_detail_renders(
-    app: FastAPI, client: AsyncClient, db: AsyncSession
-) -> None:
+async def test_study_detail_renders(app: FastAPI, client: AsyncClient, db: AsyncSession) -> None:
     """Study detail page must render and include correct case row URLs."""
     from app.services.user_service import get_or_create_user
 
