@@ -6,6 +6,8 @@ on:
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -35,13 +37,16 @@ jobs:
           npx wait-on --httpTimeout 10000 "http-get://localhost:8000/api/healthz" \
             --timeout 30000 || (cat /tmp/server.log && exit 1)
 
-      - name: Run Lighthouse CI
+      - name: Collect Lighthouse results
         run: |
           npx --yes @lhci/cli@0.14 collect \
             --url http://localhost:8000/studies \
             --numberOfRuns 1 \
             --settings.preset desktop \
             --settings.onlyCategories accessibility,performance,seo
+
+      - name: Assert Lighthouse thresholds
+        run: |
           npx @lhci/cli@0.14 assert \
             --assertions.accessibility="['warn', {'minScore': 0.92}]" \
             --assertions.performance="['error', {'minScore': 0.9}]" \
@@ -50,4 +55,88 @@ jobs:
             --assertions.landmark-one-main="['error', {'minScore': 1}]" \
             --assertions.meta-description="['error', {'minScore': 1}]" \
             --assertions.document-title="['error', {'minScore': 1}]"
-          npx @lhci/cli@0.14 upload --target temporary-public-storage || true
+
+      - name: Upload results and get report URL
+        id: upload
+        run: |
+          output=$(npx @lhci/cli@0.14 upload --target temporary-public-storage 2>&1)
+          echo "$output"
+          url=$(echo "$output" | grep -oP 'https://storage\.googleapis\.com[^\s]+' | head -1)
+          echo "report_url=$url" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Parse scores
+        id: scores
+        run: |
+          results_file=$(ls .lighthouseci/*.json | head -1)
+          python3 - << 'PYEOF'
+          import json, os, sys
+          f = sorted(__import__('glob').glob('.lighthouseci/*.json'))
+          if not f:
+              sys.exit(0)
+          data = json.load(open(f[0]))
+          cats = data.get('categories', {})
+          def score(key):
+              s = cats.get(key, {}).get('score')
+              return f"{round(s * 100)}" if s is not None else 'n/a'
+          def emoji(key):
+              s = cats.get(key, {}).get('score')
+              if s is None: return '⚪'
+              return '✅' if s >= 0.9 else '⚠️' if s >= 0.7 else '❌'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f"perf={emoji('performance')} {score('performance')}\n")
+              out.write(f"a11y={emoji('accessibility')} {score('accessibility')}\n")
+              out.write(f"seo={emoji('seo')} {score('seo')}\n")
+          PYEOF
+
+      - name: Comment PR with results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportUrl = '${{ steps.upload.outputs.report_url }}';
+            const perf = '${{ steps.scores.outputs.perf }}';
+            const a11y = '${{ steps.scores.outputs.a11y }}';
+            const seo  = '${{ steps.scores.outputs.seo }}';
+
+            const reportLink = reportUrl
+              ? `[View full report](${reportUrl})`
+              : '_Report upload failed_';
+
+            const body = [
+              '## Lighthouse Results',
+              '',
+              '| Category | Score |',
+              '|---|---|',
+              `| Performance | ${perf} |`,
+              `| Accessibility | ${a11y} |`,
+              `| SEO | ${seo} |`,
+              '',
+              reportLink,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.startsWith('## Lighthouse Results')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
