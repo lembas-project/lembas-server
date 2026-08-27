@@ -38,7 +38,7 @@ async def test_auth_callback_success(client: AsyncClient, mocker: Mock, base_url
     )
 
     assert response.status_code == 307
-    assert response.headers["Location"] == f"{base_url}/"
+    assert response.headers["Location"] == f"{base_url}/studies"
 
     assert response.cookies.get("access_token") == "valid-access-token"
 
@@ -55,6 +55,6 @@ async def test_auth_callback_redirect_on_failure(
     mock.assert_called_once()
 
     assert response.status_code == 307
-    assert response.headers["Location"] == f"{base_url}/"
+    assert response.headers["Location"] == f"{base_url}/studies"
 
     assert response.cookies.get("access_token") is None

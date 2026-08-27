@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}{{ study.name }} – lembas{% endblock %}
+
+{% block extra_styles %}
+.study-header {
+  margin-bottom: 1.5rem;
+}
+
+.study-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.375rem;
+}
+
+.study-header .meta {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.study-tags {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  margin-top: 0.625rem;
+}
+
+.stat-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.875rem 1.25rem;
+  min-width: 120px;
+}
+
+.stat-card .label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.stat-card .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stat-card.complete .value { color: var(--complete); }
+.stat-card.failed  .value { color: var(--failed); }
+.stat-card.running .value { color: var(--running); }
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.layout.with-panel {
+  grid-template-columns: 1fr 380px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 0.3rem 0.875rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cases-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.cases-table th {
+  text-align: left;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.cases-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid #0f2035;
+  vertical-align: middle;
+  color: var(--text);
+}
+
+.cases-table tr.case-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.cases-table tr.case-row:hover { background: #111f30; }
+.cases-table tr.case-row.selected { background: #0e2540; }
+
+.case-id {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.duration {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.input-val {
+  font-size: 0.8125rem;
+  color: #b0c4d8;
+}
+
+/* Detail panel */
+.detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.detail-placeholder {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.back-link {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.back-link:hover { color: var(--text); text-decoration: none; }
+
+#case-detail { min-height: 200px; }
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a href="/studies" class="back-link">← Studies</a>
+
+  <div class="study-header">
+    <h1>{{ study.name }}</h1>
+    <div class="meta">
+      {% if study.pushed_by %}<span>by {{ study.pushed_by }}</span>{% endif %}
+      <span>{{ study.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+      {% if study.description %}<span>{{ study.description }}</span>{% endif %}
+    </div>
+    {% if study.tags %}
+    <div class="study-tags">
+      {% for tag in study.tags %}
+      <span class="tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% set total    = cases | length %}
+  {% set complete = cases | selectattr('status', 'equalto', 'complete') | list | length %}
+  {% set failed   = cases | selectattr('status', 'equalto', 'failed')   | list | length %}
+  {% set running  = cases | selectattr('status', 'equalto', 'running')  | list | length %}
+  {% set pending  = cases | selectattr('status', 'equalto', 'pending')  | list | length %}
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="label">Total</div>
+      <div class="value">{{ total }}</div>
+    </div>
+    {% if complete %}
+    <div class="stat-card complete">
+      <div class="label">Complete</div>
+      <div class="value">{{ complete }}</div>
+    </div>
+    {% endif %}
+    {% if running %}
+    <div class="stat-card running">
+      <div class="label">Running</div>
+      <div class="value">{{ running }}</div>
+    </div>
+    {% endif %}
+    {% if failed %}
+    <div class="stat-card failed">
+      <div class="label">Failed</div>
+      <div class="value">{{ failed }}</div>
+    </div>
+    {% endif %}
+    {% if pending %}
+    <div class="stat-card">
+      <div class="label">Pending</div>
+      <div class="value">{{ pending }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="filter-bar">
+    <span style="font-size:0.8125rem; color:var(--muted); margin-right:0.25rem">Filter:</span>
+    <button class="filter-btn active"
+      hx-get="/studies/{{ study.id }}/cases"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      hx-push-url="false"
+      onclick="setActive(this)">All</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=complete"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Complete</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=running"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Running</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=failed"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Failed</button>
+    <button class="filter-btn"
+      hx-get="/studies/{{ study.id }}/cases?status=pending"
+      hx-target="#cases-table-body"
+      hx-swap="innerHTML"
+      onclick="setActive(this)">Pending</button>
+  </div>
+
+  <div class="layout" id="study-layout">
+    <div>
+      <table class="cases-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            {% for key in input_keys %}
+            <th>{{ key }}</th>
+            {% endfor %}
+            {% for key in result_keys %}
+            <th>{{ key }} <span style="color:#42a5f5; font-size:0.6rem">result</span></th>
+            {% endfor %}
+            <th>Duration</th>
+            <th>ID</th>
+          </tr>
+        </thead>
+        <tbody id="cases-table-body">
+          {% include "partials/case_rows.html" %}
+        </tbody>
+      </table>
+    </div>
+
+    <div id="case-detail">
+      <div class="detail-placeholder">
+        Click a case to see details
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setActive(btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // Expand layout when detail panel is loaded
+  document.body.addEventListener('htmx:afterSwap', function(e) {
+    if (e.detail.target.id === 'case-detail') {
+      document.getElementById('study-layout').className = 'layout with-panel';
+      // Mark selected row
+      document.querySelectorAll('.case-row').forEach(r => r.classList.remove('selected'));
+      const caseId = e.detail.requestConfig?.path?.split('/cases/')[1];
+      if (caseId) {
+        const row = document.querySelector(`[data-case-id="${caseId}"]`);
+        if (row) row.classList.add('selected');
+      }
+    }
+  });
+</script>
+{% endblock %}

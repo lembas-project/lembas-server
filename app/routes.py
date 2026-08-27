@@ -1,6 +1,5 @@
 import logging
 from typing import Annotated
-from typing import Any
 
 from fastapi import APIRouter
 from fastapi import Depends
@@ -9,9 +8,11 @@ from fastapi import Query
 from fastapi import Request
 from fastapi import Response
 from fastapi import status
+from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import exchange_code_for_token
@@ -57,19 +58,6 @@ api_router = APIRouter()
 # --- Hidden routes ---
 
 
-@hidden_router.get("/")
-async def home(
-    request: Request,
-    user: Annotated[User | None, Depends(current_user)],
-) -> dict[str, Any]:
-    return {
-        "status": "ok",
-        "user": {"username": user.username, "avatar_url": user.avatar_url} if user else None,
-        "login_url": str(request.url_for("auth_login")),
-        "logout_url": str(request.url_for("auth_logout")),
-    }
-
-
 @hidden_router.get("/auth/login")
 async def auth_login(
     request: Request,
@@ -89,7 +77,7 @@ async def auth_callback(
     config: Annotated[Settings, Depends(config)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> RedirectResponse:
-    response = RedirectResponse(request.url_for("home"))
+    response = RedirectResponse(request.url_for("studies_gallery"))
 
     if access_token := await exchange_code_for_token(code, config):
         response.set_cookie(key="access_token", value=access_token)
@@ -108,7 +96,7 @@ async def auth_callback(
 
 @hidden_router.get("/auth/logout")
 async def auth_logout(request: Request) -> RedirectResponse:
-    response = RedirectResponse(request.url_for("home"))
+    response = RedirectResponse(request.url_for("studies_gallery"))
     response.delete_cookie(key="access_token")
     return response
 
@@ -362,3 +350,122 @@ async def update_case_status(
         raise HTTPException(status_code=404, detail="Study or case not found")
     log.info(f"Updated case {case_id} in study {study_id} to {payload.status}")
     return {"status": "ok", "case": case}
+
+
+# --- UI Routes ---
+
+ui_router = APIRouter(include_in_schema=False)
+
+
+def _get_templates(request: Request) -> Jinja2Templates:
+    return request.app.extra["templates"]
+
+
+def _input_keys(studies_or_cases: list) -> list[str]:
+    """Extract sorted unique input parameter keys across all cases."""
+    keys: set[str] = set()
+    for item in studies_or_cases:
+        inputs = item.inputs if hasattr(item, "inputs") else {}
+        keys.update(inputs.keys())
+    return sorted(keys)
+
+
+def _result_keys(cases: list) -> list[str]:
+    """Extract sorted unique result keys across all cases that have results."""
+    keys: set[str] = set()
+    for case in cases:
+        results = case.results if hasattr(case, "results") else {}
+        keys.update(results.keys())
+    return sorted(keys)
+
+
+@ui_router.get("/")
+async def root() -> RedirectResponse:
+    return RedirectResponse("/studies")
+
+
+@ui_router.get("/studies", response_class=HTMLResponse)
+async def studies_gallery(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> HTMLResponse:
+    templates = _get_templates(request)
+    studies = await study_service.get_all_studies(db)
+    return templates.TemplateResponse(
+        request,
+        "studies_gallery.html",
+        {"studies": studies, "active_page": "studies"},
+    )
+
+
+@ui_router.get("/studies/{study_id}", response_class=HTMLResponse)
+async def study_detail(
+    study_id: str,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> HTMLResponse:
+    templates = _get_templates(request)
+    study = await study_service.get_study(db, study_id)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    cases = list(study.cases.values())
+    return templates.TemplateResponse(
+        request,
+        "study.html",
+        {
+            "study": study,
+            "cases": cases,
+            "input_keys": _input_keys(cases),
+            "result_keys": _result_keys(cases),
+            "active_page": "studies",
+        },
+    )
+
+
+@ui_router.get("/studies/{study_id}/cases", response_class=HTMLResponse)
+async def study_cases_partial(
+    study_id: str,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    status: str | None = None,
+) -> HTMLResponse:
+    """htmx partial: filtered case table rows."""
+    templates = _get_templates(request)
+    study = await study_service.get_study(db, study_id)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    cases = list(study.cases.values())
+    if status:
+        cases = [c for c in cases if c.status == status]
+    return templates.TemplateResponse(
+        request,
+        "partials/case_rows.html",
+        {
+            "cases": cases,
+            "study_id": study_id,
+            "input_keys": _input_keys(cases),
+            "result_keys": _result_keys(cases),
+        },
+    )
+
+
+@ui_router.get("/studies/{study_id}/cases/{case_id}", response_class=HTMLResponse)
+async def case_detail_partial(
+    study_id: str,
+    case_id: str,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> HTMLResponse:
+    """htmx partial: case detail panel."""
+    templates = _get_templates(request)
+    study = await study_service.get_study(db, study_id)
+    if not study:
+        raise HTTPException(status_code=404, detail="Study not found")
+    case = study.cases.get(case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found")
+    return templates.TemplateResponse(
+        request,
+        "partials/case_detail.html",
+        {"case": case},
+    )

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}lembas{% endblock %}</title>
+  <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
+  <script src="/static/js/htmx.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a1929;
+      --surface:   #0d2137;
+      --border:    #1e3a5f;
+      --text:      #e0e0e0;
+      --muted:     #90a4ae;
+      --accent:    #42a5f5;
+      --accent-lo: #1e3a5f;
+      --complete:  #81c784;
+      --running:   #ffb74d;
+      --failed:    #e57373;
+      --pending:   #78909c;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    nav .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    nav .brand img { height: 28px; width: auto; }
+
+    nav .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+
+    nav .nav-links a { color: var(--muted); }
+    nav .nav-links a:hover { color: var(--text); text-decoration: none; }
+    nav .nav-links a.active { color: var(--accent); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-complete  { background: #1b3a1f; color: var(--complete); }
+    .badge-running   { background: #3a2a0a; color: var(--running); }
+    .badge-failed    { background: #3a1010; color: var(--failed); }
+    .badge-pending   { background: #1a2a35; color: var(--pending); }
+
+    .tag {
+      background: var(--accent-lo);
+      color: var(--accent);
+      padding: 0.125rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
+    .htmx-request .htmx-indicator { opacity: 1; }
+
+    {% block extra_styles %}{% endblock %}
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="brand" href="/studies">
+      <img src="/static/images/logo.svg" alt="lembas" />
+    </a>
+    <div class="nav-links">
+      <a href="/studies" {% if active_page == 'studies' %}class="active"{% endif %}>Studies</a>
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+</body>
+</html>
