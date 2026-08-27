@@ -1,5 +1,6 @@
 """Service functions for API token management."""
 
+import hashlib
 import logging
 import secrets
 from datetime import UTC
@@ -26,16 +27,34 @@ def _generate_token() -> str:
     return f"{TOKEN_PREFIX}_{secrets.token_hex(32)}"
 
 
+def hash_token(raw_token: str) -> str:
+    """Return the SHA-256 hex digest of a raw token value.
+
+    Only the hash is stored in the database. The raw token is shown to the
+    user once at creation time and never persisted.
+    """
+    return hashlib.sha256(raw_token.encode()).hexdigest()
+
+
 async def create_token(db: AsyncSession, user: User, name: str | None = None) -> APIToken:
-    """Create and persist a new API token for the given user."""
+    """Create a new API token, storing only its hash.
+
+    Returns the ORM object with the ``token`` field set to the raw value
+    so it can be returned to the caller once. After this function returns
+    the raw value is not recoverable from the database.
+    """
+    raw_token = _generate_token()
     token = APIToken(
         user_id=user.id,
-        token=_generate_token(),
+        token=hash_token(raw_token),
         name=name,
     )
     db.add(token)
     await db.commit()
     await db.refresh(token)
+    # Temporarily set the raw value on the ORM object so the route can
+    # return it to the caller — it is NOT stored in the DB.
+    token.token = raw_token
     return token
 
 
@@ -48,7 +67,7 @@ async def get_user_by_token(db: AsyncSession, raw_token: str) -> User | None:
     try:
         result = await db.execute(
             select(APIToken)
-            .where(APIToken.token == raw_token)
+            .where(APIToken.token == hash_token(raw_token))
             .options(selectinload(APIToken.user))
         )
     except Exception:
@@ -88,7 +107,9 @@ async def delete_token(db: AsyncSession, token_id: str, user: User) -> bool:
 
 async def delete_token_by_value(db: AsyncSession, raw_token: str) -> bool:
     """Delete a token by its raw value. Used for self-revocation on logout."""
-    result = await db.execute(select(APIToken).where(APIToken.token == raw_token))
+    result = await db.execute(
+        select(APIToken).where(APIToken.token == hash_token(raw_token))
+    )
     token = result.scalar_one_or_none()
     if token is None:
         return False
