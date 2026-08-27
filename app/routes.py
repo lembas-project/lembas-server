@@ -7,17 +7,24 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Query
 from fastapi import Request
+from fastapi import Response
 from fastapi import status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import exchange_code_for_token
 from app.auth import get_github_user_data
+from app.auth import poll_device_token
+from app.auth import request_device_code
 from app.database import get_db
 from app.database.models import User
 from app.dependencies import config
 from app.dependencies import current_user
 from app.schemas import CaseStatusUpdatePayload
+from app.schemas import DeviceFlowResponse
+from app.schemas import DevicePendingResponse
+from app.schemas import DeviceTokenRequest
+from app.schemas import DeviceTokenResponse
 from app.schemas import HealthResponse
 from app.schemas import Page
 from app.schemas import Study
@@ -125,6 +132,63 @@ async def list_users(
 
 
 # --- Token API Endpoints ---
+
+
+@api_router.get("/auth/device")
+async def device_flow_start(
+    config: Annotated[Settings, Depends(config)],
+) -> DeviceFlowResponse:
+    """Initiate a device authorization flow.
+
+    Returns a user_code to display and verification_uri to open in the browser.
+    Poll POST /api/auth/device/token with the device_code until approved.
+    """
+    result = await request_device_code(config)
+    return DeviceFlowResponse(
+        device_code=result.device_code,
+        user_code=result.user_code,
+        verification_uri=result.verification_uri,
+        interval=result.interval,
+        expires_in=result.expires_in,
+    )
+
+
+@api_router.post("/auth/device/token")
+async def device_flow_token(
+    payload: DeviceTokenRequest,
+    config: Annotated[Settings, Depends(config)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    response: Response,
+) -> DeviceTokenResponse | DevicePendingResponse:
+    """Poll for a completed device authorization.
+
+    Returns 201 with the API token once approved, or 200 with a pending/slow_down
+    error while waiting. The client should poll at the interval returned by
+    GET /api/auth/device.
+    """
+    result = await poll_device_token(payload.device_code, config)
+
+    if result.error in ("authorization_pending", "slow_down"):
+        response.status_code = status.HTTP_200_OK
+        return DevicePendingResponse(
+            error=result.error,  # type: ignore[arg-type]
+            interval=result.interval if result.error == "slow_down" else None,
+        )
+
+    if result.error or not result.access_token:
+        raise HTTPException(status_code=400, detail=result.error or "Device flow failed")
+
+    # Exchange GitHub token for a lembas API token
+    github_user = await get_github_user_data(result.access_token)
+    user = await get_or_create_user(
+        db,
+        github_id=github_user.id,
+        username=github_user.login,
+        avatar_url=github_user.avatar_url,
+    )
+    token = await create_token(db, user, name=payload.token_name or "cli")
+    response.status_code = status.HTTP_201_CREATED
+    return DeviceTokenResponse(token=token.token, token_name=token.name)
 
 
 @api_router.post("/tokens", status_code=status.HTTP_201_CREATED)

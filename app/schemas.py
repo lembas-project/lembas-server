@@ -26,6 +26,37 @@ class HealthResponse(BaseModel):
     status: Literal["ok"]
 
 
+class DeviceFlowResponse(BaseModel):
+    """Returned to the CLI when initiating a device login flow."""
+
+    device_code: str
+    user_code: str
+    verification_uri: str
+    interval: int
+    expires_in: int
+
+
+class DeviceTokenRequest(BaseModel):
+    """Payload for polling the device token endpoint."""
+
+    device_code: str
+    token_name: str | None = Field(default=None, description="Optional label for the token")
+
+
+class DeviceTokenResponse(BaseModel):
+    """Returned when the device flow completes successfully."""
+
+    token: str
+    token_name: str | None = None
+
+
+class DevicePendingResponse(BaseModel):
+    """Returned while the user has not yet approved the device flow."""
+
+    error: Literal["authorization_pending", "slow_down"]
+    interval: int | None = None  # updated interval if slow_down
+
+
 class UserResponse(BaseModel):
     """Public-facing user representation."""
 
