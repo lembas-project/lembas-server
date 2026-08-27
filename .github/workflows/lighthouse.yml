@@ -1,0 +1,147 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: v0.70.2
+
+      - name: Run migrations
+        run: DATABASE_URL=sqlite:///data/lembas.db pixi run -- alembic upgrade head
+        env:
+          CLIENT_ID: dummy
+          CLIENT_SECRET: dummy
+
+      - name: Start server
+        run: |
+          nohup pixi run -- uvicorn app.main:app --host 0.0.0.0 --port 8000 \
+            > /tmp/server.log 2>&1 &
+          echo "Server PID: $!"
+        env:
+          CLIENT_ID: dummy
+          CLIENT_SECRET: dummy
+          DUMMY_AUTH: "true"
+          DATABASE_URL: sqlite+aiosqlite:///data/lembas.db
+
+      - name: Wait for server
+        run: |
+          npx wait-on --httpTimeout 10000 "http-get://localhost:8000/api/healthz" \
+            --timeout 30000 || (cat /tmp/server.log && exit 1)
+
+      - name: Seed study for detail page test
+        run: |
+          study_id=$(curl -s http://localhost:8000/api/studies | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['items'][0]['id'] if d['items'] else '')")
+          echo "STUDY_ID=$study_id" >> "$GITHUB_ENV"
+
+      - name: Collect Lighthouse results
+        run: |
+          base="http://localhost:8000"
+          urls="--url $base/studies"
+          if [ -n "$STUDY_ID" ]; then
+            urls="$urls --url $base/studies/$STUDY_ID"
+          fi
+          npx --yes @lhci/cli@0.14 collect \
+            $urls \
+            --numberOfRuns 1 \
+            --settings.preset desktop \
+            --settings.onlyCategories accessibility,performance,seo
+
+      - name: Assert Lighthouse thresholds
+        run: |
+          npx @lhci/cli@0.14 assert \
+            --assertions.accessibility="['warn', {'minScore': 0.92}]" \
+            --assertions.performance="['error', {'minScore': 0.9}]" \
+            --assertions.seo="['warn', {'minScore': 0.95}]" \
+            --assertions.color-contrast="['error', {'minScore': 1}]" \
+            --assertions.landmark-one-main="['error', {'minScore': 1}]" \
+            --assertions.meta-description="['error', {'minScore': 1}]" \
+            --assertions.document-title="['error', {'minScore': 1}]"
+
+      - name: Upload results and get report URL
+        id: upload
+        run: |
+          output=$(npx @lhci/cli@0.14 upload --target temporary-public-storage 2>&1)
+          echo "$output"
+          url=$(echo "$output" | grep -oP 'https://storage\.googleapis\.com[^\s]+' | head -1)
+          echo "report_url=$url" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Parse scores
+        id: scores
+        run: |
+          python3 - << 'PYEOF'
+          import glob, json, os, sys
+          files = sorted(glob.glob('.lighthouseci/lhr-*.json'))
+          if not files:
+              sys.exit(0)
+          raw = json.load(open(files[0]))
+          data = raw[0] if isinstance(raw, list) else raw
+          cats = data.get('categories', {})
+          def score(key):
+              s = cats.get(key, {}).get('score')
+              return str(round(s * 100)) if s is not None else 'n/a'
+          def emoji(key):
+              s = cats.get(key, {}).get('score')
+              if s is None: return 'n/a'
+              return ('✅' if s >= 0.9 else '⚠️' if s >= 0.7 else '❌') + ' ' + score(key)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('perf=' + emoji('performance') + '\n')
+              out.write('a11y=' + emoji('accessibility') + '\n')
+              out.write('seo=' + emoji('seo') + '\n')
+          PYEOF
+
+      - name: Comment PR with results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reportUrl = '${{ steps.upload.outputs.report_url }}';
+            const perf = '${{ steps.scores.outputs.perf }}';
+            const a11y = '${{ steps.scores.outputs.a11y }}';
+            const seo  = '${{ steps.scores.outputs.seo }}';
+            const reportLink = reportUrl
+              ? `[View full report](${reportUrl})`
+              : '_Report upload unavailable_';
+            const body = [
+              '## Lighthouse Results',
+              '',
+              '| Category | Score |',
+              '|---|---|',
+              `| Performance | ${perf} |`,
+              `| Accessibility | ${a11y} |`,
+              `| SEO | ${seo} |`,
+              '',
+              reportLink,
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.startsWith('## Lighthouse Results')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

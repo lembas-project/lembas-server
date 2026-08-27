@@ -1,0 +1,23 @@
+assert:
+  assertions:
+    accessibility:
+    - warn
+    - minScore: 0.92
+    color-contrast:
+    - error
+    - minScore: 1
+    document-title:
+    - error
+    - minScore: 1
+    landmark-one-main:
+    - error
+    - minScore: 1
+    meta-description:
+    - error
+    - minScore: 1
+    performance:
+    - error
+    - minScore: 0.9
+    seo:
+    - warn
+    - minScore: 0.95

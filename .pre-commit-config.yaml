@@ -26,6 +26,7 @@ repos:
   hooks:
   - id: pretty-format-yaml
     args: [--autofix]
+    exclude: ^\.github/
   - id: pretty-format-toml
     args: [--autofix]
 - repo: https://github.com/pre-commit/mirrors-prettier

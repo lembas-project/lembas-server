@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}lembas{% endblock %}</title>
+    <meta name="description" content="{% block description %}lembas — parametric engineering study platform{% endblock %}" />
     <link rel="icon" href="/static/images/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="/static/css/styles.css" />
     <script src="/static/js/htmx.min.js"></script>
@@ -11,13 +12,15 @@
   <body>
     <nav>
       <a class="brand" href="/studies">
-        <img src="/static/images/logo.svg" alt="lembas" />
+        <img src="/static/images/logo.svg" alt="lembas" width="91" height="28" />
       </a>
       <div class="nav-links">
         <a href="/studies" {% if active_page == 'studies' %}class="active"{% endif %}>Studies</a>
       </div>
     </nav>
 
-    {% block content %}{% endblock %}
+    <main>
+      {% block content %}{% endblock %}
+    </main>
   </body>
 </html>
