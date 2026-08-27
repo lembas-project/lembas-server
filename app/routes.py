@@ -416,6 +416,7 @@ async def study_detail(
         "study.html",
         {
             "study": study,
+            "study_id": study_id,
             "cases": cases,
             "input_keys": _input_keys(cases),
             "result_keys": _result_keys(cases),
