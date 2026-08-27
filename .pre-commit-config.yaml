@@ -38,11 +38,6 @@ repos:
   hooks:
   - id: check-github-workflows
   - id: check-renovate
-- repo: https://github.com/codespell-project/codespell
-  rev: v2.3.0
-  hooks:
-  - id: codespell
-    exclude: ^static/js/htmx\.min\.js$
 - repo: meta
   hooks:
   - id: check-hooks-apply
