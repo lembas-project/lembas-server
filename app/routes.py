@@ -189,9 +189,9 @@ async def device_flow_token(
         username=github_user.login,
         avatar_url=github_user.avatar_url,
     )
-    token = await create_token(db, user, name=payload.token_name or "cli")
+    api_token, raw_token = await create_token(db, user, name=payload.token_name or "cli")
     response.status_code = status.HTTP_201_CREATED
-    return DeviceTokenResponse(token=token.token, token_name=token.name)
+    return DeviceTokenResponse(token=raw_token, token_name=api_token.name)
 
 
 @api_router.post("/tokens", status_code=status.HTTP_201_CREATED)
@@ -207,12 +207,12 @@ async def create_api_token(
     """
     if not user:
         raise HTTPException(status_code=401, detail="Authentication required")
-    token = await create_token(db, user, name=payload.name)
+    api_token, raw_token = await create_token(db, user, name=payload.name)
     return TokenResponse(
-        id=token.id,
-        name=token.name,
-        token=token.token,
-        created_at=token.created_at,
+        id=api_token.id,
+        name=api_token.name,
+        token=raw_token,
+        created_at=api_token.created_at,
     )
 
 
