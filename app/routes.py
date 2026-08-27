@@ -77,7 +77,7 @@ async def auth_callback(
     config: Annotated[Settings, Depends(config)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> RedirectResponse:
-    response = RedirectResponse(request.url_for("studies_gallery"))
+    response = RedirectResponse(request.url_for("root"))
 
     if access_token := await exchange_code_for_token(code, config):
         response.set_cookie(key="access_token", value=access_token)
@@ -96,7 +96,7 @@ async def auth_callback(
 
 @hidden_router.get("/auth/logout")
 async def auth_logout(request: Request) -> RedirectResponse:
-    response = RedirectResponse(request.url_for("studies_gallery"))
+    response = RedirectResponse(request.url_for("root"))
     response.delete_cookie(key="access_token")
     return response
 
