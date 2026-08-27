@@ -114,3 +114,31 @@ async def test_delete_token_not_found(app: FastAPI, client: AsyncClient, db: Asy
         assert response.status_code == 404
     finally:
         app.dependency_overrides.pop(current_user)
+
+
+async def test_revoke_current_token(client: AsyncClient, db: AsyncSession) -> None:
+    """DELETE /api/tokens/current revokes the token used in the request."""
+    from app.services.token_service import create_token
+    from app.services.user_service import get_or_create_user
+
+    user = await get_or_create_user(db, github_id=3000005, username="revokeuser", avatar_url="")
+    token = await create_token(db, user, name="to-revoke")
+
+    response = await client.delete(
+        "/api/tokens/current",
+        headers={"Authorization": f"Bearer {token.token}"},
+    )
+    assert response.status_code == 204
+
+    # Token should no longer authenticate
+    auth_resp = await client.get(
+        "/api/tokens",
+        headers={"Authorization": f"Bearer {token.token}"},
+    )
+    assert auth_resp.status_code == 401
+
+
+async def test_revoke_current_token_unauthenticated(client: AsyncClient) -> None:
+    response = await client.delete("/api/tokens/current")
+    assert response.status_code == 401
+

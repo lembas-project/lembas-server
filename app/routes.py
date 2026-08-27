@@ -10,6 +10,8 @@ from fastapi import Request
 from fastapi import Response
 from fastapi import status
 from fastapi.responses import RedirectResponse
+from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import exchange_code_for_token
@@ -37,6 +39,7 @@ from app.schemas import UserResponse
 from app.services import study_service
 from app.services.token_service import create_token
 from app.services.token_service import delete_token
+from app.services.token_service import delete_token_by_value
 from app.services.token_service import list_tokens
 from app.services.user_service import get_all_users
 from app.services.user_service import get_or_create_user
@@ -231,6 +234,20 @@ async def list_api_tokens(
         )
         for t in tokens
     ]
+
+
+_bearer = HTTPBearer(auto_error=False)
+
+
+@api_router.delete("/tokens/current", status_code=status.HTTP_204_NO_CONTENT)
+async def revoke_current_token(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> None:
+    """Revoke the token used to authenticate this request (self-revocation for logout)."""
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    await delete_token_by_value(db, credentials.credentials)
 
 
 @api_router.delete("/tokens/{token_id}", status_code=status.HTTP_204_NO_CONTENT)
