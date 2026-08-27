@@ -37,10 +37,21 @@ jobs:
           npx wait-on --httpTimeout 10000 "http-get://localhost:8000/api/healthz" \
             --timeout 30000 || (cat /tmp/server.log && exit 1)
 
+      - name: Seed study for detail page test
+        run: |
+          study_id=$(curl -s http://localhost:8000/api/studies | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['items'][0]['id'] if d['items'] else '')")
+          echo "STUDY_ID=$study_id" >> "$GITHUB_ENV"
+
       - name: Collect Lighthouse results
         run: |
+          base="http://localhost:8000"
+          urls="--url $base/studies"
+          if [ -n "$STUDY_ID" ]; then
+            urls="$urls --url $base/studies/$STUDY_ID"
+          fi
+          urls="$urls --url $base/studies/nonexistent-404"
           npx --yes @lhci/cli@0.14 collect \
-            --url http://localhost:8000/studies \
+            $urls \
             --numberOfRuns 1 \
             --settings.preset desktop \
             --settings.onlyCategories accessibility,performance,seo

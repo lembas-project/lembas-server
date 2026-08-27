@@ -1,0 +1,43 @@
+name: Post-deploy Lighthouse
+
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  lighthouse:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get a live study ID
+        id: study
+        run: |
+          study_id=$(curl -s https://lembas.matt-kramer.com/api/studies | python3 -c "import json,sys; d=json.load(sys.stdin); print(d['items'][0]['id'] if d['items'] else '')")
+          echo "study_id=$study_id" >> "$GITHUB_OUTPUT"
+
+      - name: Collect Lighthouse results against prod
+        run: |
+          base="https://lembas.matt-kramer.com"
+          urls="--url $base/studies"
+          if [ -n "${{ steps.study.outputs.study_id }}" ]; then
+            urls="$urls --url $base/studies/${{ steps.study.outputs.study_id }}"
+          fi
+          npx --yes @lhci/cli@0.14 collect \
+            $urls \
+            --numberOfRuns 3 \
+            --settings.preset desktop \
+            --settings.onlyCategories performance,accessibility,seo
+
+      - name: Assert performance thresholds
+        run: |
+          npx @lhci/cli@0.14 assert \
+            --assertions.performance="['error', {'minScore': 0.8}]" \
+            --assertions.accessibility="['error', {'minScore': 0.92}]" \
+            --assertions.seo="['error', {'minScore': 0.95}]"
+
+      - name: Upload results
+        run: npx @lhci/cli@0.14 upload --target temporary-public-storage || true
