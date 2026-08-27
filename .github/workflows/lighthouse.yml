@@ -68,25 +68,25 @@ jobs:
       - name: Parse scores
         id: scores
         run: |
-          results_file=$(ls .lighthouseci/*.json | head -1)
           python3 - << 'PYEOF'
-          import json, os, sys
-          f = sorted(__import__('glob').glob('.lighthouseci/*.json'))
-          if not f:
+          import glob, json, os, sys
+          files = sorted(glob.glob('.lighthouseci/*.json'))
+          if not files:
               sys.exit(0)
-          data = json.load(open(f[0]))
+          raw = json.load(open(files[0]))
+          data = raw[0] if isinstance(raw, list) else raw
           cats = data.get('categories', {})
           def score(key):
               s = cats.get(key, {}).get('score')
-              return f"{round(s * 100)}" if s is not None else 'n/a'
+              return str(round(s * 100)) if s is not None else 'n/a'
           def emoji(key):
               s = cats.get(key, {}).get('score')
-              if s is None: return '⚪'
-              return '✅' if s >= 0.9 else '⚠️' if s >= 0.7 else '❌'
+              if s is None: return 'n/a'
+              return ('✅' if s >= 0.9 else '⚠️' if s >= 0.7 else '❌') + ' ' + score(key)
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-              out.write(f"perf={emoji('performance')} {score('performance')}\n")
-              out.write(f"a11y={emoji('accessibility')} {score('accessibility')}\n")
-              out.write(f"seo={emoji('seo')} {score('seo')}\n")
+              out.write('perf=' + emoji('performance') + '\n')
+              out.write('a11y=' + emoji('accessibility') + '\n')
+              out.write('seo=' + emoji('seo') + '\n')
           PYEOF
 
       - name: Comment PR with results
@@ -97,11 +97,9 @@ jobs:
             const perf = '${{ steps.scores.outputs.perf }}';
             const a11y = '${{ steps.scores.outputs.a11y }}';
             const seo  = '${{ steps.scores.outputs.seo }}';
-
             const reportLink = reportUrl
               ? `[View full report](${reportUrl})`
-              : '_Report upload failed_';
-
+              : '_Report upload unavailable_';
             const body = [
               '## Lighthouse Results',
               '',
@@ -113,18 +111,15 @@ jobs:
               '',
               reportLink,
             ].join('\n');
-
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-
             const existing = comments.find(c =>
               c.user.login === 'github-actions[bot]' &&
               c.body.startsWith('## Lighthouse Results')
             );
-
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
