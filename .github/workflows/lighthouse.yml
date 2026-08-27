@@ -35,7 +35,17 @@ jobs:
           npx wait-on --httpTimeout 10000 "http-get://localhost:8000/api/healthz" \
             --timeout 30000 || (cat /tmp/server.log && exit 1)
 
-      - name: Run Lighthouse CI
-        run: npx --yes @lhci/cli@0.14 autorun
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      - name: Collect Lighthouse results
+        run: |
+          npx --yes @lhci/cli@0.14 collect \
+            --url http://localhost:8000/studies \
+            --numberOfRuns 1 \
+            --settings.preset desktop \
+            --settings.onlyCategories accessibility,performance,seo
+
+      - name: Assert Lighthouse thresholds
+        run: npx @lhci/cli@0.14 assert --config .lighthouserc.yml
+
+      - name: Upload results
+        run: npx @lhci/cli@0.14 upload --target temporary-public-storage
+        continue-on-error: true

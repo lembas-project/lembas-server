@@ -21,15 +21,3 @@ assert:
     seo:
     - warn
     - minScore: 0.95
-collect:
-  numberOfRuns: 1
-  settings:
-    onlyCategories:
-    - accessibility
-    - performance
-    - seo
-    preset: desktop
-  url:
-  - http://localhost:8000/studies
-upload:
-  target: temporary-public-storage
