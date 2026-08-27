@@ -1,66 +1,22 @@
-<div style="padding: 1.25rem">
-  <div
-    style="
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-    "
-  >
+<div class="detail-body">
+  <div class="detail-header">
     <div>
-      <div
-        style="
-          font-size: 0.6875rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: var(--muted);
-          margin-bottom: 0.25rem;
-        "
-      >
-        Case
-      </div>
-      <div style="font-family: monospace; font-size: 0.8125rem; color: #b0c4d8">
-        {{ case.id[:16] }}…
-      </div>
+      <div class="section-label">Case</div>
+      <div class="mono-id">{{ case.id[:16] }}…</div>
     </div>
     <span class="badge badge-{{ case.status }}">{{ case.status }}</span>
   </div>
 
-  <div
-    style="
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 1.25rem;
-      font-family: monospace;
-    "
-  >
-    {{ case.handler_fqn }}
-  </div>
+  <div class="mono-fqn">{{ case.handler_fqn }}</div>
 
   <!-- Inputs -->
-  <div style="margin-bottom: 1.25rem">
-    <div
-      style="
-        font-size: 0.6875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--muted);
-        margin-bottom: 0.5rem;
-      "
-    >
-      Inputs
-    </div>
-    <table style="width: 100%; font-size: 0.8125rem; border-collapse: collapse">
+  <div class="detail-section">
+    <div class="section-label">Inputs</div>
+    <table class="kv-table">
       {% for key, val in case.inputs.items() %}
       <tr>
-        <td style="padding: 0.25rem 0; color: var(--muted); width: 50%">
-          {{ key }}
-        </td>
-        <td
-          style="padding: 0.25rem 0; color: var(--text); font-family: monospace"
-        >
-          {{ val }}
-        </td>
+        <td class="kv-key">{{ key }}</td>
+        <td class="kv-val">{{ val }}</td>
       </tr>
       {% endfor %}
     </table>
@@ -68,31 +24,13 @@
 
   <!-- Results -->
   {% if case.results %}
-  <div style="margin-bottom: 1.25rem">
-    <div
-      style="
-        font-size: 0.6875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--muted);
-        margin-bottom: 0.5rem;
-      "
-    >
-      Results
-    </div>
-    <table style="width: 100%; font-size: 0.8125rem; border-collapse: collapse">
+  <div class="detail-section">
+    <div class="section-label">Results</div>
+    <table class="kv-table">
       {% for key, val in case.results.items() %}
       <tr>
-        <td style="padding: 0.25rem 0; color: var(--muted); width: 50%">
-          {{ key }}
-        </td>
-        <td
-          style="
-            padding: 0.25rem 0;
-            color: var(--complete);
-            font-family: monospace;
-          "
-        >
+        <td class="kv-key">{{ key }}</td>
+        <td class="kv-val kv-val--result">
           {{ "%.6g" | format(val) if val is number else val }}
         </td>
       </tr>
@@ -103,34 +41,20 @@
 
   <!-- Timing -->
   {% if case.duration_seconds or case.started_at or case.completed_at %}
-  <div style="margin-bottom: 1.25rem">
-    <div
-      style="
-        font-size: 0.6875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--muted);
-        margin-bottom: 0.5rem;
-      "
-    >
-      Timing
-    </div>
-    <table style="width: 100%; font-size: 0.8125rem; border-collapse: collapse">
+  <div class="detail-section">
+    <div class="section-label">Timing</div>
+    <table class="kv-table">
       {% if case.duration_seconds %}
       <tr>
-        <td style="padding: 0.25rem 0; color: var(--muted); width: 50%">
-          Duration
-        </td>
-        <td style="padding: 0.25rem 0; font-family: monospace">
-          {{ "%.3f" | format(case.duration_seconds) }}s
-        </td>
+        <td class="kv-key">Duration</td>
+        <td class="kv-val">{{ "%.3f" | format(case.duration_seconds) }}s</td>
       </tr>
-      {% endif %} {% if case.completed_at %}
+      {% endif %}
+      {% if case.completed_at %}
       <tr>
-        <td style="padding: 0.25rem 0; color: var(--muted)">Completed</td>
-        <td style="padding: 0.25rem 0; font-size: 0.75rem; color: var(--muted)">
-          {{ case.completed_at.strftime('%Y-%m-%d %H:%M:%S') if
-          case.completed_at else '–' }}
+        <td class="kv-key">Completed</td>
+        <td class="kv-val kv-val--muted">
+          {{ case.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}
         </td>
       </tr>
       {% endif %}
@@ -140,63 +64,21 @@
 
   <!-- Error -->
   {% if case.error_message %}
-  <div>
-    <div
-      style="
-        font-size: 0.6875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--failed);
-        margin-bottom: 0.5rem;
-      "
-    >
-      Error
-    </div>
-    <pre
-      style="
-        background: #1a0a0a;
-        border: 1px solid #3a1010;
-        border-radius: 4px;
-        padding: 0.75rem;
-        font-size: 0.75rem;
-        color: var(--failed);
-        white-space: pre-wrap;
-        word-break: break-word;
-      "
-    >
-{{ case.error_message }}</pre
-    >
+  <div class="detail-section">
+    <div class="section-label section-label--error">Error</div>
+    <pre class="error-block">{{ case.error_message }}</pre>
   </div>
   {% endif %}
 
   <!-- Environment -->
   {% if case.environment %}
-  <div style="margin-top: 1.25rem">
-    <div
-      style="
-        font-size: 0.6875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--muted);
-        margin-bottom: 0.5rem;
-      "
-    >
-      Environment
-    </div>
-    <table style="width: 100%; font-size: 0.75rem; border-collapse: collapse">
+  <div class="detail-section">
+    <div class="section-label">Environment</div>
+    <table class="kv-table kv-table--sm">
       {% for key, val in case.environment.items() %}
       <tr>
-        <td style="padding: 0.2rem 0; color: var(--muted)">{{ key }}</td>
-        <td
-          style="
-            padding: 0.2rem 0;
-            font-family: monospace;
-            color: #b0c4d8;
-            font-size: 0.7rem;
-          "
-        >
-          {{ val }}
-        </td>
+        <td class="kv-key">{{ key }}</td>
+        <td class="kv-val kv-val--env">{{ val }}</td>
       </tr>
       {% endfor %}
     </table>

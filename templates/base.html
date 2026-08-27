@@ -111,6 +111,123 @@
       .htmx-indicator { opacity: 0; transition: opacity 0.2s; }
       .htmx-request .htmx-indicator { opacity: 1; }
 
+      /* Detail panel */
+      .detail-body { padding: 1.25rem; }
+
+      .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+      }
+
+      .detail-section { margin-bottom: 1.25rem; }
+      .detail-section:last-child { margin-bottom: 0; }
+
+      .section-label {
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+      }
+
+      .section-label--error { color: var(--failed); }
+
+      .kv-table {
+        width: 100%;
+        font-size: 0.8125rem;
+        border-collapse: collapse;
+      }
+
+      .kv-table--sm { font-size: 0.75rem; }
+
+      .kv-key {
+        padding: 0.25rem 0;
+        color: var(--muted);
+        width: 50%;
+        vertical-align: top;
+      }
+
+      .kv-val {
+        padding: 0.25rem 0;
+        font-family: monospace;
+        color: var(--text);
+      }
+
+      .kv-val--result  { color: var(--complete); }
+      .kv-val--env     { color: #b0c4d8; font-size: 0.7rem; }
+      .kv-val--muted   { color: var(--muted); }
+
+      .mono-id {
+        font-family: monospace;
+        font-size: 0.8125rem;
+        color: #b0c4d8;
+      }
+
+      .mono-fqn {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-bottom: 1.25rem;
+      }
+
+      .error-block {
+        background: #1a0a0a;
+        border: 1px solid #3a1010;
+        border-radius: 4px;
+        padding: 0.75rem;
+        font-size: 0.75rem;
+        color: var(--failed);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      /* Filter label */
+      .filter-label {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin-right: 0.25rem;
+      }
+
+      /* Result column marker in table header */
+      .result-marker {
+        color: var(--accent);
+        font-size: 0.6rem;
+      }
+
+      /* Empty / no-results states */
+      .empty-row {
+        text-align: center;
+        padding: 2rem;
+        color: var(--muted);
+      }
+
+      /* 404 page */
+      .not-found {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .not-found__code {
+        font-size: 4rem;
+        font-weight: 700;
+        color: var(--border);
+        line-height: 1;
+      }
+
+      .not-found__message {
+        font-size: 1.125rem;
+        color: var(--muted);
+        margin-top: 0.75rem;
+        margin-bottom: 2rem;
+      }
+
       {% block extra_styles %}{% endblock %}
     </style>
   </head>
@@ -120,18 +237,7 @@
         <img src="/static/images/logo.svg" alt="lembas" />
       </a>
       <div class="nav-links">
-        <a
-          href="/studies"
-          {%
-          if
-          active_page=""
-          ="studies"
-          %}class="active"
-          {%
-          endif
-          %}
-          >Studies</a
-        >
+        <a href="/studies" {% if active_page == 'studies' %}class="active"{% endif %}>Studies</a>
       </div>
     </nav>
 
