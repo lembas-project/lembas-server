@@ -25,7 +25,7 @@ jobs:
           CLIENT_ID: dummy
           CLIENT_SECRET: dummy
           DUMMY_AUTH: "true"
-          DATABASE_URL: sqlite:///data/lembas.db
+          DATABASE_URL: sqlite+aiosqlite:///data/lembas.db
 
       - name: Wait for server
         run: npx wait-on http://localhost:8000/api/healthz --timeout 30000
