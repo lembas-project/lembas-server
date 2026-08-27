@@ -378,9 +378,7 @@ def _result_keys(cases: list) -> list[str]:
 
 def _html_404(request: Request, message: str = "Page not found") -> HTMLResponse:
     templates = get_templates(request)
-    return templates.TemplateResponse(
-        request, "404.html", {"message": message}, status_code=404
-    )
+    return templates.TemplateResponse(request, "404.html", {"message": message}, status_code=404)
 
 
 @ui_router.get("/")
