@@ -107,9 +107,7 @@ async def delete_token(db: AsyncSession, token_id: str, user: User) -> bool:
 
 async def delete_token_by_value(db: AsyncSession, raw_token: str) -> bool:
     """Delete a token by its raw value. Used for self-revocation on logout."""
-    result = await db.execute(
-        select(APIToken).where(APIToken.token == hash_token(raw_token))
-    )
+    result = await db.execute(select(APIToken).where(APIToken.token == hash_token(raw_token)))
     token = result.scalar_one_or_none()
     if token is None:
         return False
