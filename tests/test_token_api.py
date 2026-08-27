@@ -141,4 +141,3 @@ async def test_revoke_current_token(client: AsyncClient, db: AsyncSession) -> No
 async def test_revoke_current_token_unauthenticated(client: AsyncClient) -> None:
     response = await client.delete("/api/tokens/current")
     assert response.status_code == 401
-
