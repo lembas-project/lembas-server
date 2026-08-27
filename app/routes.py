@@ -357,7 +357,7 @@ async def update_case_status(
 ui_router = APIRouter(include_in_schema=False)
 
 
-def _get_templates(request: Request) -> Jinja2Templates:
+def get_templates(request: Request) -> Jinja2Templates:
     return request.app.extra["templates"]
 
 
@@ -388,8 +388,8 @@ async def root() -> RedirectResponse:
 async def studies_gallery(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
 ) -> HTMLResponse:
-    templates = _get_templates(request)
     studies = await study_service.get_all_studies(db)
     return templates.TemplateResponse(
         request,
@@ -403,8 +403,8 @@ async def study_detail(
     study_id: str,
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
 ) -> HTMLResponse:
-    templates = _get_templates(request)
     study = await study_service.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
@@ -427,10 +427,10 @@ async def study_cases_partial(
     study_id: str,
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
     status: str | None = None,
 ) -> HTMLResponse:
     """htmx partial: filtered case table rows."""
-    templates = _get_templates(request)
     study = await study_service.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")
@@ -455,9 +455,9 @@ async def case_detail_partial(
     case_id: str,
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
 ) -> HTMLResponse:
     """htmx partial: case detail panel."""
-    templates = _get_templates(request)
     study = await study_service.get_study(db, study_id)
     if not study:
         raise HTTPException(status_code=404, detail="Study not found")

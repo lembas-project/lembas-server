@@ -120,15 +120,8 @@
         <img src="/static/images/logo.svg" alt="lembas" />
       </a>
       <div class="nav-links">
-        <a
-          href="/studies"
-          {%
-          if
-          active_page=""
-          ="studies"
-          %}class="active"
-          {%
-          endif
+        <a href="/studies" {% if active_page == 'studies' %}class="active"{% endif %}>Studies</a>
+      </div>
           %}
           >Studies</a
         >
