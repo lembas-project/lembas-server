@@ -125,10 +125,10 @@ nav .nav-links a.active {
   color: var(--pending);
 }
 
-/* Tags */
+/* Tags — lightened to meet 4.5:1 contrast ratio on #1e3a5f background */
 .tag {
   background: var(--accent-lo);
-  color: var(--accent);
+  color: #64b5f6;
   padding: 0.125rem 0.5rem;
   border-radius: 4px;
   font-size: 0.6875rem;

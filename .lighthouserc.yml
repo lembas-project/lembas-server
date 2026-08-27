@@ -1,0 +1,47 @@
+collect:
+  url:
+    - http://localhost:8000/studies
+  numberOfRuns: 1
+  settings:
+    preset: desktop
+    onlyCategories:
+      - accessibility
+      - performance
+      - seo
+
+assert:
+  assertions:
+    # Accessibility — current score 0.87, targeting 0.95+ after fixes
+    accessibility:
+      - warn
+      - minScore: 0.92
+
+    # Performance — already 1.0, keep it
+    performance:
+      - error
+      - minScore: 0.9
+
+    # SEO — targeting 1.0 after meta description fix
+    seo:
+      - warn
+      - minScore: 0.95
+
+    # Individual audits we care about
+    color-contrast:
+      - error
+      - minScore: 1
+
+    landmark-one-main:
+      - error
+      - minScore: 1
+
+    meta-description:
+      - error
+      - minScore: 1
+
+    document-title:
+      - error
+      - minScore: 1
+
+upload:
+  target: temporary-public-storage

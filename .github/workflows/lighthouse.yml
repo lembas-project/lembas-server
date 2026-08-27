@@ -1,0 +1,36 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: v0.41.4
+
+      - name: Run migrations
+        run: DATABASE_URL=sqlite:///data/lembas.db pixi run -- alembic upgrade head
+        env:
+          CLIENT_ID: dummy
+          CLIENT_SECRET: dummy
+
+      - name: Start server
+        run: pixi run -- uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        env:
+          CLIENT_ID: dummy
+          CLIENT_SECRET: dummy
+          DUMMY_AUTH: "true"
+          DATABASE_URL: sqlite:///data/lembas.db
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:8000/api/healthz --timeout 30000
+
+      - name: Run Lighthouse CI
+        run: npx --yes @lhci/cli@0.14 autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
