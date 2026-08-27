@@ -5,6 +5,7 @@ from fastapi import Depends
 from fastapi import Request
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_github_user_data
@@ -19,6 +20,10 @@ _bearer = HTTPBearer(auto_error=False)
 
 def config(request: Request) -> Settings:
     return request.app.extra["config"]
+
+
+def get_templates(request: Request) -> Jinja2Templates:
+    return request.app.extra["templates"]
 
 
 async def current_user(

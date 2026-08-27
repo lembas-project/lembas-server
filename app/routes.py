@@ -23,6 +23,7 @@ from app.database import get_db
 from app.database.models import User
 from app.dependencies import config
 from app.dependencies import current_user
+from app.dependencies import get_templates
 from app.schemas import CaseStatusUpdatePayload
 from app.schemas import DeviceFlowResponse
 from app.schemas import DevicePendingResponse
@@ -355,10 +356,6 @@ async def update_case_status(
 # --- UI Routes ---
 
 ui_router = APIRouter(include_in_schema=False)
-
-
-def get_templates(request: Request) -> Jinja2Templates:
-    return request.app.extra["templates"]
 
 
 def _input_keys(studies_or_cases: list) -> list[str]:
