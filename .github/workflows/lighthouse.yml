@@ -70,7 +70,7 @@ jobs:
         run: |
           python3 - << 'PYEOF'
           import glob, json, os, sys
-          files = sorted(glob.glob('.lighthouseci/*.json'))
+          files = sorted(glob.glob('.lighthouseci/lhr-*.json'))
           if not files:
               sys.exit(0)
           raw = json.load(open(files[0]))
