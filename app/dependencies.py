@@ -3,7 +3,6 @@ from typing import Annotated
 from fastapi import Cookie
 from fastapi import Depends
 from fastapi import Request
-from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
@@ -25,17 +24,6 @@ def config(request: Request) -> Settings:
 
 def get_templates(request: Request) -> Jinja2Templates:
     return request.app.extra["templates"]
-
-
-def html_404(request: Request, message: str = "Page not found") -> HTMLResponse:
-    """Return a rendered 404 HTML response for UI routes."""
-    templates = get_templates(request)
-    return templates.TemplateResponse(
-        request,
-        "404.html",
-        {"message": message},
-        status_code=404,
-    )
 
 
 async def current_user(

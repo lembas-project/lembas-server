@@ -24,7 +24,6 @@ from app.database.models import User
 from app.dependencies import config
 from app.dependencies import current_user
 from app.dependencies import get_templates
-from app.dependencies import html_404
 from app.schemas import CaseStatusUpdatePayload
 from app.schemas import DeviceFlowResponse
 from app.schemas import DevicePendingResponse
@@ -377,6 +376,13 @@ def _result_keys(cases: list) -> list[str]:
     return sorted(keys)
 
 
+def _html_404(request: Request, message: str = "Page not found") -> HTMLResponse:
+    templates = get_templates(request)
+    return templates.TemplateResponse(
+        request, "404.html", {"message": message}, status_code=404
+    )
+
+
 @ui_router.get("/")
 async def root() -> RedirectResponse:
     return RedirectResponse("/studies")
@@ -405,7 +411,7 @@ async def study_detail(
 ) -> HTMLResponse:
     study = await study_service.get_study(db, study_id)
     if not study:
-        return html_404(request, "Study not found")
+        return _html_404(request, "Study not found")
     cases = list(study.cases.values())
     return templates.TemplateResponse(
         request,
@@ -431,7 +437,7 @@ async def study_cases_partial(
     """htmx partial: filtered case table rows."""
     study = await study_service.get_study(db, study_id)
     if not study:
-        return html_404(request, "Study not found")
+        return _html_404(request, "Study not found")
     cases = list(study.cases.values())
     if status:
         cases = [c for c in cases if c.status == status]
@@ -458,10 +464,10 @@ async def case_detail_partial(
     """htmx partial: case detail panel."""
     study = await study_service.get_study(db, study_id)
     if not study:
-        return html_404(request, "Study not found")
+        return _html_404(request, "Study not found")
     case = study.cases.get(case_id)
     if not case:
-        return html_404(request, f"Case {case_id[:8]} not found")
+        return _html_404(request, f"Case {case_id[:8]} not found")
     return templates.TemplateResponse(
         request,
         "partials/case_detail.html",
