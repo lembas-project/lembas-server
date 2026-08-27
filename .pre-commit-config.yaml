@@ -42,6 +42,7 @@ repos:
   rev: v2.3.0
   hooks:
   - id: codespell
+    exclude: ^static/js/htmx\.min\.js$
 - repo: meta
   hooks:
   - id: check-hooks-apply
