@@ -20,7 +20,10 @@ jobs:
           CLIENT_SECRET: dummy
 
       - name: Start server
-        run: pixi run -- uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+        run: |
+          nohup pixi run -- uvicorn app.main:app --host 0.0.0.0 --port 8000 \
+            > /tmp/server.log 2>&1 &
+          echo "Server PID: $!"
         env:
           CLIENT_ID: dummy
           CLIENT_SECRET: dummy
@@ -28,7 +31,9 @@ jobs:
           DATABASE_URL: sqlite+aiosqlite:///data/lembas.db
 
       - name: Wait for server
-        run: npx wait-on http://localhost:8000/api/healthz --timeout 30000
+        run: |
+          npx wait-on http://localhost:8000/api/healthz --timeout 30000 || \
+          (cat /tmp/server.log && exit 1)
 
       - name: Run Lighthouse CI
         run: npx --yes @lhci/cli@0.14 autorun
