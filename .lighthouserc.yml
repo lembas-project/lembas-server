@@ -33,4 +33,3 @@ collect:
   - http://localhost:8000/studies
 upload:
   target: temporary-public-storage
-
