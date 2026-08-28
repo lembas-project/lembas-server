@@ -29,6 +29,7 @@ from app.schemas import DeviceFlowResponse
 from app.schemas import DevicePendingResponse
 from app.schemas import DeviceTokenRequest
 from app.schemas import DeviceTokenResponse
+from app.schemas import HandlerSchemaResponse
 from app.schemas import HealthResponse
 from app.schemas import Page
 from app.schemas import Study
@@ -39,6 +40,8 @@ from app.schemas import TokenMetadata
 from app.schemas import TokenResponse
 from app.schemas import UserResponse
 from app.services import study_service
+from app.services.schema_service import get_all_schemas
+from app.services.schema_service import get_schema
 from app.services.token_service import create_token
 from app.services.token_service import delete_token
 from app.services.token_service import delete_token_by_value
@@ -108,6 +111,45 @@ async def auth_logout(request: Request) -> RedirectResponse:
 @api_router.get("/healthz")
 async def health() -> HealthResponse:
     return HealthResponse(status="ok")
+
+
+# --- Schema Registry API Endpoints ---
+
+
+@api_router.get("/schemas")
+async def list_handler_schemas(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[HandlerSchemaResponse]:
+    """List all handler schemas across all studies, deduplicated by fingerprint."""
+    schemas = await get_all_schemas(db)
+    return [
+        HandlerSchemaResponse(
+            fingerprint=s["fingerprint"],
+            name=s["name"],
+            schema=s["schema"],
+            created_at=s["created_at"],
+            used_by=s["used_by"],
+        )
+        for s in schemas
+    ]
+
+
+@api_router.get("/schemas/{fingerprint}")
+async def get_handler_schema(
+    fingerprint: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> HandlerSchemaResponse:
+    """Fetch a handler schema by fingerprint."""
+    schema = await get_schema(db, fingerprint)
+    if not schema:
+        raise HTTPException(status_code=404, detail="Schema not found")
+    return HandlerSchemaResponse(
+        fingerprint=schema["fingerprint"],
+        name=schema["name"],
+        schema=schema["schema"],
+        created_at=schema["created_at"],
+        used_by=[],
+    )
 
 
 # --- User API Endpoints ---

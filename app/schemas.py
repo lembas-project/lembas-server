@@ -22,6 +22,25 @@ class Page[T](BaseModel):
     offset: int | None = Field(default=None, description="Offset of this page")
 
 
+class StudyUsage(BaseModel):
+    """A study that uses a particular handler schema."""
+
+    study_id: str
+    study_name: str
+
+
+class HandlerSchemaResponse(BaseModel):
+    """A handler schema with usage information."""
+
+    fingerprint: str
+    name: str
+    schema_: dict[str, Any] = Field(alias="schema")
+    created_at: datetime
+    used_by: list[StudyUsage] = Field(default_factory=list)
+
+    model_config = {"populate_by_name": True}
+
+
 class HealthResponse(BaseModel):
     status: Literal["ok"]
 
@@ -112,6 +131,16 @@ class CaseSchema(BaseModel):
     error_message: str | None = None
 
 
+class HandlerSchemaPayload(BaseModel):
+    """A handler schema submitted alongside a study."""
+
+    fingerprint: str = Field(description="Content-addressed fingerprint (SHA-256[:16] or full)")
+    name: str = Field(description="Handler class name")
+    schema_: dict[str, Any] = Field(alias="schema", description="Full JSON Schema blob")
+
+    model_config = {"populate_by_name": True}
+
+
 class StudyCreatePayload(BaseModel):
     """Payload for creating/registering a study."""
 
@@ -119,6 +148,7 @@ class StudyCreatePayload(BaseModel):
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
     plugins_declared: list[str] = Field(default_factory=list)
+    handlers: list[HandlerSchemaPayload] = Field(default_factory=list)
     cases: list[CaseRunCreate] = Field(default_factory=list)
 
 
