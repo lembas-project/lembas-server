@@ -1,6 +1,7 @@
 {% for case in cases %}
 <tr
-  class="case-row"
+  id="{{ case.id }}"
+  class="case-row{% if selected_case_id == case.id %} selected{% endif %}"
   data-case-id="{{ case.id }}"
   hx-get="/studies/{{ study.id }}/cases/{{ case.id }}"
   hx-target="#case-detail"

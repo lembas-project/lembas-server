@@ -419,6 +419,8 @@ async def study_detail(
             "cases": cases,
             "input_keys": _input_keys(cases),
             "result_keys": _result_keys(cases),
+            "selected_case_id": None,
+            "selected_case": None,
             "active_page": "studies",
         },
     )
@@ -477,7 +479,7 @@ async def case_detail_partial(
         )
 
     # Direct navigation (deep link / reload) — render full study page
-    # with the selected case so JS can open the panel on load
+    # with the selected case rendered inline (no JS needed)
     cases = list(study.cases.values())
     return templates.TemplateResponse(
         request,
@@ -488,6 +490,7 @@ async def case_detail_partial(
             "input_keys": _input_keys(cases),
             "result_keys": _result_keys(cases),
             "selected_case_id": case_id,
+            "selected_case": case,
             "active_page": "studies",
         },
     )

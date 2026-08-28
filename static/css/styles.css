@@ -488,7 +488,8 @@ nav .nav-links a.active {
 .cases-table tr.case-row:hover {
   background: #111f30;
 }
-.cases-table tr.case-row.selected {
+.cases-table tr.case-row.selected,
+.cases-table tr.case-row:target {
   background: #0e2540;
 }
 
