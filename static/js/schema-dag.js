@@ -6,14 +6,19 @@ function renderStepDAG(container, steps) {
   if (!container || !steps || steps.length === 0) return;
 
   const stepMap = {};
-  steps.forEach((s) => { stepMap[s.name] = s; });
+  steps.forEach((s) => {
+    stepMap[s.name] = s;
+  });
 
   // Compute BFS levels from requires dependencies
   const levels = {};
   function getLevel(name) {
     if (levels[name] !== undefined) return levels[name];
     const step = stepMap[name];
-    if (!step || step.requires.length === 0) { levels[name] = 0; return 0; }
+    if (!step || step.requires.length === 0) {
+      levels[name] = 0;
+      return 0;
+    }
     let max = -1;
     for (const req of step.requires) max = Math.max(max, getLevel(req));
     levels[name] = max + 1;
@@ -31,7 +36,10 @@ function renderStepDAG(container, steps) {
     maxLevel = Math.max(maxLevel, l);
   });
 
-  const nW = 140, nH = 50, lGap = 80, nGap = 20;
+  const nW = 140,
+    nH = 50,
+    lGap = 80,
+    nGap = 20;
 
   let svgWidth = 0;
   for (let l = 0; l <= maxLevel; l++) {

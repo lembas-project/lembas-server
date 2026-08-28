@@ -566,7 +566,9 @@ nav .nav-links a.active {
   text-decoration: none;
   color: inherit;
   display: block;
-  transition: border-color 0.15s, transform 0.15s;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
 }
 
 .schema-card:hover {
@@ -604,7 +606,9 @@ nav .nav-links a.active {
   margin-bottom: 0.75rem;
 }
 
-.schema-stats span { white-space: nowrap; }
+.schema-stats span {
+  white-space: nowrap;
+}
 
 .schema-usage {
   display: flex;
