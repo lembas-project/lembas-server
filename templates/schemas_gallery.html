@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Schemas – lembas{% endblock %}
+{% block description %}Browse handler schemas registered across all studies.{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <h1>Handler Schemas</h1>
+  </div>
+
+  {% if schemas %}
+  <div class="schemas-grid">
+    {% for schema in schemas %}
+    {% set s = schema.schema_ %}
+    <a href="/schemas/{{ schema.fingerprint }}" class="schema-card">
+      <div class="schema-name">{{ schema.name }}</div>
+      <div class="schema-fingerprint">{{ schema.fingerprint[:16] }}</div>
+      {% if s.get('description') %}
+      <div class="schema-description">{{ s.description }}</div>
+      {% endif %}
+      <div class="schema-stats">
+        <span>{{ s.get('inputs', {}).get('properties', {}) | length }} inputs</span>
+        <span>{{ s.get('results', {}).get('properties', {}) | length }} results</span>
+        {% if s.get('steps') %}
+        <span>{{ s.steps | length }} steps</span>
+        {% endif %}
+      </div>
+      {% if schema.used_by %}
+      <div class="schema-usage">
+        {% for use in schema.used_by[:4] %}
+        <span class="tag">{{ use.study_name }}</span>
+        {% endfor %}
+        {% if schema.used_by | length > 4 %}
+        <span class="tag">+{{ schema.used_by | length - 4 }} more</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h2>No schemas yet</h2>
+    <p>Push a study with handler schemas using <code>lembas push</code>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

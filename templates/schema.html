@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ schema.name }} – lembas{% endblock %}
+{% block description %}{{ s.get('description') or schema.name }} — handler schema {{ schema.fingerprint[:16] }}.{% endblock %}
+
+{% block content %}
+<div class="container">
+  <a href="/schemas" class="back-link">← Schemas</a>
+
+  <div class="schema-header">
+    <h1>{{ schema.name }}</h1>
+    <div class="meta">
+      <span>{{ schema.fingerprint[:16] }}</span>
+      {% if s.get('x-lembas-source') %}
+      <span class="{% if s['x-lembas-source'].get('dirty') %}kv-val--result{% else %}kv-val--muted{% endif %}">
+        {{ s['x-lembas-source'].get('git_ref', '') }}{% if s['x-lembas-source'].get('dirty') %} (dirty){% endif %}
+      </span>
+      {% endif %}
+    </div>
+    {% if s.get('description') %}
+    <div style="margin-top:0.5rem; color:var(--muted); font-size:0.875rem;">{{ s.description }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Inputs -->
+  {% set inputs = s.get('inputs', {}).get('properties', {}) %}
+  {% set required_inputs = s.get('inputs', {}).get('required', []) %}
+  {% if inputs %}
+  <div class="detail-section">
+    <div class="section-label">Inputs</div>
+    <div class="prop-grid">
+      {% for name, prop in inputs.items() %}
+      <div class="prop-card">
+        <div class="prop-name">
+          {{ name }}
+          {% if name in required_inputs %}
+          <span class="required-badge">required</span>
+          {% endif %}
+        </div>
+        <div class="prop-type">{{ prop.get('type', 'any') }}</div>
+        {% if prop.get('description') %}
+        <div class="prop-meta">{{ prop.description }}</div>
+        {% endif %}
+        {% if prop.get('default') is not none %}
+        <div class="prop-meta">default: <code>{{ prop.default }}</code></div>
+        {% endif %}
+        {% if prop.get('minimum') is not none or prop.get('maximum') is not none %}
+        <div class="prop-meta">
+          {% if prop.get('minimum') is not none %}min: {{ prop.minimum }}{% endif %}
+          {% if prop.get('maximum') is not none %}{% if prop.get('minimum') is not none %}, {% endif %}max: {{ prop.maximum }}{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Results -->
+  {% set results = s.get('results', {}).get('properties', {}) %}
+  {% if results %}
+  <div class="detail-section">
+    <div class="section-label">Results</div>
+    <div class="prop-grid">
+      {% for name, prop in results.items() %}
+      <div class="prop-card">
+        <div class="prop-name">{{ name }}</div>
+        <div class="prop-type">{{ prop.get('type', 'any') }}</div>
+        {% if prop.get('description') %}
+        <div class="prop-meta">{{ prop.description }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Step DAG -->
+  {% set steps = s.get('steps', []) %}
+  {% if steps %}
+  <div class="detail-section">
+    <div class="section-label">Pipeline Steps</div>
+    <div class="dag-container" id="dag-container"></div>
+    <div class="dag-legend">
+      <span><span class="legend-dot" style="background:#0d2137;border:1.5px solid #1e3a5f;"></span>Step</span>
+      <span><span class="legend-dot" style="background:#1a2a3a;border:1.5px solid #f59e0b;"></span>Conditional step</span>
+    </div>
+  </div>
+  <script src="/static/js/schema-dag.js"></script>
+  <script>
+    const steps = {{ steps | tojson }};
+    renderStepDAG(document.getElementById('dag-container'), steps);
+  </script>
+  {% endif %}
+
+  <!-- Used by -->
+  {% if schema.used_by %}
+  <div class="detail-section">
+    <div class="section-label">Used by</div>
+    <div class="schema-usage" style="margin-top:0.5rem;">
+      {% for use in schema.used_by %}
+      <a href="/studies/{{ use.study_id }}" class="tag" style="text-decoration:none;">{{ use.study_name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Raw JSON -->
+  <details style="margin-top:1.5rem;">
+    <summary style="cursor:pointer; font-size:0.8125rem; color:var(--muted); padding:0.5rem 0;">Raw JSON Schema</summary>
+    <pre class="error-block" style="margin-top:0.5rem; color:#90a4ae;">{{ s | tojson(indent=2) }}</pre>
+  </details>
+</div>
+{% endblock %}
