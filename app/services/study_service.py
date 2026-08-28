@@ -88,8 +88,7 @@ async def create_study(
     # Store handler schemas and link them to this study
     if payload.handlers:
         schema_dicts = [
-            {"fingerprint": h.fingerprint, "name": h.name, **h.schema_}
-            for h in payload.handlers
+            {"fingerprint": h.fingerprint, "name": h.name, **h.schema_} for h in payload.handlers
         ]
         await upsert_schemas(db, study, schema_dicts)
 
@@ -152,8 +151,7 @@ async def update_study(
     # Update handler schemas
     if payload.handlers:
         schema_dicts = [
-            {"fingerprint": h.fingerprint, "name": h.name, **h.schema_}
-            for h in payload.handlers
+            {"fingerprint": h.fingerprint, "name": h.name, **h.schema_} for h in payload.handlers
         ]
         await upsert_schemas(db, study, schema_dicts)
 

@@ -28,9 +28,7 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("fingerprint"),
     )
-    op.create_index(
-        op.f("ix_handler_schemas_name"), "handler_schemas", ["name"], unique=False
-    )
+    op.create_index(op.f("ix_handler_schemas_name"), "handler_schemas", ["name"], unique=False)
     op.create_table(
         "study_handler_schemas",
         sa.Column("study_id", sa.Uuid(), nullable=False),

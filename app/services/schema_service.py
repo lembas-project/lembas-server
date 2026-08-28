@@ -64,10 +64,7 @@ async def get_all_schemas(db: AsyncSession) -> list[dict[str, Any]]:
             "name": s.name,
             "schema": json.loads(s.schema_json),
             "created_at": s.created_at,
-            "used_by": [
-                {"study_id": study.id, "study_name": study.name}
-                for study in s.studies
-            ],
+            "used_by": [{"study_id": study.id, "study_name": study.name} for study in s.studies],
         }
         for s in schemas
     ]

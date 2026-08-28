@@ -56,9 +56,7 @@ async def test_schema_registered_with_study(
                     "schema": SAMPLE_SCHEMA,
                 }
             ],
-            "cases": [
-                {"id": "case001", "handler_fqn": "plugin.PlaningPlateCase", "inputs": {}}
-            ],
+            "cases": [{"id": "case001", "handler_fqn": "plugin.PlaningPlateCase", "inputs": {}}],
         }
         resp = await client.post("/api/studies", json=payload)
         assert resp.status_code == 201
