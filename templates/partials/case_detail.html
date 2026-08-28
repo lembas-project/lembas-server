@@ -7,7 +7,13 @@
     <span class="badge badge-{{ case.status }}">{{ case.status }}</span>
   </div>
 
-  <div class="mono-fqn">{{ case.handler_fqn }}</div>
+  <div class="mono-fqn">
+    {% if schema_fingerprint %}
+    <a href="/schemas/{{ schema_fingerprint }}">{{ case.handler_fqn }}</a>
+    {% else %}
+    {{ case.handler_fqn }}
+    {% endif %}
+  </div>
 
   <!-- Inputs -->
   <div class="detail-section">

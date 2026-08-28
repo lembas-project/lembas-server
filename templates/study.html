@@ -115,7 +115,7 @@
 
     <div id="case-detail">
       {% if selected_case_id and selected_case %}
-        {% with case = selected_case %}{% include "partials/case_detail.html" %}{% endwith %}
+        {% with case = selected_case, schema_fingerprint = selected_case_schema_fingerprint %}{% include "partials/case_detail.html" %}{% endwith %}
       {% else %}
       <div class="detail-placeholder">
         Click a case to see details

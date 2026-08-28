@@ -428,6 +428,71 @@ async def root() -> RedirectResponse:
     return RedirectResponse("/studies")
 
 
+@ui_router.get("/schemas", response_class=HTMLResponse)
+async def schemas_gallery_ui(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
+) -> HTMLResponse:
+    schemas_data = await get_all_schemas(db)
+    from app.schemas import HandlerSchemaResponse
+    from app.schemas import StudyUsage
+
+    schemas = [
+        HandlerSchemaResponse(
+            fingerprint=s["fingerprint"],
+            name=s["name"],
+            schema=s["schema"],
+            created_at=s["created_at"],
+            used_by=[StudyUsage(**u) for u in s["used_by"]],
+        )
+        for s in schemas_data
+    ]
+    return templates.TemplateResponse(
+        request,
+        "schemas_gallery.html",
+        {"schemas": schemas, "active_page": "schemas"},
+    )
+
+
+@ui_router.get("/schemas/{fingerprint}", response_class=HTMLResponse)
+async def schema_detail_ui(
+    fingerprint: str,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    templates: Annotated[Jinja2Templates, Depends(get_templates)],
+) -> HTMLResponse:
+    from app.schemas import HandlerSchemaResponse
+    from app.schemas import StudyUsage
+
+    schema_data = await get_schema(db, fingerprint)
+    if not schema_data:
+        return _html_404(request, f"Schema {fingerprint[:16]} not found")
+
+    # Also get usage info
+    all_schemas = await get_all_schemas(db)
+    usage: list[dict] = next(
+        (s["used_by"] for s in all_schemas if s["fingerprint"] == fingerprint), []
+    )
+
+    schema = HandlerSchemaResponse(
+        fingerprint=schema_data["fingerprint"],
+        name=schema_data["name"],
+        schema=schema_data["schema"],
+        created_at=schema_data["created_at"],
+        used_by=[StudyUsage(**u) for u in usage],
+    )
+    return templates.TemplateResponse(
+        request,
+        "schema.html",
+        {
+            "schema": schema,
+            "s": schema.schema_,
+            "active_page": "schemas",
+        },
+    )
+
+
 @ui_router.get("/studies", response_class=HTMLResponse)
 async def studies_gallery(
     request: Request,
@@ -514,15 +579,26 @@ async def case_detail_partial(
 
     # htmx swap request — return just the detail panel partial
     if request.headers.get("HX-Request"):
+        # Look up the schema fingerprint for this handler by class name
+        handler_class = case.handler_fqn.split(".")[-1]
+        all_schemas = await get_all_schemas(db)
+        schema_fingerprint = next(
+            (s["fingerprint"] for s in all_schemas if s["name"] == handler_class), None
+        )
         return templates.TemplateResponse(
             request,
             "partials/case_detail.html",
-            {"case": case},
+            {"case": case, "schema_fingerprint": schema_fingerprint},
         )
 
     # Direct navigation (deep link / reload) — render full study page
     # with the selected case rendered inline (no JS needed)
     cases = list(study.cases.values())
+    handler_class = case.handler_fqn.split(".")[-1]
+    all_schemas = await get_all_schemas(db)
+    schema_fingerprint = next(
+        (s["fingerprint"] for s in all_schemas if s["name"] == handler_class), None
+    )
     return templates.TemplateResponse(
         request,
         "study.html",
@@ -533,6 +609,7 @@ async def case_detail_partial(
             "result_keys": _result_keys(cases),
             "selected_case_id": case_id,
             "selected_case": case,
+            "selected_case_schema_fingerprint": schema_fingerprint,
             "active_page": "studies",
         },
     )
