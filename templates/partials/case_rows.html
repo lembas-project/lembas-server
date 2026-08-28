@@ -5,6 +5,7 @@
   hx-get="/studies/{{ study.id }}/cases/{{ case.id }}"
   hx-target="#case-detail"
   hx-swap="innerHTML"
+  hx-push-url="/studies/{{ study.id }}/cases/{{ case.id }}"
 >
   <td><span class="badge badge-{{ case.status }}">{{ case.status }}</span></td>
   {% for key in input_keys %}

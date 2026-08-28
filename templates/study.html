@@ -127,18 +127,42 @@
     btn.classList.add('active');
   }
 
-  // Expand layout when detail panel is loaded
+  function openCasePanel(caseId) {
+    document.getElementById('study-layout').className = 'layout with-panel';
+    document.querySelectorAll('.case-row').forEach(r => r.classList.remove('selected'));
+    const row = document.querySelector(`[data-case-id="${caseId}"]`);
+    if (row) row.classList.add('selected');
+  }
+
+  // Expand layout and mark row when detail panel is loaded via htmx
   document.body.addEventListener('htmx:afterSwap', function(e) {
     if (e.detail.target.id === 'case-detail') {
-      document.getElementById('study-layout').className = 'layout with-panel';
-      // Mark selected row
-      document.querySelectorAll('.case-row').forEach(r => r.classList.remove('selected'));
       const caseId = e.detail.requestConfig?.path?.split('/cases/')[1];
-      if (caseId) {
-        const row = document.querySelector(`[data-case-id="${caseId}"]`);
-        if (row) row.classList.add('selected');
-      }
+      if (caseId) openCasePanel(caseId);
     }
   });
+
+  // Handle back/forward — close panel when URL returns to study root
+  window.addEventListener('popstate', function() {
+    const path = window.location.pathname;
+    if (!path.includes('/cases/')) {
+      document.getElementById('study-layout').className = 'layout';
+      document.getElementById('case-detail').innerHTML =
+        '<div class="detail-placeholder">Click a case to see details</div>';
+      document.querySelectorAll('.case-row').forEach(r => r.classList.remove('selected'));
+    }
+  });
+
+  // Deep-link: auto-open panel if page loaded with a case already selected
+  {% if selected_case_id %}
+  document.addEventListener('DOMContentLoaded', function() {
+    htmx.ajax('GET', '/studies/{{ study.id }}/cases/{{ selected_case_id }}', {
+      target: '#case-detail',
+      swap: 'innerHTML',
+    }).then(function() {
+      openCasePanel('{{ selected_case_id }}');
+    });
+  });
+  {% endif %}
 </script>
 {% endblock %}

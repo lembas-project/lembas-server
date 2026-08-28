@@ -73,11 +73,33 @@ async def test_case_detail_partial_renders(
     )
     study = await create_study(db, payload, pushed_by_id=user.id)
 
-    response = await client.get(f"/studies/{study.id}/cases/def456")
+    response = await client.get(f"/studies/{study.id}/cases/def456", headers={"HX-Request": "true"})
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "def456" in response.text
     assert "test.Case" in response.text
+
+
+async def test_case_detail_deep_link(
+    app: FastAPI, client: AsyncClient, db: AsyncSession
+) -> None:
+    """Direct navigation to /studies/{id}/cases/{case_id} renders full study page."""
+    from app.services.user_service import get_or_create_user
+
+    user = await get_or_create_user(db, github_id=4000004, username="deeplink", avatar_url="")
+    payload = StudyCreatePayload(
+        name="deep-link-study",
+        cases=[CaseRunCreate(id="deep123", handler_fqn="test.Case", inputs={})],
+    )
+    study = await create_study(db, payload, pushed_by_id=user.id)
+
+    # No HX-Request header — direct navigation
+    response = await client.get(f"/studies/{study.id}/cases/deep123")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    # Full page — contains study name and the selected_case_id JS
+    assert "deep-link-study" in response.text
+    assert "deep123" in response.text
 
 
 async def test_study_detail_404(client: AsyncClient) -> None:
