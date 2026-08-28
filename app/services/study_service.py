@@ -90,7 +90,7 @@ async def create_study(
         schema_dicts = [
             {"fingerprint": h.fingerprint, "name": h.name, **h.schema_} for h in payload.handlers
         ]
-        await upsert_schemas(db, study, schema_dicts)
+        await upsert_schemas(db, study.id, schema_dicts)
 
     result = await db.execute(_study_query(study.id))
     study = result.scalar_one()
@@ -148,12 +148,12 @@ async def update_study(
     await db.commit()
     db.expire_all()
 
-    # Update handler schemas
+    # Update handler schemas (use study_id directly — study object is expired after commit)
     if payload.handlers:
         schema_dicts = [
             {"fingerprint": h.fingerprint, "name": h.name, **h.schema_} for h in payload.handlers
         ]
-        await upsert_schemas(db, study, schema_dicts)
+        await upsert_schemas(db, study_id, schema_dicts)
 
     result = await db.execute(_study_query(study_id))
     study = result.scalar_one()

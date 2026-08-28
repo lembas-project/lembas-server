@@ -8,13 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database.models import HandlerSchema
-from app.database.models import Study
 from app.database.models import StudyHandlerSchema
 
 
 async def upsert_schemas(
     db: AsyncSession,
-    study: Study,
+    study_id: str,
     schemas: list[dict[str, Any]],
 ) -> None:
     """Insert handler schemas that don't exist yet and link them to a study.
@@ -42,9 +41,9 @@ async def upsert_schemas(
             )
 
         # Link to study if not already linked
-        link = await db.get(StudyHandlerSchema, (study.id, fingerprint))
+        link = await db.get(StudyHandlerSchema, (study_id, fingerprint))
         if link is None:
-            db.add(StudyHandlerSchema(study_id=study.id, fingerprint=fingerprint))
+            db.add(StudyHandlerSchema(study_id=study_id, fingerprint=fingerprint))
 
     await db.commit()
 
