@@ -419,6 +419,8 @@ async def study_detail(
             "cases": cases,
             "input_keys": _input_keys(cases),
             "result_keys": _result_keys(cases),
+            "selected_case_id": None,
+            "selected_case": None,
             "active_page": "studies",
         },
     )
@@ -459,15 +461,36 @@ async def case_detail_partial(
     db: Annotated[AsyncSession, Depends(get_db)],
     templates: Annotated[Jinja2Templates, Depends(get_templates)],
 ) -> HTMLResponse:
-    """htmx partial: case detail panel."""
+    """Case detail — serves the htmx partial for in-page swaps, or the full
+    study page for direct navigation (deep links / page reload)."""
     study = await study_service.get_study(db, study_id)
     if not study:
         return _html_404(request, "Study not found")
     case = study.cases.get(case_id)
     if not case:
         return _html_404(request, f"Case {case_id[:8]} not found")
+
+    # htmx swap request — return just the detail panel partial
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse(
+            request,
+            "partials/case_detail.html",
+            {"case": case},
+        )
+
+    # Direct navigation (deep link / reload) — render full study page
+    # with the selected case rendered inline (no JS needed)
+    cases = list(study.cases.values())
     return templates.TemplateResponse(
         request,
-        "partials/case_detail.html",
-        {"case": case},
+        "study.html",
+        {
+            "study": study,
+            "cases": cases,
+            "input_keys": _input_keys(cases),
+            "result_keys": _result_keys(cases),
+            "selected_case_id": case_id,
+            "selected_case": case,
+            "active_page": "studies",
+        },
     )

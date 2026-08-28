@@ -91,7 +91,7 @@
       onclick="setActive(this)">Pending</button>
   </div>
 
-  <div class="layout" id="study-layout">
+  <div class="{% if selected_case_id %}layout with-panel{% else %}layout{% endif %}" id="study-layout">
     <div>
       <table class="cases-table">
         <thead>
@@ -114,9 +114,13 @@
     </div>
 
     <div id="case-detail">
+      {% if selected_case_id and selected_case %}
+        {% with case = selected_case %}{% include "partials/case_detail.html" %}{% endwith %}
+      {% else %}
       <div class="detail-placeholder">
         Click a case to see details
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -127,17 +131,19 @@
     btn.classList.add('active');
   }
 
-  // Expand layout when detail panel is loaded
+  // Expand layout when the detail panel is loaded via htmx
   document.body.addEventListener('htmx:afterSwap', function(e) {
     if (e.detail.target.id === 'case-detail') {
       document.getElementById('study-layout').className = 'layout with-panel';
-      // Mark selected row
-      document.querySelectorAll('.case-row').forEach(r => r.classList.remove('selected'));
-      const caseId = e.detail.requestConfig?.path?.split('/cases/')[1];
-      if (caseId) {
-        const row = document.querySelector(`[data-case-id="${caseId}"]`);
-        if (row) row.classList.add('selected');
-      }
+    }
+  });
+
+  // Back/forward: close panel when URL returns to the study root
+  window.addEventListener('popstate', function() {
+    if (!window.location.pathname.includes('/cases/')) {
+      document.getElementById('study-layout').className = 'layout';
+      document.getElementById('case-detail').innerHTML =
+        '<div class="detail-placeholder">Click a case to see details</div>';
     }
   });
 </script>
