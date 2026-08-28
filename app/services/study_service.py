@@ -17,6 +17,7 @@ from app.schemas import CaseSchema
 from app.schemas import CaseStatusUpdatePayload
 from app.schemas import Study as StudySchema
 from app.schemas import StudyCreatePayload
+from app.services.schema_service import upsert_schemas
 
 
 def _orm_case_to_schema(case: Case) -> CaseSchema:
@@ -84,6 +85,13 @@ async def create_study(
 
     await db.commit()
 
+    # Store handler schemas and link them to this study
+    if payload.handlers:
+        schema_dicts = [
+            {"fingerprint": h.fingerprint, "name": h.name, **h.schema_} for h in payload.handlers
+        ]
+        await upsert_schemas(db, study, schema_dicts)
+
     result = await db.execute(_study_query(study.id))
     study = result.scalar_one()
     return _orm_study_to_schema(study)
@@ -139,6 +147,13 @@ async def update_study(
 
     await db.commit()
     db.expire_all()
+
+    # Update handler schemas
+    if payload.handlers:
+        schema_dicts = [
+            {"fingerprint": h.fingerprint, "name": h.name, **h.schema_} for h in payload.handlers
+        ]
+        await upsert_schemas(db, study, schema_dicts)
 
     result = await db.execute(_study_query(study_id))
     study = result.scalar_one()

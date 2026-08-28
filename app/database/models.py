@@ -81,6 +81,9 @@ class Study(Base):
     cases: Mapped[list["Case"]] = relationship(
         "Case", back_populates="study", cascade="all, delete-orphan"
     )
+    handler_schemas: Mapped[list["HandlerSchema"]] = relationship(
+        "HandlerSchema", secondary="study_handler_schemas", back_populates="studies"
+    )
 
 
 class Case(Base):
@@ -122,3 +125,31 @@ class APIToken(Base):
     last_used_at: Mapped[datetime | None] = mapped_column(TZDateTime)
 
     user: Mapped["User"] = relationship("User")
+
+
+class HandlerSchema(Base):
+    """A content-addressed handler schema, shared across studies."""
+
+    __tablename__ = "handler_schemas"
+
+    fingerprint: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    schema_json: Mapped[str] = mapped_column(Text, nullable=False)  # full JSON Schema blob
+    created_at: Mapped[datetime] = mapped_column(TZDateTime, default=_utc_now)
+
+    studies: Mapped[list["Study"]] = relationship(
+        "Study", secondary="study_handler_schemas", back_populates="handler_schemas"
+    )
+
+
+class StudyHandlerSchema(Base):
+    """Join table linking studies to the handler schemas they use."""
+
+    __tablename__ = "study_handler_schemas"
+
+    study_id: Mapped[str] = mapped_column(
+        Uuid(as_uuid=False), ForeignKey("studies.id"), primary_key=True
+    )
+    fingerprint: Mapped[str] = mapped_column(
+        String(64), ForeignKey("handler_schemas.fingerprint"), primary_key=True
+    )
