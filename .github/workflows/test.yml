@@ -19,7 +19,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
     - name: Install pixi
-      uses: prefix-dev/setup-pixi@f549d4661561febfea24180549434adf6853645f # main
+      uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # main
       with:
         pixi-version: v0.82.0
     - name: Run static type checks
