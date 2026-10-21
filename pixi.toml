@@ -12,7 +12,7 @@ sqlalchemy = ">=2.0"
 uvicorn = "*"
 
 [environments]
-default = {features = ["dev"], solve-group = "default"}
+default = { features = ["dev"], solve-group = "default" }
 
 [feature.dev.dependencies]
 mypy = "*"
