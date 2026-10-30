@@ -12,7 +12,7 @@ jobs:
     concurrency: deploy-group
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
-    - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
+    - uses: superfly/flyctl-actions/setup-flyctl@98172f70657cb3e15db199af139be99bd3e61200 # master
     - run: make deploy
       env:
         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
