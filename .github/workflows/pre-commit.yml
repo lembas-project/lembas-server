@@ -30,7 +30,7 @@ jobs:
     - name: Install pixi
       uses: prefix-dev/setup-pixi@7c6c31c9dd8bb847bf7f595d2136ab6876c16874 # main
       with:
-        pixi-version: v0.83.0
+        pixi-version: v0.84.0
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9   # v6.1.0
       with:
         path: |
